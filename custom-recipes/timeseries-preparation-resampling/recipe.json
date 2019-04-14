@@ -1,0 +1,124 @@
+{
+    "meta" : {
+        "label" : "Timeserie resampling",
+        "description" : "Resample non-equispaced timeseries and perform interpolation/extrapolation.",
+        "icon" : "icon-time"
+    },
+    "kind" : "PYTHON",
+    "selectableFromDataset" : "input_dataset",
+    "inputRoles" : [
+        {
+            "name": "input_dataset",
+            "label": "Input dataset",
+            "description": "A dataset with the datetime column.",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": true,
+            "acceptsFolder": false
+        }
+    ],
+    "outputRoles" : [
+        {
+            "name": "output_dataset",
+            "label": "Output dataset",
+            "description": "Dataset with equispaced timeseries.",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": true
+        }
+    ],
+    "params": [
+        {
+            "name": "sep1",
+            "label": "Resampling parameters",
+            "type": "SEPARATOR"
+        },
+        {
+            "name" : "time_unit",
+            "label" : "Time unit",
+            "type" : "SELECT",
+            "selectChoices" : [
+                    { "value" : "millisecond", "label" : "Millisecond"},
+                    { "value" : "second", "label" : "Second"},
+                    { "value" : "minute", "label" : "Minute"},
+                    { "value" : "hour", "label" : "Hour"},
+                    { "value" : "day", "label" : "Day"},
+                    { "value" : "week", "label" : "Week"},
+                    { "value" : "month", "label" : "Month"},
+                    { "value" : "quarter", "label" : "Quarter"},
+                    { "value" : "year", "label" : "Year"}
+            ],
+            "defaultValue": "second"
+        }, 
+        {
+            "name": "time_step_size",
+            "label" : "Time step size",
+            "type": "DOUBLE",
+            "defaultValue" : 10
+        },
+        {
+            "name": "offset",
+            "label" : "Offset",
+            "type": "DOUBLE",
+            "defaultValue" : 0
+        },
+        {
+            "name": "crop",
+            "label" : "Crop",
+            "type": "DOUBLE",
+            "defaultValue" : 0
+        },
+        {
+            "name": "sep2",
+            "label": "Method",
+            "type": "SEPARATOR"
+        },
+        {
+            "name" : "interpolation_method",
+            "label" : "Interpolation method",
+            "type" : "SELECT",
+            "selectChoices" : [
+                    { "value" : "nearest", "label" : "Nearest"},
+                    { "value" : "previous", "label" : "Previous"},
+                    { "value" : "next", "label" : "Next"},
+                    { "value" : "linear", "label" : "Linear"},
+                    { "value" : "quadratic", "label" : "Quadratic"},
+                    { "value" : "cubic", "label" : "Cubic"},
+                    { "value" : "barycentric", "label" : "Barycentric"},
+                    { "value" : "None", "label" : "None"}
+            ],
+            "defaultValue": "linear"
+        },
+        {
+            "name" : "extrapolation_method",
+            "label" : "Extrapolation method",
+            "type" : "SELECT",
+            "selectChoices" : [
+                    { "value" : "clip", "label" : "Nearest"},
+                    { "value" : "interpolation", "label" : "Same as interpolation"},
+                    { "value" : "None", "label" : "None"}
+            ],
+            "defaultValue": "roc_auc"
+        },
+        {
+            "name": "sep3",
+            "label": "Advanced",
+            "type": "SEPARATOR"
+        }, 
+        {
+            "name": "advance_activate",
+            "label": "Open advanced options",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "groupby_cols",
+            "label" : "Column to groupby",
+            "type": "COLUMN",
+            "columnRole":"input_dataset",
+            "mandatory" : false,
+            "description": "In case we have one timeserie per value of this column.",
+            "visibilityCondition": "model.advance_activate"
+
+        }
+    ]
+}
