@@ -94,6 +94,10 @@ class Resampler:
         self.params.check()
 
     def _compute_full_time_index(self, df):
+        """
+        From the resampling config, create the full index of the output dataframe.
+        """
+
         resampling_step = str(self.params.time_step_size) + TIME_STEP_MAPPING.get(self.params.time_unit, '')
         offset_step = str(self.params.offset) + OFFSET_MAPPING.get(self.params.time_unit, '')
         crop_step = str(self.params.crop) + OFFSET_MAPPING.get(self.params.time_unit, '')
@@ -123,13 +127,12 @@ class Resampler:
         # TODO should we check the input df first for the prerequisite ?
         return None
 
-    def _resample(self, df, group_id=None): #TODO we dont actually use group_id
+    def _resample(self, df): #TODO we dont actually use group_id
 
         try:
             temp_df = df.reindex(df.index | self.full_time_index)
         except Exception, e:
-            raise ValueError('{}: Your timeseries might have dupplicate timestamps.'.format(str(e)))
-
+            raise ValueError('{}: Your timeseries contain dupplicate timestamps.'.format(str(e)))
 
         if self.params.interpolation_method == 'next':  # no `next` method with pd.interpolate()
             df_interpolated = temp_df.bfill()
@@ -148,16 +151,16 @@ class Resampler:
         else:
             df_extrapolated = df_interpolated
 
-        if self.params.groupby_cols:
-            df_extrapolated[self.params.groupby_cols] = df_extrapolated[
-                self.params.groupby_cols].ffill().bfill()
+        groupby_cols = self.params.groupby_cols
+        if groupby_cols:
+            df_extrapolated[groupby_cols] = df_extrapolated[groupby_cols].ffill().bfill()
 
         df_resampled = df_extrapolated.reindex(self.full_time_index)
         return df_resampled
 
     def transform(self, raw_df):
 
-        datetime_column = self._find_datetime_column(raw_df)
+        datetime_column = self.params.datetime_column
         # TODO sort_index() is necessary ?
         df = raw_df.set_index(datetime_column).sort_index()
         self.full_time_index = self._compute_full_time_index(df)
@@ -167,7 +170,7 @@ class Resampler:
             resampled_groups = []
 
             for group_id, group in grouped:
-                df_extrapolated = self._resample(group, group_id)
+                df_extrapolated = self._resample(group)
                 resampled_groups.append(df_extrapolated)
 
             df_transformed = pd.concat(resampled_groups)
