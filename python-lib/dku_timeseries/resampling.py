@@ -77,13 +77,14 @@ class ResamplerParams:
         if self.time_unit not in TIME_UNITS:
             raise ValueError('"{0}" is not a valid unit. Possible time units are: {1}'.format(
                 self.time_unit, TIME_UNITS))
+        """
         if self.offset != 0 and self.time_unit not in OFFSET_UNITS:
             raise ValueError('Can not use offset with "{0}" unit. Possible time units are: {1}'.format(
                 self.time_unit, OFFSET_UNITS))
         if self.crop != 0 and self.time_unit not in OFFSET_UNITS:
             raise ValueError('Can not use crop with "{0}" unit. Possible time units are: {1}'.format(
                 self.time_unit, OFFSET_UNITS))
-
+        """ 
 
 class Resampler:
 
@@ -99,8 +100,24 @@ class Resampler:
         """
 
         resampling_step = str(self.params.time_step_size) + TIME_STEP_MAPPING.get(self.params.time_unit, '')
-        offset_step = str(self.params.offset) + OFFSET_MAPPING.get(self.params.time_unit, '')
-        crop_step = str(self.params.crop) + OFFSET_MAPPING.get(self.params.time_unit, '')
+
+        # pd.Timedelta does not have this units, so we convert them to `day` 
+        if self.params.time_unit in ['week', 'month', 'quarter', 'year']:
+            day_conversion = {
+                'year': 365,
+                'quarter': 90,
+                'month': 30,
+                'week': 7
+            }
+
+            offset_value = self.params.offset * day_conversion.get(self.params.time_unit)
+            crop_value = self.params.crop * day_conversion.get(self.params.time_unit)
+            offset_step = str(offset_value) + 'day'
+            crop_step = str(crop_value) + 'day'
+        else:
+
+            offset_step = str(self.params.offset) + OFFSET_MAPPING.get(self.params.time_unit, '')
+            crop_step = str(self.params.crop) + OFFSET_MAPPING.get(self.params.time_unit, '')
 
         offset_time_delta = pd.Timedelta(offset_step)
         crop_time_delta = pd.Timedelta(crop_step)
