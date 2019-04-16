@@ -1,7 +1,7 @@
 {
     "meta" : {
-        "label" : "Timeserie resampling",
-        "description" : "Resample non-equispaced timeseries and perform interpolation/extrapolation.",
+        "label" : "Timeseries resampling",
+        "description" : "Resample the timeseries and perform interpolation/extrapolation.",
         "icon" : "icon-time"
     },
     "kind" : "PYTHON",
@@ -29,6 +29,18 @@
     ],
     "params": [
         {
+            "name": "sep0",
+            "label": "Data parameters",
+            "type": "SEPARATOR"
+        },
+        {
+            "name": "datetime_column",
+            "label" : "Date column",
+            "type": "COLUMN",
+            "columnRole":"input_dataset",
+            "mandatory": true
+        },
+        {
             "name": "sep1",
             "label": "Resampling parameters",
             "type": "SEPARATOR"
@@ -38,15 +50,17 @@
             "label" : "Time unit",
             "type" : "SELECT",
             "selectChoices" : [
-                    { "value" : "millisecond", "label" : "Millisecond"},
-                    { "value" : "second", "label" : "Second"},
-                    { "value" : "minute", "label" : "Minute"},
-                    { "value" : "hour", "label" : "Hour"},
-                    { "value" : "day", "label" : "Day"},
-                    { "value" : "week", "label" : "Week"},
-                    { "value" : "month", "label" : "Month"},
-                    { "value" : "quarter", "label" : "Quarter"},
-                    { "value" : "year", "label" : "Year"}
+                    { "value" : "nanosecond", "label" : "nanosecond"},
+                    { "value" : "microsecond", "label" : "microsecond"},
+                    { "value" : "millisecond", "label" : "millisecond"},
+                    { "value" : "second", "label" : "second"},
+                    { "value" : "minute", "label" : "minute"},
+                    { "value" : "hour", "label" : "hour"},
+                    { "value" : "day", "label" : "day"},
+                    { "value" : "week", "label" : "week"},
+                    { "value" : "month", "label" : "month"},
+                    { "value" : "quarter", "label" : "quarter"},
+                    { "value" : "year", "label" : "year"}
             ],
             "defaultValue": "second"
         }, 
@@ -78,14 +92,14 @@
             "label" : "Interpolation method",
             "type" : "SELECT",
             "selectChoices" : [
-                    { "value" : "nearest", "label" : "Nearest"},
-                    { "value" : "previous", "label" : "Previous"},
-                    { "value" : "next", "label" : "Next"},
-                    { "value" : "linear", "label" : "Linear"},
-                    { "value" : "quadratic", "label" : "Quadratic"},
-                    { "value" : "cubic", "label" : "Cubic"},
-                    { "value" : "barycentric", "label" : "Barycentric"},
-                    { "value" : "None", "label" : "None"}
+                    { "value" : "nearest", "label" : "nearest"},
+                    { "value" : "previous", "label" : "previous"},
+                    { "value" : "next", "label" : "next"},
+                    { "value" : "linear", "label" : "linear"},
+                    { "value" : "quadratic", "label" : "quadratic"},
+                    { "value" : "cubic", "label" : "cubic"},
+                    { "value" : "barycentric", "label" : "barycentric"},
+                    { "value" : "None", "label" : "none"}
             ],
             "defaultValue": "linear"
         },
@@ -94,11 +108,11 @@
             "label" : "Extrapolation method",
             "type" : "SELECT",
             "selectChoices" : [
-                    { "value" : "clip", "label" : "Nearest"},
-                    { "value" : "interpolation", "label" : "Same as interpolation"},
-                    { "value" : "None", "label" : "None"}
+                    { "value" : "clip", "label" : "clip"},
+                    { "value" : "interpolation", "label" : "same as interpolation"},
+                    { "value" : "None", "label" : "none"}
             ],
-            "defaultValue": "roc_auc"
+            "defaultValue": "clip"
         },
         {
             "name": "sep3",

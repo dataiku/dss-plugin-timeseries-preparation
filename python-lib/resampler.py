@@ -9,19 +9,53 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO,
                     format='timeseries-preparation plugin %(levelname)s - %(message)s')
 
+TIME_STEP_MAPPING = {
+    'year': 'A',
+    'quarter': 'Q',
+    'month': 'M',
+    'week': 'W',
+    'day': 'D',
+    'hour': 'H',
+    'minute': 'T',
+    'second': 'S',
+    'millisecond': 'L',
+    'microsecond': 'us',
+    'nanosecond': 'ns'
+}
+
+OFFSET_MAPPING = {
+    'day': 'D',
+    'hour': 'h',
+    'minute': 'm',
+    'second': 's',
+    'millisecond': 'ms',
+    'microsecond': 'us',
+    'nanosecond': 'ns'
+}
 
 class Resampler:
 
     def __init__(self, params=None):
 
-        assert params is not None, "ResamplerParams instance is None."
+        assert params is not None, "ResamplerParams not specified."
         self.params = params
         self.params.check()
 
     def _compute_full_time_index(self, df):
-        full_time_index = pd.date_range(start=df.index.min() + pd.Timedelta(self.params.offset_step),
-                                        end=df.index.max() - pd.Timedelta(self.params.crop_step),
-                                        freq=self.params.resampling_step)
+        resampling_step = str(self.params.time_step_size) + TIME_STEP_MAPPING.get(self.params.time_unit, '')
+        offset_step = str(self.params.offset) + OFFSET_MAPPING.get(self.params.time_unit, '')
+        crop_step = str(self.params.crop) + OFFSET_MAPPING.get(self.params.time_unit, '')
+
+        offset_time_delta = pd.Timedelta(offset_step)
+        crop_time_delta = pd.Timedelta(crop_step)
+
+        start_index = df.index.min() + offset_time_delta
+        end_index = df.index.max() + crop_time_delta
+
+        full_time_index = pd.date_range(start=start_index,
+                                        end=end_index,
+                                        freq=resampling_step)
+
         return full_time_index
 
     def _find_datetime_column(self, df):
@@ -89,5 +123,6 @@ class Resampler:
         else:
             df_transformed = self._resample(df)
 
+        # put the datetime index back to the dataframe
         final_df = df_transformed.rename_axis(datetime_column).reset_index()
         return final_df

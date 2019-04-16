@@ -2,17 +2,21 @@
 import dataiku
 from dataiku.customrecipe import *
 import logging
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO,  # avoid getting log from 3rd party module
-                    format='timeseries-preparation plugin %(levelname)s - %(message)s')
-
 from resampler import Resampler
 from recipe_config_to_params import get_resampling_params
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO,  
+                    format='timeseries-preparation plugin %(levelname)s - %(message)s')
+
+
+
 
 # --- Get IOs
-input_dataset_name = get_input_names_for_role('input_dataset')[0]
+try:
+	input_dataset_name = get_input_names_for_role('input_dataset')[0]
+except:
+	raise ValueError('No input dataset.') 
 input_dataset = dataiku.Dataset(input_dataset_name)
 
 output_dataset_name = get_output_names_for_role('output_dataset')[0]
