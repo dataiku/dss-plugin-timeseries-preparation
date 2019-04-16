@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# %%
 import dataiku
 import pandas as pd
 import logging
@@ -15,6 +16,7 @@ class Resampler:
 
         assert params is not None, "ResamplerParams instance is None."
         self.params = params
+        self.params.check()
 
     def _compute_full_time_index(self, df):
         full_time_index = pd.date_range(start=df.index.min() + pd.Timedelta(self.params.offset_step),
@@ -35,9 +37,13 @@ class Resampler:
         # TODO should we check the input df first for the prerequisite ?
         return None
 
-    def _resample(self, df, group_id=None):
+    def _resample(self, df, group_id=None): #TODO we dont actually use group_id
 
-        temp_df = df.reindex(df.index | self.full_time_index)
+        try:
+            temp_df = df.reindex(df.index | self.full_time_index)
+        except Exception, e:
+            raise ValueError('{}: Your timeseries might have dupplicate timestamps.'.format(str(e)))
+
 
         if self.params.interpolation_method == 'next':  # no `next` method with pd.interpolate()
             df_interpolated = temp_df.bfill()
