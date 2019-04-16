@@ -3,11 +3,11 @@
     "version" : "0.0.1",
     "meta" : {
         "label" : "Timeseries Preparation",
-        "description" : "This plugin provides a set of recipes to help you prepare timeseries data.",
+        "description" : "",
         "author" : "Dataiku (Du PHAN)",
         "icon" : "icon-time",
         "licenseInfo" : "Apache Software License",
-        "url" : "https://www.dataiku.com/community/plugins/info/local-sensitivity-hashing.html",
+        "url" : "https://www.dataiku.com/community/plugins/info/timeseries-preparation.html",
         "tags" : ["Timeseries"]
     }
 }

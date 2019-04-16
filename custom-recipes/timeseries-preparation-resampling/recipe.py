@@ -2,14 +2,12 @@
 import dataiku
 from dataiku.customrecipe import *
 import logging
-from resampler import Resampler
-from recipe_config_to_params import get_resampling_params
+from dku_timeseries import ResamplerParams, Resampler
+from dku_tools import get_resampling_params
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO,  
                     format='timeseries-preparation plugin %(levelname)s - %(message)s')
-
-
 
 
 # --- Get IOs
