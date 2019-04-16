@@ -1,5 +1,5 @@
 # coding: utf-8
-from resampler_params import *
+from dku_timeseries import ResamplerParams
 
 def get_resampling_params(recipe_config):
 
