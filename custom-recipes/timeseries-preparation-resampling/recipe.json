@@ -10,7 +10,7 @@
         {
             "name": "input_dataset",
             "label": "Input dataset",
-            "description": "A dataset with the datetime column.",
+            "description": "",
             "arity": "UNARY",
             "required": true,
             "acceptsDataset": true,
