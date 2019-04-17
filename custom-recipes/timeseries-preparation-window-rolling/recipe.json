@@ -1,0 +1,118 @@
+{
+    "meta" : {
+        "label" : "Timeseries window rolling",
+        "description" : "Apply different operations on rolling timeseries window.",
+        "icon" : "icon-time"
+    },
+    "kind" : "PYTHON",
+    "selectableFromDataset" : "input_dataset",
+    "inputRoles" : [
+        {
+            "name": "input_dataset",
+            "label": "Input dataset",
+            "description": "",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": true,
+            "acceptsFolder": false
+        }
+    ],
+    "outputRoles" : [
+        {
+            "name": "output_dataset",
+            "label": "Output dataset",
+            "description": "",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": true
+        }
+    ],
+    "params": [
+        {
+            "name": "sep0",
+            "label": "Data parameters",
+            "type": "SEPARATOR"
+        },
+        {
+            "name": "datetime_column",
+            "label" : "Date column",
+            "type": "COLUMN",
+            "columnRole":"input_dataset",
+            "mandatory": true
+        },
+        {
+            "name": "sep1",
+            "label": "Window parameters",
+            "type": "SEPARATOR"
+        },
+        {
+            "name" : "window_unit",
+            "label" : "Window unit",
+            "type" : "SELECT",
+            "selectChoices" : [
+                    { "value" : "nanosecond", "label" : "nanosecond"},
+                    { "value" : "microsecond", "label" : "microsecond"},
+                    { "value" : "millisecond", "label" : "millisecond"},
+                    { "value" : "second", "label" : "second"},
+                    { "value" : "minute", "label" : "minute"},
+                    { "value" : "hour", "label" : "hour"},
+                    { "value" : "day", "label" : "day"},
+                    { "value" : "week", "label" : "week"},
+                    { "value" : "month", "label" : "month"},
+                    { "value" : "quarter", "label" : "quarter"},
+                    { "value" : "year", "label" : "year"}
+            ],
+            "defaultValue": "second"
+        }, 
+        {
+            "name": "window_width",
+            "label" : "Window width",
+            "type": "DOUBLE",
+            "defaultValue" : 10
+        },
+        {
+            "name" : "window_type",
+            "label" : "Window type",
+            "type" : "SELECT",
+            "selectChoices" : [
+                    { "value" : "normal", "label" : "normal"},
+                    { "value" : "triang", "label" : "triangle"},
+                    { "value" : " blackman", "label" : "blackman"},
+                    { "value" : "hamming", "label" : "hamming"},
+                    { "value" : "barlett", "label" : "barlett"},
+                    { "value" : "parzan", "label" : "parzan"},
+                    { "value" : "gaussian", "label" : "gaussian"},
+                    { "value" : "none", "label" : "none"}
+            ],
+            "defaultValue": "none"
+        }, 
+        {
+            "name": "gaussian_std",
+            "label" : "Gaussian standard deviation",
+            "type": "DOUBLE",
+            "default_value": 1.0, 
+            "visibilityCondition": "model.window_type == 'gaussian'"
+
+        },
+        {
+            "name": "sep3",
+            "label": "Advanced",
+            "type": "SEPARATOR"
+        }, 
+        {
+            "name": "advance_activate",
+            "label": "Open advanced options",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "groupby_cols",
+            "label" : "Column to groupby",
+            "type": "COLUMN",
+            "columnRole":"input_dataset",
+            "mandatory" : false,
+            "description": "In case we have one timeserie per value of this column.",
+            "visibilityCondition": "model.advance_activate"
+
+        }
+    ]
+}

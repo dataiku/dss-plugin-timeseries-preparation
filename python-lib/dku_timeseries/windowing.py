@@ -9,16 +9,23 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO,
                     format='timeseries-preparation plugin %(levelname)s - %(message)s')
 
+
 TIME_STEP_MAPPING = {
+    'year': 'A',
+    'quarter': 'Q',
+    'month': 'M',
+    'week': 'W',
     'day': 'D',
     'hour': 'H',
     'minute': 'T',
     'second': 'S',
-    'millisecond': 'ms',
+    'millisecond': 'L',
+    'microsecond': 'us',
+    'nanosecond': 'ns'
 }
 
-WIN_TYPES = ['normal', 'triang', 'blackman', 'hamming', 'bartlett', 'parzen', 'gaussian', None]
-TIME_UNITS = ['day', 'hour', 'minute', 'second', 'millisecond', 'row']
+WINDOW_TYPES = ['normal', 'triang', 'blackman', 'hamming', 'bartlett', 'parzen', 'gaussian', None]
+WINDOW_UNITS = TIME_STEP_MAPPING.keys() + ['row']
 CLOSED_OPTIONS = ['right', 'left', 'both', 'neither']
 AGGREGATIONS = ['retrieve', 'average', 'min', 'max', 'std', 'q25', 'median', 'q75', 'sum', 
                 'first_order_derivative', 'second_order_derivative', 'count'] # No lag for instance, UI concern (where to put offset value)
@@ -26,43 +33,48 @@ AGGREGATIONS = ['retrieve', 'average', 'min', 'max', 'std', 'q25', 'median', 'q7
 class WindowRollerParams: #TODO better naming ?
     
     def __init__(self, 
-                 time_step_size = 1, 
-                 time_unit = 'second', 
+    			 datetime_column = None,
+                 window_width = 1, 
+                 window_unit = 'second', 
                  min_period=1, 
-                 closed_option='right',
+                 closed_option='left',
                  center='left', 
-                 win_type=None,
+                 window_type=None,
                  gaussian_std = None,
-                 aggregation_types = ['mean'],
-                 groupby_cols = []):
+                 aggregation_types = AGGREGATIONS,
+                 groupby_cols = None):
     
-        self.time_step_size = time_step_size
-        self.time_unit = time_unit
+        self.datetime_column = datetime_column
+        self.window_width = window_width
+        self.window_unit = window_unit
         
-        if time_unit == 'row':
-            self.window_description = self.time_step_size
+        if window_unit == 'row':
+            self.window_description = self.window_width
         else: 
-            self.window_description = str(self.time_step_size) + TIME_STEP_MAPPING.get(self.time_unit, '')
+            self.window_description = str(self.window_width) + TIME_STEP_MAPPING.get(self.window_unit, '')
             
         self.min_period = min_period
         self.closed_option = closed_option
         self.center = center
-        self.win_type = win_type
+        self.window_type = window_type
         self.gaussian_std = gaussian_std
         self.aggregation_types = aggregation_types
         self.groupby_cols = groupby_cols
         
     def check(self):
-        
-        if self.win_type not in WIN_TYPES:
-            raise ValueError('{0} is not a valid window type. Possbile options are: {1}'.format(self.win_type, WIN_TYPES))
-        
-        if self.time_step_size < 0:
-            raise ValueError('Time step can not be negative.')
 
-        if self.time_unit not in TIME_UNITS:
-            raise ValueError('"{0}" is not a valid unit. Possible time units are: {1}'.format(
-                self.time_unit, TIME_UNITS))
+        if self.datetime_column is None:
+            raise ValueError('Timestamp column must be defined.')
+
+        if self.window_type not in WINDOW_TYPES:
+            raise ValueError('{0} is not a valid window type. Possbile options are: {1}'.format(self.window_type, WINDOW_TYPES))
+        
+        if self.window_width < 0:
+            raise ValueError('Window width can not be negative.')
+
+        if self.window_unit not in WINDOW_UNITS:
+            raise ValueError('"{0}" is not a valid unit. Possible window units are: {1}'.format(
+                self.window_unit, WINDOW_UNITS))
             
         if self.min_period < 1:
             raise ValueError('Min period must be positive.')
@@ -81,20 +93,15 @@ class WindowRoller:
         
     def _check_valid_data(self, df):
         
-        self.frequency = pd.infer_freq(df[~df.index.duplicated()].index[:1000])
-        print('Frequency: ',self.frequency)
         # if non-equispaced + time-based window + using window, it is not possible (scipy limitation)
-        if not self.frequency and self.params.time_unit != 'row' and self.params.win_type is not None:
+        if not self.frequency and self.params.window_unit != 'row' and self.params.window_type is not None:
             raise ValueError('The input dataset is not equispaced thus we can not apply window fucntions on it.') 
 
     def _convert_time_freq_to_row_freq(self):
         
-        print(self.params.window_description)
-        print(self.frequency)
         data_frequency = pd.to_timedelta(to_offset(self.frequency))
         demanded_frequency = pd.to_timedelta(to_offset(self.params.window_description))
         n = demanded_frequency/data_frequency
-        print(int(round(n)))
         if n < 1:
             raise ValueError('The requested window size is smaller than the timeseries frequency. Please increase the former.')
         return int(round(n))
@@ -102,14 +109,20 @@ class WindowRoller:
     def _compute_rolling_stats(self, df, raw_columns):
            
         new_df = pd.DataFrame(index=df.index)
+
         # compute all stats except mean and sum, does not change whether or not we have a window type
-        rolling_without_window = df.rolling(window = self.params.window_description)
-        
+        if self.params.window_unit == 'row': # for now `closed` is only implemented for time-based window
+            rolling_without_window = df.rolling(window = self.params.window_description)
+        else:
+            rolling_without_window = df.rolling(window = self.params.window_description,)
+            									#closed = self.params.closed_option)
         if 'retrieve' in self.params.aggregation_types:
             new_df[raw_columns] = df[raw_columns]
-        if 'min' in self.params.aggregation_types:
+        """ 
+    	if 'min' in self.params.aggregation_types:
             col_names = ['{}_min'.format(col) for col in raw_columns]
             new_df[col_names] = rolling_without_window[raw_columns].min()
+        """ 
         if 'max' in self.params.aggregation_types:
             col_names = ['{}_max'.format(col) for col in raw_columns]
             new_df[col_names] = rolling_without_window[raw_columns].max()
@@ -131,20 +144,25 @@ class WindowRoller:
         if 'std' in self.params.aggregation_types:
             col_names = ['{}_std'.format(col) for col in raw_columns]
             new_df[col_names] = rolling_without_window[raw_columns].std()
-            
+    
         # compute mean, std and sum
-        if self.params.win_type:
-            rolling_with_window = df.rolling(self.params.window_description, 
-                                             win_type=self.params.win_type)
+        if self.params.window_type:
+            if self.params.window_unit == 'row': # 
+                rolling_with_window = df.rolling(window = self.params.window_description,
+	                                             window_type=self.params.window_type)
+            else:
+                rolling_with_window = df.rolling(window = self.params.window_description, 
+	                                             window_type=self.params.window_type,)
+	                                             #closed = self.params.closed_option)
             if 'average' in self.params.aggregation_types:
                 col_names = ['{}_avg'.format(col) for col in raw_columns]
-                if self.params.win_type == 'gaussian':
+                if self.params.window_type == 'gaussian':
                     new_df[col_names] = rolling_with_window[raw_columns].mean(std=self.params.gaussian_std)
                 else:
                     new_df[col_names] = rolling_with_window[raw_columns].mean()
             if 'sum' in self.params.aggregation_types:
                 col_names = ['{}_sum'.format(col) for col in raw_columns]
-                if self.params.win_type == 'gaussian':
+                if self.params.window_type == 'gaussian':
                     new_df[col_names] = rolling_with_window[raw_columns].sum(std=self.params.gaussian_std)
                 else:
                     new_df[col_names] = rolling_with_window[raw_columns].sum()
@@ -155,23 +173,25 @@ class WindowRoller:
             if 'sum' in self.params.aggregation_types:
                 col_names = ['{}_sum'.format(col) for col in raw_columns]
                 new_df[col_names] = rolling_without_window[raw_columns].sum()
-    
+        
         return new_df
     
     
     def compute(self, raw_df):
         
-        df = raw_df.set_index('UTC').sort_index() #TODO change this!!
+        df = raw_df.set_index(self.params.datetime_column).sort_index() 
+        self.frequency = pd.infer_freq(df[~df.index.duplicated()].index[:1000])
+        logger.info('Timeseries frequency: ',self.frequency)
         self._check_valid_data(df)
         raw_columns = df.select_dtypes(include=['float', 'int']).columns.tolist()
         
-        if self.frequency and self.params.time_unit != 'row' and self.params.win_type is not None:
+        if self.frequency and self.params.window_unit != 'row' and self.params.window_type is not None:
             self.params.window_description = self._convert_time_freq_to_row_freq() #TODO: should there be a parameter ?
         
         if self.params.groupby_cols:
             grouped = df.groupby(self.params.groupby_cols)
             computed_groups = []
-            for _, group in grouped:                         
+            for _, group in grouped: 
                 computed_df = self._compute_rolling_stats(group, raw_columns)
                 computed_groups.append(computed_df) 
             final_df = pd.concat(computed_groups)
@@ -179,5 +199,5 @@ class WindowRoller:
         else:
             final_df = self._compute_rolling_stats(group, raw_columns)
         
-        final_df = final_df.rename_axis('toto').reset_index()
+        final_df = final_df.rename_axis(self.params.datetime_column).reset_index()
         return final_df

@@ -109,7 +109,6 @@ class Resampler:
                 'month': 30,
                 'week': 7
             }
-
             offset_value = self.params.offset * day_conversion.get(self.params.time_unit)
             crop_value = self.params.crop * day_conversion.get(self.params.time_unit)
             offset_step = str(offset_value) + 'day'
