@@ -103,7 +103,7 @@ class WindowRoller:
         demanded_frequency = pd.to_timedelta(to_offset(self.params.window_description))
         n = demanded_frequency/data_frequency
         if n < 1:
-            raise ValueError('The requested window size is smaller than the timeseries frequency. Please increase the former.')
+            raise ValueError('The requested window width is smaller than the timeseries frequency. Please increase the former.')
         return int(round(n))
 
     def _compute_rolling_stats(self, df, raw_columns):
@@ -114,18 +114,16 @@ class WindowRoller:
         if self.params.window_unit == 'row': # for now `closed` is only implemented for time-based window
             rolling_without_window = df.rolling(window = self.params.window_description)
         else:
-            rolling_without_window = df.rolling(window = self.params.window_description,)
-            									#closed = self.params.closed_option)
+            rolling_without_window = df.rolling(window = self.params.window_description,
+            									closed = self.params.closed_option)
         if 'retrieve' in self.params.aggregation_types:
             new_df[raw_columns] = df[raw_columns]
-        """ 
     	if 'min' in self.params.aggregation_types:
             col_names = ['{}_min'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window[raw_columns].min()
-        """ 
+            new_df[col_names] = rolling_without_window[raw_columns].apply(min, raw=True)
         if 'max' in self.params.aggregation_types:
             col_names = ['{}_max'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window[raw_columns].max()
+            new_df[col_names] = rolling_without_window[raw_columns].apply(max, raw=True)
         if 'q25' in self.params.aggregation_types:
             col_names = ['{}_q25'.format(col) for col in raw_columns]
             new_df[col_names] = rolling_without_window[raw_columns].quantile(0.25)
@@ -152,8 +150,8 @@ class WindowRoller:
 	                                             window_type=self.params.window_type)
             else:
                 rolling_with_window = df.rolling(window = self.params.window_description, 
-	                                             window_type=self.params.window_type,)
-	                                             #closed = self.params.closed_option)
+	                                             window_type=self.params.window_type,
+	                                             closed = self.params.closed_option)
             if 'average' in self.params.aggregation_types:
                 col_names = ['{}_avg'.format(col) for col in raw_columns]
                 if self.params.window_type == 'gaussian':
@@ -183,10 +181,11 @@ class WindowRoller:
         self.frequency = pd.infer_freq(df[~df.index.duplicated()].index[:1000])
         logger.info('Timeseries frequency: ',self.frequency)
         self._check_valid_data(df)
+        window_width_in_row = self._convert_time_freq_to_row_freq() 
         raw_columns = df.select_dtypes(include=['float', 'int']).columns.tolist()
         
         if self.frequency and self.params.window_unit != 'row' and self.params.window_type is not None:
-            self.params.window_description = self._convert_time_freq_to_row_freq() #TODO: should there be a parameter ?
+            self.params.window_description = window_width_in_row #self._convert_time_freq_to_row_freq() #TODO: should there be a parameter ?
         
         if self.params.groupby_cols:
             grouped = df.groupby(self.params.groupby_cols)
