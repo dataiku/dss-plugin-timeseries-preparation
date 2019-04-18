@@ -24,7 +24,7 @@ TIME_STEP_MAPPING = {
     'nanosecond': 'ns'
 }
 
-WINDOW_TYPES = ['normal', 'triang', 'blackman', 'hamming', 'bartlett', 'parzen', 'gaussian', None]
+WINDOW_TYPES = ['triang', 'blackman', 'hamming', 'bartlett', 'parzen', 'gaussian', None]
 WINDOW_UNITS = TIME_STEP_MAPPING.keys() + ['row']
 CLOSED_OPTIONS = ['right', 'left', 'both', 'neither']
 AGGREGATIONS = ['retrieve', 'average', 'min', 'max', 'std', 'q25', 'median', 'q75', 'sum', 
@@ -80,7 +80,7 @@ class WindowRollerParams: #TODO better naming ?
             raise ValueError('Min period must be positive.')
             
         if self.closed_option not in CLOSED_OPTIONS:
-            raise ValueError('{0} is not a valid closed option. Possible values are: {1}'.format(self.closed_option, CLOSED_OPTIONS))
+            raise ValueError('"{0}" is not a valid closed option. Possible values are: {1}'.format(self.closed_option, CLOSED_OPTIONS))
            
 
 class WindowRoller:
@@ -114,8 +114,10 @@ class WindowRoller:
         if self.params.window_unit == 'row': # for now `closed` is only implemented for time-based window
             rolling_without_window = df.rolling(window = self.params.window_description)
         else:
+            print('toto------')
+            print(self.params.closed_option)
             rolling_without_window = df.rolling(window = self.params.window_description,
-            									closed = self.params.closed_option)
+                                                closed = self.params.closed_option)
         if 'retrieve' in self.params.aggregation_types:
             new_df[raw_columns] = df[raw_columns]
     	if 'min' in self.params.aggregation_types:
@@ -147,10 +149,10 @@ class WindowRoller:
         if self.params.window_type:
             if self.params.window_unit == 'row': # 
                 rolling_with_window = df.rolling(window = self.params.window_description,
-	                                             window_type=self.params.window_type)
+	                                             win_type=self.params.window_type)
             else:
                 rolling_with_window = df.rolling(window = self.params.window_description, 
-	                                             window_type=self.params.window_type,
+	                                             win_type=self.params.window_type,
 	                                             closed = self.params.closed_option)
             if 'average' in self.params.aggregation_types:
                 col_names = ['{}_avg'.format(col) for col in raw_columns]
@@ -194,9 +196,8 @@ class WindowRoller:
                 computed_df = self._compute_rolling_stats(group, raw_columns)
                 computed_groups.append(computed_df) 
             final_df = pd.concat(computed_groups)
-        
         else:
-            final_df = self._compute_rolling_stats(group, raw_columns)
+            final_df = self._compute_rolling_stats(df, raw_columns)
         
         final_df = final_df.rename_axis(self.params.datetime_column).reset_index()
         return final_df

@@ -46,11 +46,14 @@ def get_windowing_params(recipe_config):
 	else:
 		gaussian_std = None
 
+	closed_option = _p('closed_option')
+
 	params = WindowRollerParams(datetime_column = datetime_column, 
 								 window_unit = window_unit,
 				                 window_width = window_width,
 				                 window_type = window_type,
-				                 gaussian_std = gaussian_std
+				                 gaussian_std = gaussian_std,
+				                 closed_option = closed_option
 				                )
 
 	if _p('advance_activate'):

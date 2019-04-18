@@ -75,7 +75,6 @@
             "label" : "Window type",
             "type" : "SELECT",
             "selectChoices" : [
-                    { "value" : "normal", "label" : "normal"},
                     { "value" : "triang", "label" : "triangle"},
                     { "value" : " blackman", "label" : "blackman"},
                     { "value" : "hamming", "label" : "hamming"},
@@ -85,6 +84,19 @@
                     { "value" : "none", "label" : "none"}
             ],
             "defaultValue": "none"
+        }, 
+        {
+            "name" : "closed_option",
+            "label" : "Interval inclusion",
+            "type" : "SELECT",
+            "selectChoices" : [
+                    { "value" : "left", "label" : "left"},
+                    { "value" : "right", "label" : "right"},
+                    { "value" : "both", "label" : "both"},
+                    { "value" : "neither", "label" : "neither"}
+                ],
+            "defaultValue": "left",
+            "description": "Do we include the left/right endpoints in the interval ?"
         }, 
         {
             "name": "gaussian_std",

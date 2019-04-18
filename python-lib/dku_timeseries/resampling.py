@@ -64,7 +64,7 @@ class ResamplerParams:
     def check(self):
 
         if self.datetime_column is None:
-            raise ValueError('Timestamp column must be defined.')
+            raise ValueError('Timestamp column not defined.')
 
         if self.interpolation_method not in INTERPOLATION_METHODS:
             raise ValueError('Method "{0}" is not valid. Possible interpolation methods are: {1}.'.format(
@@ -133,7 +133,7 @@ class Resampler:
     def _find_datetime_column(self, df):
         datetime_cols = df.select_dtypes(include='datetime').columns.tolist()
         if len(datetime_cols) == 0:
-            raise ValueError('No datetime column detected.')
+            raise ValueError('Datetime column not specified.')
         elif len(datetime_cols) == 1:
             return datetime_cols[0]
         else:
