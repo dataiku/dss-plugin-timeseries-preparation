@@ -22,12 +22,13 @@ output_dataset = dataiku.Dataset(output_dataset_name)
 
 # --- Get configuration
 recipe_config = get_recipe_config()
+datetime_column = recipe_config.get('datetime_column')
 params = get_windowing_params(recipe_config)
 
 # --- Run
 df = input_dataset.get_dataframe()
 window_roller = WindowRoller(params)
-output_df = window_roller.compute(df)
+output_df = window_roller.compute(df, datetime_column)
 
 # --- Write output
 output_dataset.write_with_schema(output_df)

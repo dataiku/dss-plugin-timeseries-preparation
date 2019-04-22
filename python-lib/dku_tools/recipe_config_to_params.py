@@ -33,7 +33,6 @@ def get_windowing_params(recipe_config):
 	def _p(param_name, default=None):
 		return recipe_config.get(param_name, default)
 
-	datetime_column = _p('datetime_column')
 	window_unit = _p('window_unit')
 	window_width = int(_p('window_width'))
 	if _p('window_type') == 'none':
@@ -48,7 +47,7 @@ def get_windowing_params(recipe_config):
 
 	closed_option = _p('closed_option')
 
-	params = WindowRollerParams(datetime_column = datetime_column, 
+	params = WindowRollerParams(
 								 window_unit = window_unit,
 				                 window_width = window_width,
 				                 window_type = window_type,
