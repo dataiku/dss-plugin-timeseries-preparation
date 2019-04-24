@@ -11,7 +11,6 @@ logging.basicConfig(level=logging.INFO,
 
 TIME_STEP_MAPPING = {
     'year': 'A',
-    'quarter': 'Q',
     'month': 'M',
     'week': 'W',
     'day': 'D',
@@ -23,21 +22,10 @@ TIME_STEP_MAPPING = {
     'nanosecond': 'ns'
 }
 
-OFFSET_MAPPING = {
-    'day': 'D',
-    'hour': 'h',
-    'minute': 'm',
-    'second': 's',
-    'millisecond': 'ms',
-    'microsecond': 'us',
-    'nanosecond': 'ns'
-}
-
 INTERPOLATION_METHODS = ['None', 'nearest', 'previous',
                          'next', 'linear', 'quadratic', 'cubic', 'barycentric']
 EXTRAPOLATION_METHODS = ['None', 'clip', 'interpolation']
 TIME_UNITS = TIME_STEP_MAPPING.keys() + ['row']
-OFFSET_UNITS = OFFSET_MAPPING.keys() + ['row']
 
 
 class ResamplerParams:
@@ -57,6 +45,7 @@ class ResamplerParams:
         self.extrapolation_method = extrapolation_method
         self.time_step_size = time_step_size
         self.time_unit = time_unit
+        self.resampling_step = str(self.time_step_size) + TIME_STEP_MAPPING.get(self.time_unit, '')
         self.offset = offset
         self.crop = crop
         self.groupby_cols = groupby_cols
@@ -65,7 +54,6 @@ class ResamplerParams:
 
         if self.datetime_column is None:
             raise ValueError('Timestamp column not defined.')
-
         if self.interpolation_method not in INTERPOLATION_METHODS:
             raise ValueError('Method "{0}" is not valid. Possible interpolation methods are: {1}.'.format(
                 self.interpolation_method, INTERPOLATION_METHODS))
@@ -77,14 +65,6 @@ class ResamplerParams:
         if self.time_unit not in TIME_UNITS:
             raise ValueError('"{0}" is not a valid unit. Possible time units are: {1}'.format(
                 self.time_unit, TIME_UNITS))
-        """
-        if self.offset != 0 and self.time_unit not in OFFSET_UNITS:
-            raise ValueError('Can not use offset with "{0}" unit. Possible time units are: {1}'.format(
-                self.time_unit, OFFSET_UNITS))
-        if self.crop != 0 and self.time_unit not in OFFSET_UNITS:
-            raise ValueError('Can not use crop with "{0}" unit. Possible time units are: {1}'.format(
-                self.time_unit, OFFSET_UNITS))
-        """ 
 
 class Resampler:
 
@@ -99,34 +79,18 @@ class Resampler:
         From the resampling config, create the full index of the output dataframe.
         """
 
-        resampling_step = str(self.params.time_step_size) + TIME_STEP_MAPPING.get(self.params.time_unit, '')
+        offset_value = self._get_date_offset(self.params.offset) 
+        crop_value = self._get_date_offset(self.params.crop)
 
-        # pd.Timedelta does not have this units, so we convert them to `day` 
-        if self.params.time_unit in ['week', 'month', 'quarter', 'year']:
-            day_conversion = {
-                'year': 365,
-                'quarter': 90,
-                'month': 30,
-                'week': 7
-            }
-            offset_value = self.params.offset * day_conversion.get(self.params.time_unit)
-            crop_value = self.params.crop * day_conversion.get(self.params.time_unit)
-            offset_step = str(offset_value) + 'day'
-            crop_step = str(crop_value) + 'day'
-        else:
+        #offset_time_delta = pd.Timedelta(offset_step)
+        #crop_time_delta = pd.Timedelta(crop_step)
 
-            offset_step = str(self.params.offset) + OFFSET_MAPPING.get(self.params.time_unit, '')
-            crop_step = str(self.params.crop) + OFFSET_MAPPING.get(self.params.time_unit, '')
-
-        offset_time_delta = pd.Timedelta(offset_step)
-        crop_time_delta = pd.Timedelta(crop_step)
-
-        start_index = df.index.min() + offset_time_delta
-        end_index = df.index.max() + crop_time_delta
+        start_index = df.index.min() + offset_value
+        end_index = df.index.max() + crop_value
 
         full_time_index = pd.date_range(start=start_index,
                                         end=end_index,
-                                        freq=resampling_step)
+                                        freq=self.params.resampling_step)
 
         return full_time_index
 
@@ -142,6 +106,27 @@ class Resampler:
     def _check_df(self, df):
         # TODO should we check the input df first for the prerequisite ?
         return None
+
+    def _get_date_offset(self, offset_value):
+        
+        if self.params.time_unit == 'year':
+            return pd.DateOffset(years=offset_value)
+        elif self.params.time_unit == 'month':
+            return pd.DateOffset(months=offset_value)
+        elif self.params.time_unit == 'week':
+            return pd.DateOffset(weeks=offset_value)
+        elif self.params.time_unit == 'day':
+            return pd.DateOffset(days=offset_value)
+        elif self.params.time_unit == 'hour':
+            return pd.DateOffset(hours=offset_value)
+        elif self.params.time_unit == 'minute':
+            return pd.DateOffset(minutes=offset_value)
+        elif self.params.time_unit == 'second':
+            return pd.DateOffset(seconds=offset_value)
+        elif self.params.time_unit == 'microsecond':
+            return pd.DateOffset(microseconds=offset_value)
+        elif self.params.time_unit == 'nanosecond':
+            return pd.DateOffset(nanoseconds=offset_value)
 
     def _resample(self, df): #TODO we dont actually use group_id
 

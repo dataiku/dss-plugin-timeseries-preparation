@@ -59,7 +59,6 @@
                     { "value" : "day", "label" : "day"},
                     { "value" : "week", "label" : "week"},
                     { "value" : "month", "label" : "month"},
-                    { "value" : "quarter", "label" : "quarter"},
                     { "value" : "year", "label" : "year"}
             ],
             "defaultValue": "second"
