@@ -72,7 +72,7 @@ def test_identity_resampling():
     for x in range(1000):
         assert output_df[DATA_COL][x] == df[DATA_COL][x]
 
-def test_double_freq_resampling():
+def test_half_freq_resampling():
     length = 100000
     print("test_double_freq_resampling with "+str(length)+" records")
     data = [x for x in range(length)]
