@@ -79,10 +79,10 @@ class SegmentExtractor:
         inds = np.nonzero((x >= lower_threshold) & (x <= upper_threshold))[0]
         if inds.size:
             # initial and final indexes of almost continuous data
-            inds = np.vstack((inds[np.diff(np.hstack((-np.inf, inds))) > self.params.max_noise_duration+1], \
-                              inds[np.diff(np.hstack((inds, np.inf))) > self.params.max_noise_duration+1])).T
+            inds = np.vstack((inds[np.diff(np.hstack((-np.inf, inds))) >= self.params.max_noise_duration], \
+                              inds[np.diff(np.hstack((inds, np.inf))) >= self.params.max_noise_duration])).T
             # indexes of almost continuous data longer than or equal to n_above
-            segment_indexes = inds[inds[:, 1]-inds[:, 0] >= self.params.min_segment_duration-1, :]
+            segment_indexes = inds[inds[:, 1]-inds[:, 0] >= self.params.min_segment_duration, :]
         if not inds.size:
             segment_indexes = np.array([])  # standardize inds shape for output
 
