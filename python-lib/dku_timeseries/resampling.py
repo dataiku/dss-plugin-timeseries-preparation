@@ -104,8 +104,11 @@ class Resampler:
             raise ValueError('Multiple datetime columns detected.')
 
     def _check_df(self, df):
-        # TODO should we check the input df first for the prerequisite ?
-        return None
+
+        if len(df) == 0:
+            return False
+        else:
+            return True
 
     def _get_date_offset(self, offset_value):
         
@@ -161,8 +164,10 @@ class Resampler:
 
     def transform(self, raw_df):
 
+        passed = self._check_df(raw_df)
+        if not passed:
+            return raw_df
         datetime_column = self.params.datetime_column
-        # TODO sort_index() is necessary ?
         df = raw_df.set_index(datetime_column).sort_index()
         self.full_time_index = self._compute_full_time_index(df)
 

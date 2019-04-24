@@ -81,7 +81,7 @@ class WindowRoller:
     
     def __init__(self, params=None):
                 
-        assert params is not None, "ResamplerParams instance is not specified."
+        assert params is not None, "WindowRollerParams instance is not specified."
         self.params = params
         self.params.check()
         

@@ -21,21 +21,16 @@ class ExtremaExtractorParams:
         self.extrema_type = extrema_type
         
     def check(self):
-            
         if self.window_roller is None:
             raise ValueError('WindowRoller object is not specified.')
-        
-        
         if self.extrema_type not in EXTREMUM_TYPES:
             raise ValueError('{0} is not a valid options. Possible extrema types are: {1}'.format(self.extrema_type, EXTREMA_TYPES))
-            
-        
 
 class ExtremaExtractor:
     
     def __init__(self, params=None):
         
-        assert params is not None, "ResamplerParams instance is not specified."
+        assert params is not None, "ExtremaExtractorParams instance is not specified."
         self.params = params
         self.params.check()
         
@@ -54,12 +49,6 @@ class ExtremaExtractor:
         extrema_neighbor_df = pd.concat(extrema_neigbors).drop_duplicates()
 
         return extrema_neighbor_df, extrema_value
-    
-    def _get_extrema(self, df, extrema_column,extrema_value):
-        
-        extrema_df = df.loc[df[extrema_column]==extrema_value]
-        
-        return extrema_df
         
     def compute(self, raw_df, datetime_column, extrema_column):
         """
@@ -76,5 +65,5 @@ class ExtremaExtractor:
             else:
                 raise ValueError('Error while computing aggregated stats: ', e)
             
-        extrema_df = self._get_extrema(rolling_df, extrema_column, extrema_value)
+        extrema_df = rolling_df.loc[df[extrema_column]==extrema_value]
         return extrema_df
