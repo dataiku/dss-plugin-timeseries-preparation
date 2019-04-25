@@ -31,7 +31,6 @@ TIME_UNITS = TIME_STEP_MAPPING.keys() + ['row']
 class ResamplerParams:
 
     def __init__(self,
-                 datetime_column = None,
                  interpolation_method='linear',
                  extrapolation_method='clip',
                  time_step_size=1,
@@ -40,7 +39,6 @@ class ResamplerParams:
                  crop=0,
                  groupby_cols=None):
 
-        self.datetime_column = datetime_column
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
         self.time_step_size = time_step_size
@@ -52,8 +50,6 @@ class ResamplerParams:
 
     def check(self):
 
-        if self.datetime_column is None:
-            raise ValueError('Timestamp column not defined.')
         if self.interpolation_method not in INTERPOLATION_METHODS:
             raise ValueError('Method "{0}" is not valid. Possible interpolation methods are: {1}.'.format(
                 self.interpolation_method, INTERPOLATION_METHODS))
@@ -81,9 +77,6 @@ class Resampler:
 
         offset_value = self._get_date_offset(self.params.offset) 
         crop_value = self._get_date_offset(self.params.crop)
-
-        #offset_time_delta = pd.Timedelta(offset_step)
-        #crop_time_delta = pd.Timedelta(crop_step)
 
         start_index = df.index.min() + offset_value
         end_index = df.index.max() + crop_value
@@ -131,7 +124,7 @@ class Resampler:
         elif self.params.time_unit == 'nanosecond':
             return pd.DateOffset(nanoseconds=offset_value)
 
-    def _resample(self, df): #TODO we dont actually use group_id
+    def _resample(self, df): 
 
         try:
             temp_df = df.reindex(df.index | self.full_time_index)
@@ -162,12 +155,11 @@ class Resampler:
         df_resampled = df_extrapolated.reindex(self.full_time_index)
         return df_resampled
 
-    def transform(self, raw_df):
+    def transform(self, raw_df, datetime_column):
 
         passed = self._check_df(raw_df)
         if not passed:
             return raw_df
-        datetime_column = self.params.datetime_column
         df = raw_df.set_index(datetime_column).sort_index()
         self.full_time_index = self._compute_full_time_index(df)
 
