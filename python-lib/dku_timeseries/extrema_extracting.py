@@ -23,7 +23,7 @@ class ExtremaExtractorParams:
     def check(self):
         if self.window_roller is None:
             raise ValueError('WindowRoller object is not specified.')
-        if self.extrema_type not in EXTREMUM_TYPES:
+        if self.extrema_type not in EXTREMA_TYPES:
             raise ValueError('{0} is not a valid options. Possible extrema types are: {1}'.format(self.extrema_type, EXTREMA_TYPES))
 
 class ExtremaExtractor:
@@ -50,20 +50,23 @@ class ExtremaExtractor:
 
         return extrema_neighbor_df, extrema_value
         
-    def compute(self, raw_df, datetime_column, extrema_column):
+    def compute(self, raw_df, datetime_column, extrema_column, groupby_columns=None):
         """
         From the input dataset, keep only the extrema and theirs surrounding, then compute
         aggregated statistics on what's going on around the extrema.
         """    
         df = raw_df.set_index(datetime_column).sort_index()
-        extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(df, extrema_column)
-        try:
+        if groupby_columns:
+            grouped = df.groupby(groupby_columns)
+            computed_groups = []
+            for _, group in grouped:
+                extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(group, extrema_column)
+                rolling_df = self.params.window_roller.compute(extrema_neighbor_df)
+                extrema_df = rolling_df.loc[group[extrema_column]==extrema_value]
+                computed_groups.append(extrema_df)
+            final_df = pd.concat(computed_groups)
+        else:
+            extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(df, extrema_column)
             rolling_df = self.params.window_roller.compute(extrema_neighbor_df)
-        except Exception, e:
-            if e.message == 'Need at least 3 dates to infer frequency':
-                raise ValueError('The chosen window for aggregating is too small: ', e)
-            else:
-                raise ValueError('Error while computing aggregated stats: ', e)
-            
-        extrema_df = rolling_df.loc[df[extrema_column]==extrema_value]
-        return extrema_df
+            final_df = rolling_df.loc[df[extrema_column]==extrema_value]
+        return final_df
