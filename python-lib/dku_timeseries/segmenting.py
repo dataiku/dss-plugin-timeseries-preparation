@@ -1,13 +1,3 @@
-# -*- coding: utf-8 -*-
-import dataiku
-import pandas as pd
-import numpy as np
-import logging
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO,
-                    format='timeseries-preparation plugin %(levelname)s - %(message)s')
-
 TIME_STEP_MAPPING = {
     'day': 'D',
     'hour': 'h',
@@ -24,11 +14,13 @@ class SegmentExtractorParams:
     def __init__(self,
                  min_segment_duration_value = 0,
                  max_noise_duration_value = 0,
-                 time_unit = 'second'):
+                 time_unit = 'second',
+                 groupby_cols = None):
         
         self.min_segment_duration_value = min_segment_duration_value
         self.max_noise_duration_value = max_noise_duration_value
         self.time_unit = time_unit
+        self.groupby_cols = groupby_cols
         
         if self.time_unit == 'row':
             self.min_segment_duration = self.min_segment_duration_value
@@ -51,11 +43,13 @@ class SegmentExtractor:
     def __init__(self, params):
         assert params is not None, "SegmentExtractorParams instance is not specified."
         self.params = params
+        print self.params.__dict__
         self.params.check()
         
     def _detect_time_segment(self, df, chosen_col, lower_threshold, upper_threshold):        
         
         filtered_index = df[(df[chosen_col] >= lower_threshold) & (df[chosen_col] <= upper_threshold)].index
+        
         if len(filtered_index) > 0:
             filtered_serie = filtered_index.to_series()
 
@@ -69,10 +63,10 @@ class SegmentExtractor:
             filtered2 = filtered_serie[d2 >= self.params.max_noise_duration].index
             
             inds2 = np.vstack((filtered, filtered2)).T
-                                            
+                        
             check_segment_duration = lambda x: pd.Timedelta(x[1]-x[0]) >= self.params.min_segment_duration
             segment_indexes = filter(check_segment_duration, inds2)
-
+            
         else: #empty
             segment_indexes = []
             
@@ -96,9 +90,8 @@ class SegmentExtractor:
 
         return segment_indexes
         
-    def compute(self, raw_df, datetime_column, threshold_dict):
+    def _detect_segment(self, raw_df, datetime_column, threshold_dict):
         
-        #
         if self.params.time_unit == 'row':
             df = raw_df.sort_values(datetime_column)
         else:
@@ -109,19 +102,34 @@ class SegmentExtractor:
             if self.params.time_unit == 'row':
                 segment_indexes = self._detect_row_segment(df, chosen_column, lower_threshold, upper_threshold)
             else:
-                segment_indexes = self._detect_time_segment(df, chosen_column, lower_threshold, upper_threshold)
-            
+                segment_indexes = self._detect_time_segment(df, chosen_column, lower_threshold, upper_threshold)            
+
         mask_list = []
         if len(segment_indexes) > 0:
             for start, end in segment_indexes:
                 mask = (df.index >= start) & (df.index <= end)
                 mask_list.append(mask)
-            
             segment_df = df.loc[np.logical_or.reduce(mask_list)]
-
         else:
             segment_df = pd.DataFrame(columns=df.columns)
         
-        final_df = segment_df.rename_axis(datetime_column).reset_index()
-
+        if self.params.time_unit != 'row':
+            segment_df = segment_df.rename_axis(datetime_column).reset_index()
+        
+        return segment_df
+        
+        
+    def compute(self, raw_df, datetime_column, threshold_dict):
+        
+        if self.params.groupby_cols:
+            grouped = raw_df.groupby(self.params.groupby_cols)
+            segmented_groups = []
+            for _, group in grouped:
+                segment_df = self._detect_segment(group, threshold_dict)
+                segmented_groups.append(segment_df)
+            final_df = pd.concat(segmented_groups)        
+        else:
+            final_df = self._detect_segment(raw_df, datetime_column, threshold_dict)
+        
         return final_df
+        
