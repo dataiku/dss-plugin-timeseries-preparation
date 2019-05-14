@@ -25,7 +25,7 @@ TIME_STEP_MAPPING = {
 INTERPOLATION_METHODS = ['None', 'nearest', 'previous',
                          'next', 'linear', 'quadratic', 'cubic', 'barycentric']
 EXTRAPOLATION_METHODS = ['None', 'clip', 'interpolation']
-TIME_UNITS = TIME_STEP_MAPPING.keys() + ['row']
+TIME_UNITS = list(TIME_STEP_MAPPING.keys()) + ['row']
 
 
 class ResamplerParams:

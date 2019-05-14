@@ -26,6 +26,7 @@ TIME_STEP_MAPPING = {
 
 WINDOW_TYPES = ['triang', 'blackman', 'hamming', 'bartlett', 'parzen', 'gaussian', None]
 WINDOW_UNITS = TIME_STEP_MAPPING.keys() + ['row']
+WINDOW_UNITS = list(TIME_STEP_MAPPING.keys()) + ['row']
 CLOSED_OPTIONS = ['right', 'left', 'both', 'neither']
 AGGREGATIONS = ['retrieve', 'average', 'min', 'max', 'std', 'q25', 'median', 'q75', 'sum', 
                 'first_order_derivative', 'second_order_derivative', 'count'] # No lag for instance, UI concern (where to put offset value)
