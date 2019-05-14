@@ -1,8 +1,8 @@
 {
     "meta" : {
         "label" : "Timeseries segmenting",
-        "description" : "Apply different operations on rolling timeseries window.",
-        "icon" : "icon-time"
+        "description" : "Find segments in timeseries.",
+        "icon" : "icon-reorder"
     },
     "kind" : "PYTHON",
     "selectableFromDataset" : "input_dataset",

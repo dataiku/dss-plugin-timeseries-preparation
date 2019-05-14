@@ -4,7 +4,7 @@
     "meta" : {
         "label" : "Timeseries Preparation",
         "description" : "",
-        "author" : "Dataiku (Damien JACQUEMART and Du PHAN)",
+        "author" : "Dataiku (Du PHAN)",
         "icon" : "icon-time",
         "licenseInfo" : "Apache Software License",
         "url" : "https://www.dataiku.com/community/plugins/info/timeseries-preparation.html",

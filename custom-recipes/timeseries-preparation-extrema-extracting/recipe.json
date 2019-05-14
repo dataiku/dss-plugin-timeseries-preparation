@@ -1,8 +1,8 @@
 {
     "meta" : {
-        "label" : "Timeseries window rolling",
-        "description" : "Apply different operations on rolling timeseries window.",
-        "icon" : "icon-repeat"
+        "label" : "Timeseries extrema extracting",
+        "description" : "Find extrema in timeseries and compute statistics around them.",
+        "icon" : "icon-zoom-in"
     },
     "kind" : "PYTHON",
     "selectableFromDataset" : "input_dataset",
@@ -39,6 +39,23 @@
             "type": "COLUMN",
             "columnRole":"input_dataset",
             "mandatory": true
+        },
+        {
+            "name": "extrema_column",
+            "label" : "Extrema column",
+            "type": "COLUMN",
+            "columnRole":"input_dataset",
+            "mandatory": true
+        },
+        {
+            "name" : "extrema_type",
+            "label" : "Interval inclusion",
+            "type" : "SELECT",
+            "selectChoices" : [
+                    { "value" : "min", "label" : "min"},
+                    { "value" : "max", "label" : "max"},
+                ],
+            "defaultValue": "max"
         },
         {
             "name": "sep1",

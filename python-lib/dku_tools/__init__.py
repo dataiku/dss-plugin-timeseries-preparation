@@ -1,1 +1,1 @@
-from dku_tools.recipe_config_to_params import get_resampling_params, get_windowing_params, get_segmenting_params
+from dku_tools.recipe_config_to_params import get_resampling_params, get_windowing_params, get_segmenting_params, get_extrema_extracting_params

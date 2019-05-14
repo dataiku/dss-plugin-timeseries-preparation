@@ -208,9 +208,10 @@ class WindowRoller:
             df = raw_df.copy()
         self.frequency = pd.infer_freq(df[~df.index.duplicated()].index[:1000])
         logger.info('Timeseries frequency: ',self.frequency)
-        self._check_valid_data(df)
         window_width_in_row = self._convert_time_freq_to_row_freq() 
         raw_columns = df.select_dtypes(include=['float', 'int']).columns.tolist()
+        self._check_valid_data(df)
+
         
         if self.frequency and self.params.window_unit != 'row' and self.params.window_type is not None:
             self.params.window_description_in_row = window_width_in_row
