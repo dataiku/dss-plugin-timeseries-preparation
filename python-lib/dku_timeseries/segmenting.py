@@ -102,6 +102,7 @@ class SegmentExtractor:
         
     def _detect_segment(self, raw_df, datetime_column, threshold_dict):
         
+        #TODO add support for multiple threshold column
         if self.params.time_unit == 'row':
             df = raw_df.sort_values(datetime_column)
         else:

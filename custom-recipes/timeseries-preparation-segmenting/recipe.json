@@ -1,0 +1,120 @@
+{
+    "meta" : {
+        "label" : "Timeseries segmenting",
+        "description" : "Apply different operations on rolling timeseries window.",
+        "icon" : "icon-time"
+    },
+    "kind" : "PYTHON",
+    "selectableFromDataset" : "input_dataset",
+    "inputRoles" : [
+        {
+            "name": "input_dataset",
+            "label": "Input dataset",
+            "description": "",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": true,
+            "acceptsFolder": false
+        }
+    ],
+    "outputRoles" : [
+        {
+            "name": "output_dataset",
+            "label": "Output dataset",
+            "description": "",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": true
+        }
+    ],
+    "params": [
+        {
+            "name": "sep0",
+            "label": "Data parameters",
+            "type": "SEPARATOR"
+        },
+        {
+            "name": "datetime_column",
+            "label" : "Date column",
+            "type": "COLUMN",
+            "columnRole":"input_dataset",
+            "mandatory": true
+        },
+        {
+            "name": "sep",
+            "label": "Threshold parameters",
+            "type": "SEPARATOR"
+        },
+        {
+            "name": "segment_column",
+            "label" : "Segment column",
+            "type": "COLUMN",
+            "columnRole":"input_dataset",
+            "mandatory": true
+        },
+        {
+            "name": "min_threshold",
+            "label" : "Min segment value",
+            "type": "DOUBLE",
+            "defaultValue" : 0
+        },
+        {
+            "name": "max_threshold",
+            "label" : "Max segment value",
+            "type": "DOUBLE",
+            "defaultValue" : 10
+        },
+        {
+            "name": "sep1",
+            "label": "Segmentation parameters",
+            "type": "SEPARATOR"
+        },
+        {
+            "name" : "time_unit",
+            "label" : "Time unit",
+            "type" : "SELECT",
+            "selectChoices" : [
+                    { "value" : "nanosecond", "label" : "nanosecond"},
+                    { "value" : "microsecond", "label" : "microsecond"},
+                    { "value" : "millisecond", "label" : "millisecond"},
+                    { "value" : "second", "label" : "second"},
+                    { "value" : "minute", "label" : "minute"},
+                    { "value" : "hour", "label" : "hour"},
+                    { "value" : "day", "label" : "day"},
+            ],
+            "defaultValue": "second"
+        }, 
+        {
+            "name": "min_segment_duration_value",
+            "label" : "Min segment duration",
+            "type": "DOUBLE",
+            "defaultValue" : 10
+        },
+        {
+            "name": "max_noise_duration_value",
+            "label" : "Max noise duration",
+            "type": "DOUBLE",
+            "defaultValue" : 10
+        },
+        {
+            "name": "sep3",
+            "label": "Advanced",
+            "type": "SEPARATOR"
+        }, 
+        {
+            "name": "advance_activate",
+            "label": "Open advanced options",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "groupby_cols",
+            "label" : "Column to groupby",
+            "type": "COLUMN",
+            "columnRole":"input_dataset",
+            "mandatory" : false,
+            "description": "In case we have one timeserie per value of this column.",
+            "visibilityCondition": "model.advance_activate"
+
+        }
+    ]
+}
