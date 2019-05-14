@@ -127,6 +127,9 @@ class WindowRoller:
            
         new_df = pd.DataFrame(index=df.index)
 
+        if self.params.groupby_cols:
+        	new_df[self.params.groupby_cols] = df[self.params.groupby_cols]
+
         # compute all stats except mean and sum, does not change whether or not we have a window type
         if self.params.window_unit == 'row': # for now `closed` is only implemented for time-based window
             rolling_without_window = df.rolling(window = self.params.window_description)
@@ -208,11 +211,13 @@ class WindowRoller:
             df = raw_df.copy()
         self.frequency = pd.infer_freq(df[~df.index.duplicated()].index[:1000])
         logger.info('Timeseries frequency: ',self.frequency)
-        window_width_in_row = self._convert_time_freq_to_row_freq() 
+
+        if self.params.window_unit != 'row':
+        	window_width_in_row = self._convert_time_freq_to_row_freq() 
+        	
         raw_columns = df.select_dtypes(include=['float', 'int']).columns.tolist()
         self._check_valid_data(df)
-
-        
+ 
         if self.frequency and self.params.window_unit != 'row' and self.params.window_type is not None:
             self.params.window_description_in_row = window_width_in_row
         else:

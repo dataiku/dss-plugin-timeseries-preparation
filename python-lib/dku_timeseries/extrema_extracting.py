@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO,
                     format='timeseries-preparation plugin %(levelname)s - %(message)s')
 
 
-EXTREMA_TYPES = ['min', 'max', 'zero_crossing']
+EXTREMA_TYPES = ['min', 'max']
 
 class ExtremaExtractorParams:
     
@@ -58,14 +58,14 @@ class ExtremaExtractor:
         df = raw_df.set_index(datetime_column).sort_index()
         df = df.fillna(0)
         if groupby_columns:
-            print(groupby_columns)
             grouped = df.groupby(groupby_columns)
             computed_groups = []
             for _, group in grouped:
-                try:
+                try: #TODO remove the try except
                     extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(group, extrema_column)
                     rolling_df = self.params.window_roller.compute(extrema_neighbor_df)
                     extrema_df = rolling_df.loc[group[extrema_column]==extrema_value]
+                    extrema_df = extrema_df.rename_axis(datetime_column).reset_index()
                     computed_groups.append(extrema_df)
                 except:
                     continue
@@ -74,4 +74,5 @@ class ExtremaExtractor:
             extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(df, extrema_column)
             rolling_df = self.params.window_roller.compute(extrema_neighbor_df)
             final_df = rolling_df.loc[df[extrema_column]==extrema_value]
+            final_df = final_df.rename_axis(datetime_column).reset_index()
         return final_df

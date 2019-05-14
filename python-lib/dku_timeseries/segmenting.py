@@ -53,7 +53,6 @@ class SegmentExtractor:
     def __init__(self, params):
         assert params is not None, "SegmentExtractorParams instance is not specified."
         self.params = params
-        print self.params.__dict__
         self.params.check()
         
     def _detect_time_segment(self, df, chosen_col, lower_threshold, upper_threshold):        
@@ -105,6 +104,7 @@ class SegmentExtractor:
         #TODO add support for multiple threshold column
         if self.params.time_unit == 'row':
             df = raw_df.sort_values(datetime_column)
+            df = df.reset_index()
         else:
             df = raw_df.set_index(datetime_column).sort_index()
         

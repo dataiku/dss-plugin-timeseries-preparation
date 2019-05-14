@@ -1,6 +1,6 @@
 {
     "meta" : {
-        "label" : "Timeseries window rolling",
+        "label" : "2. Timeseries window rolling",
         "description" : "Apply different operations on rolling timeseries window.",
         "icon" : "icon-repeat"
     },
@@ -59,9 +59,10 @@
                     { "value" : "day", "label" : "day"},
                     { "value" : "week", "label" : "week"},
                     { "value" : "month", "label" : "month"},
-                    { "value" : "year", "label" : "year"}
+                    { "value" : "year", "label" : "year"},
+                    { "value" : "row", "label" : "row"}
             ],
-            "defaultValue": "second"
+            "defaultValue": "row"
         }, 
         {
             "name": "window_width",

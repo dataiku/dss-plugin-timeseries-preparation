@@ -38,7 +38,7 @@ def get_windowing_params(recipe_config):
 		window_type = _p('window_type')
 
 	if window_type == 'gaussian':
-		gaussian_std = _p(gaussian_std)
+		gaussian_std = _p('gaussian_std')
 	else:
 		gaussian_std = None
 

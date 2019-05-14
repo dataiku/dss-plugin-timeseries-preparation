@@ -1,6 +1,6 @@
 {
     "meta" : {
-        "label" : "Timeseries extrema extracting",
+        "label" : "3. Timeseries extrema extracting",
         "description" : "Find extrema in timeseries and compute statistics around them.",
         "icon" : "icon-zoom-in"
     },
@@ -76,9 +76,10 @@
                     { "value" : "day", "label" : "day"},
                     { "value" : "week", "label" : "week"},
                     { "value" : "month", "label" : "month"},
-                    { "value" : "year", "label" : "year"}
+                    { "value" : "year", "label" : "year"},
+                    { "value" : "row", "label" : "row"}
             ],
-            "defaultValue": "second"
+            "defaultValue": "row"
         }, 
         {
             "name": "window_width",
@@ -91,8 +92,8 @@
             "label" : "Window type",
             "type" : "SELECT",
             "selectChoices" : [
-                    { "value" : "triang", "label" : "triangle"},
-                    { "value" : " blackman", "label" : "blackman"},
+                    { "value" : "triang", "label":"triangle"},
+                    { "value" : "blackman", "label":"blackman"},
                     { "value" : "hamming", "label" : "hamming"},
                     { "value" : "barlett", "label" : "barlett"},
                     { "value" : "parzan", "label" : "parzan"},

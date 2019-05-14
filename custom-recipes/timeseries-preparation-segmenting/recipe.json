@@ -1,6 +1,6 @@
 {
     "meta" : {
-        "label" : "Timeseries segmenting",
+        "label" : "4. Timeseries segmenting",
         "description" : "Find segments in timeseries.",
         "icon" : "icon-reorder"
     },
@@ -81,8 +81,9 @@
                     { "value" : "minute", "label" : "minute"},
                     { "value" : "hour", "label" : "hour"},
                     { "value" : "day", "label" : "day"},
+                    { "value" : "row", "label" : "row"}
             ],
-            "defaultValue": "second"
+            "defaultValue": "row"
         }, 
         {
             "name": "min_segment_duration_value",

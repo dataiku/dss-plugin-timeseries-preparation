@@ -1,6 +1,6 @@
 {
     "meta" : {
-        "label" : "Timeseries resampling",
+        "label" : "1. Timeseries resampling",
         "description" : "Resample the timeseries and perform interpolation/extrapolation.",
         "icon" : "icon-time"
     },
