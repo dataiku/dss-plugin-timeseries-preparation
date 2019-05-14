@@ -24,8 +24,7 @@ TIME_STEP_MAPPING = {
     'nanosecond': 'ns'
 }
 
-WINDOW_TYPES = ['triang', 'blackman', 'hamming', 'bartlett', 'parzen', 'gaussian', None]
-WINDOW_UNITS = TIME_STEP_MAPPING.keys() + ['row']
+WINDOW_TYPES = ['triang', 'blackman', 'hamming', 'barlett', 'parzen', 'gaussian', None]
 WINDOW_UNITS = list(TIME_STEP_MAPPING.keys()) + ['row']
 CLOSED_OPTIONS = ['right', 'left', 'both', 'neither']
 AGGREGATIONS = ['retrieve', 'average', 'min', 'max', 'std', 'q25', 'median', 'q75', 'sum', 
