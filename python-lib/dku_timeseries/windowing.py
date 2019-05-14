@@ -142,10 +142,10 @@ class WindowRoller:
             new_df[raw_columns] = df[raw_columns]
     	if 'min' in self.params.aggregation_types:
             col_names = ['{}_min'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window[raw_columns].apply(min, raw=True)
+            new_df[col_names] = rolling_without_window[raw_columns].apply(min) #raw=True
         if 'max' in self.params.aggregation_types:
             col_names = ['{}_max'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window[raw_columns].apply(max, raw=True)
+            new_df[col_names] = rolling_without_window[raw_columns].apply(max)
         if 'q25' in self.params.aggregation_types:
             col_names = ['{}_q25'.format(col) for col in raw_columns]
             new_df[col_names] = rolling_without_window[raw_columns].quantile(0.25)
@@ -214,7 +214,7 @@ class WindowRoller:
 
         if self.params.window_unit != 'row':
         	window_width_in_row = self._convert_time_freq_to_row_freq() 
-        	
+
         raw_columns = df.select_dtypes(include=['float', 'int']).columns.tolist()
         self._check_valid_data(df)
  

@@ -31,56 +31,46 @@ def _make_df_with_one_col(column_data, period=pd.DateOffset(seconds=1), start_ti
     df = pd.DataFrame({TIME_COL: time, DATA_COL: column_data})
     return df
 
-
-def _make_resampling_params():
-    params = dku_timeseries.ResamplerParams()
-    params.datetime_column = TIME_COL
+def _make_window_roller_params():
+    params = dku_timeseries.WindowRollerParams(window_width=3)
     return params
 
-def _make_resampler():
-    params = _make_resampling_params()
-    return dku_timeseries.Resampler(params)
+def _make_window_roller():
+    params = _make_window_roller_params()
+    return dku_timeseries.WindowRoller(params)
 
+def _make_extrema_extracting_params():
+    window = _make_window_roller()
+    params = dku_timeseries.ExtremaExtractorParams(window)
+    return params
+
+def _make_extrema_extractor():
+    params = _make_extrema_extracting_params()
+    return dku_timeseries.ExtremaExtractor(params)
 
 ### Test cases
 
+"""
 def test_empty_df():
     df = _make_df_with_one_col([])
-    resampler = _make_resampler()
-    output_df = resampler.transform(df, TIME_COL)
+    segment_extractor = _make_extrema_extractor()
+    output_df = segment_extractor.compute(df, TIME_COL, DATA_COL)
     assert output_df.shape == (0, 2)
     
 def test_single_row_df():
     df = _make_df_with_one_col([33])
-    resampler = _make_resampler()
-    output_df = resampler.transform(df, TIME_COL)
+    segment_extractor = _make_extrema_extractor()
+    output_df = segment_extractor.compute(df, TIME_COL, DATA_COL)
     assert output_df.shape == (1, 2)
     assert output_df[DATA_COL][0] == df[DATA_COL][0]
-    
-def test_identity_resampling():
-    """
-    Default sampling rate is 1Hz
-    Since we create test data at 1Hz, default resampling should be identity
-    """
-    length = 100000
-    print("test_identity_resampling with "+str(length)+" records")
-    data = [random.random() for _ in range(length)]
-    df = _make_df_with_one_col(data)
-    resampler = _make_resampler()
-    output_df = resampler.transform(df, TIME_COL)
-    assert output_df.shape == (length, 2)
-    for x in range(1000):
-        assert output_df[DATA_COL][x] == df[DATA_COL][x]
+""" 
 
-def test_half_freq_resampling():
-    length = 100000
-    half_length = length/2
-    print("test_double_freq_resampling with "+str(length)+" records")
+def test_incremental_df():
+    length = 100
     data = [x for x in range(length)]
-    df = _make_df_with_one_col(data, pd.DateOffset(seconds=0.5))
-    resampler = _make_resampler()
-    output_df = resampler.transform(df, TIME_COL)
-    print("input length:" + str(length) +" / output length: "+ str(output_df.shape[0]))
-    assert output_df.shape[0]-1 == half_length
-    for x in range(100):
-        assert output_df[DATA_COL][x] == 2*x
+    df = _make_df_with_one_col(data) 
+    print(df.shape)
+    window_roller = _make_extrema_extractor()
+    output_df = window_roller.compute(df, TIME_COL, DATA_COL)
+    assert(output_df[DATA_COL][0]) == 99
+    assert(output_df[DATA_COL+'_min'][0]) == 96
