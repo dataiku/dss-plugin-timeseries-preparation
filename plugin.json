@@ -1,0 +1,13 @@
+{
+    "id" : "timeseries-preparation",
+    "version" : "0.0.1",
+    "meta" : {
+        "label" : "Timeseries preparation",
+        "description" : "Placeholder to allow clone in DSS",
+        "author" : "Dataiku",
+        "icon" : "icon-code-fork",
+        "licenseInfo" : "Apache Software License",
+        "url" : "",
+        "tags" : ["TODO"]
+    }
+}
