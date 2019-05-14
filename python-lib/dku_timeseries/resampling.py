@@ -75,7 +75,7 @@ class Resampler:
         From the resampling config, create the full index of the output dataframe.
         """
 
-        offset_value = self._get_date_offset(self.params.offset) 
+        offset_value = self._get_date_offset(self.params.offset)
         crop_value = self._get_date_offset(self.params.crop)
 
         start_index = pd.to_datetime(df.index.min()).round(TIME_STEP_MAPPING.get(self.params.time_unit)) + offset_value
@@ -104,7 +104,7 @@ class Resampler:
             return True
 
     def _get_date_offset(self, offset_value):
-        
+
         if self.params.time_unit == 'year':
             return pd.DateOffset(years=offset_value)
         elif self.params.time_unit == 'month':
@@ -124,11 +124,11 @@ class Resampler:
         elif self.params.time_unit == 'nanosecond':
             return pd.DateOffset(nanoseconds=offset_value)
 
-    def _resample(self, df): 
-        
+    def _resample(self, df):
+
         try:
             temp_df = df.reindex(df.index | self.full_time_index)
-        except Exception, e:
+        except Exception as e:
             raise ValueError('{}: Your timeseries contain dupplicate timestamps.'.format(str(e)))
 
         if self.params.interpolation_method == 'next':  # no `next` method with pd.interpolate()
@@ -150,8 +150,8 @@ class Resampler:
 
         groupby_cols = self.params.groupby_cols
         if groupby_cols:
-            # when having groups, there will very likely be empty rows before and after 
-            # (because we use full index parameters) 
+            # when having groups, there will very likely be empty rows before and after
+            # (because we use full index parameters)
             df_extrapolated[groupby_cols] = df_extrapolated[groupby_cols].ffill().bfill()
 
         df_resampled = df_extrapolated.reindex(self.full_time_index)
