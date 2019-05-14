@@ -78,8 +78,8 @@ class Resampler:
         offset_value = self._get_date_offset(self.params.offset) 
         crop_value = self._get_date_offset(self.params.crop)
 
-        start_index = df.index.min().round(TIME_STEP_MAPPING.get(self.params.time_unit)) + offset_value
-        end_index = df.index.max().round(TIME_STEP_MAPPING.get(self.params.time_unit)) + crop_value
+        start_index = pd.to_datetime(df.index.min()).round(TIME_STEP_MAPPING.get(self.params.time_unit)) + offset_value
+        end_index = pd.to_datetime(df.index.max()).round(TIME_STEP_MAPPING.get(self.params.time_unit)) + crop_value
 
         full_time_index = pd.date_range(start=start_index,
                                         end=end_index,
