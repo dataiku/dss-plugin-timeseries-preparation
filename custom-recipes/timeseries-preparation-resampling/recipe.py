@@ -22,12 +22,13 @@ output_dataset = dataiku.Dataset(output_dataset_name)
 
 # --- Get configuration
 recipe_config = get_recipe_config()
+datetime_column = recipe_config.get('datetime_column')
 resampling_params = get_resampling_params(recipe_config)
 
 # --- Run
 df = input_dataset.get_dataframe()
 resampler = Resampler(resampling_params)
-output_df = resampler.transform(df)
+output_df = resampler.transform(df, datetime_column)
 
 # --- Write output
 output_dataset.write_with_schema(output_df)
