@@ -6,7 +6,6 @@ def get_resampling_params(recipe_config):
 	def _p(param_name, default=None):
 		return recipe_config.get(param_name, default)
 
-	datetime_column = _p('datetime_column')
 	interpolation_method = _p('interpolation_method')
 	extrapolation_method = _p('extrapolation_method')
 	time_step_size = int(_p('time_step_size'))
@@ -14,8 +13,7 @@ def get_resampling_params(recipe_config):
 	offset = int(_p('offset'))
 	crop = int(_p('crop'))
 
-	params = ResamplerParams(datetime_column = datetime_column, 
-							 interpolation_method = interpolation_method,
+	params = ResamplerParams(interpolation_method = interpolation_method,
 			                 extrapolation_method = extrapolation_method,
 			                 time_step_size = time_step_size,
 			                 time_unit = time_unit,
@@ -47,13 +45,11 @@ def get_windowing_params(recipe_config):
 
 	closed_option = _p('closed_option')
 
-	params = WindowRollerParams(
-								 window_unit = window_unit,
-				                 window_width = window_width,
-				                 window_type = window_type,
-				                 gaussian_std = gaussian_std,
-				                 closed_option = closed_option
-				                )
+	params = WindowRollerParams(window_unit = window_unit,
+				                window_width = window_width,
+				                window_type = window_type,
+				                gaussian_std = gaussian_std,
+				                closed_option = closed_option)
 
 	if _p('advance_activate'):
 		params.groupby_cols = [_p('groupby_cols')]

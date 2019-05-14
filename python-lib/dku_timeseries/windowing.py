@@ -4,6 +4,7 @@ import pandas as pd
 import logging
 import re
 from pandas.tseries.frequencies import to_offset
+import math
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO,
@@ -36,7 +37,7 @@ class WindowRollerParams: #TODO better naming ?
                  window_unit = 'second', 
                  min_period=1, 
                  closed_option='left',
-                 center='left', 
+                 center=False, 
                  window_type=None,
                  gaussian_std = None,
                  aggregation_types = AGGREGATIONS,
@@ -98,7 +99,7 @@ class WindowRoller:
         n = demanded_frequency/data_frequency
         if n < 1:
             raise ValueError('The requested window width ({0}) is smaller than the timeseries frequency ({1}). Please increase the former.'.format(data_frequency, demanded_frequency))
-        return int(round(n))
+        return int(math.ceil(n)) # always round up so that we dont miss any data
 
     def get_window_date_offset(self):
         
@@ -212,7 +213,6 @@ class WindowRoller:
         raw_columns = df.select_dtypes(include=['float', 'int']).columns.tolist()
         
         if self.frequency and self.params.window_unit != 'row' and self.params.window_type is not None:
-            #self.params.window_description = window_width_in_row #self._convert_time_freq_to_row_freq() #TODO: should there be a parameter ?
             self.params.window_description_in_row = window_width_in_row
         else:
         	self.params.window_description_in_row = None

@@ -1,3 +1,13 @@
+# -*- coding: utf-8 -*- 
+import dataiku  
+import pandas as pd 
+import numpy as np  
+import logging  
+
+logger = logging.getLogger(__name__)   
+logging.basicConfig(level=logging.INFO, 
+                    format='timeseries-preparation plugin %(levelname)s - %(message)s')
+
 TIME_STEP_MAPPING = {
     'day': 'D',
     'hour': 'h',
@@ -125,7 +135,7 @@ class SegmentExtractor:
             grouped = raw_df.groupby(self.params.groupby_cols)
             segmented_groups = []
             for _, group in grouped:
-                segment_df = self._detect_segment(group, threshold_dict)
+                segment_df = self._detect_segment(group, datetime_column, threshold_dict)
                 segmented_groups.append(segment_df)
             final_df = pd.concat(segmented_groups)        
         else:

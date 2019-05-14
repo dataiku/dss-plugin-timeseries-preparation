@@ -125,7 +125,7 @@ class Resampler:
             return pd.DateOffset(nanoseconds=offset_value)
 
     def _resample(self, df): 
-
+        
         try:
             temp_df = df.reindex(df.index | self.full_time_index)
         except Exception, e:
@@ -150,6 +150,8 @@ class Resampler:
 
         groupby_cols = self.params.groupby_cols
         if groupby_cols:
+            # when having groups, there will very likely be empty rows before and after 
+            # (because we use full index parameters) 
             df_extrapolated[groupby_cols] = df_extrapolated[groupby_cols].ffill().bfill()
 
         df_resampled = df_extrapolated.reindex(self.full_time_index)
