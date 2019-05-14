@@ -1,7 +1,7 @@
 {
     "meta" : {
         "label" : "4. Timeseries segmenting",
-        "description" : "Find segments in timeseries.",
+        "description" : "Segment timeseries based on thresholds.",
         "icon" : "icon-reorder"
     },
     "kind" : "PYTHON",
@@ -9,8 +9,8 @@
     "inputRoles" : [
         {
             "name": "input_dataset",
-            "label": "Input dataset",
-            "description": "",
+            "label": "Input timeseries",
+            "description": "Dataset containing your timeseries data.",
             "arity": "UNARY",
             "required": true,
             "acceptsDataset": true,
@@ -20,7 +20,7 @@
     "outputRoles" : [
         {
             "name": "output_dataset",
-            "label": "Output dataset",
+            "label": "Output timeseries",
             "description": "",
             "arity": "UNARY",
             "required": true,
@@ -29,13 +29,8 @@
     ],
     "params": [
         {
-            "name": "sep0",
-            "label": "Data parameters",
-            "type": "SEPARATOR"
-        },
-        {
             "name": "datetime_column",
-            "label" : "Date column",
+            "label" : "Timestamp column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
             "mandatory": true
@@ -47,20 +42,20 @@
         },
         {
             "name": "segment_column",
-            "label" : "Segment column",
+            "label" : "Timeseries to segment",
             "type": "COLUMN",
             "columnRole":"input_dataset",
             "mandatory": true
         },
         {
             "name": "min_threshold",
-            "label" : "Min segment value",
+            "label" : "Minimal value (lower boundary)",
             "type": "DOUBLE",
             "defaultValue" : 0
         },
         {
             "name": "max_threshold",
-            "label" : "Max segment value",
+            "label" : "Maximum value (upper boundary)",
             "type": "DOUBLE",
             "defaultValue" : 10
         },
@@ -71,7 +66,7 @@
         },
         {
             "name" : "time_unit",
-            "label" : "Time unit",
+            "label" : "Unit",
             "type" : "SELECT",
             "selectChoices" : [
                     { "value" : "nanosecond", "label" : "nanosecond"},
@@ -84,36 +79,39 @@
                     { "value" : "row", "label" : "row"}
             ],
             "defaultValue": "row"
-        }, 
+        },
         {
             "name": "min_segment_duration_value",
-            "label" : "Min segment duration",
+            "label" : "Minimal segment duration",
+            "description": "Values must be within thresholds for more than this duration to create a segment.",
             "type": "DOUBLE",
             "defaultValue" : 10
         },
         {
             "name": "max_noise_duration_value",
-            "label" : "Max noise duration",
+            "label" : "Maximum aberration duration",
+            "description": "Exiting thresholds for less than this duration is ignored.",
             "type": "DOUBLE",
             "defaultValue" : 10
         },
         {
             "name": "sep3",
-            "label": "Advanced",
+            "label": "Partitioning",
             "type": "SEPARATOR"
-        }, 
+        },
         {
             "name": "advance_activate",
-            "label": "Open advanced options",
+            "label": "Timeseries values are folded",
+            "description": "Activate if you use a single column for the values of multiple timeseries.",
             "type": "BOOLEAN"
         },
         {
             "name": "groupby_cols",
-            "label" : "Column to groupby",
+            "label" : "Partitioning column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
             "mandatory" : false,
-            "description": "In case we have one timeserie per value of this column.",
+            "description": "Treats each value of this column as a series identifier.",
             "visibilityCondition": "model.advance_activate"
 
         }

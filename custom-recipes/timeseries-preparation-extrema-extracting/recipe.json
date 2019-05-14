@@ -1,7 +1,7 @@
 {
     "meta" : {
-        "label" : "3. Timeseries extrema extracting",
-        "description" : "Find extrema in timeseries and compute statistics around them.",
+        "label" : "3. Timeseries extremum extraction",
+        "description" : "Find the extremum in a timeseries and compute statistics around it.",
         "icon" : "icon-zoom-in"
     },
     "kind" : "PYTHON",
@@ -10,6 +10,7 @@
         {
             "name": "input_dataset",
             "label": "Input dataset",
+            "description": "Dataset containing your timeseries data.",
             "description": "",
             "arity": "UNARY",
             "required": true,
@@ -29,31 +30,26 @@
     ],
     "params": [
         {
-            "name": "sep0",
-            "label": "Data parameters",
-            "type": "SEPARATOR"
-        },
-        {
             "name": "datetime_column",
-            "label" : "Date column",
+            "label" : "Timestamp column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
             "mandatory": true
         },
         {
             "name": "extrema_column",
-            "label" : "Extrema column",
+            "label" : "Find extremum in column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
             "mandatory": true
         },
         {
             "name" : "extrema_type",
-            "label" : "Interval inclusion",
+            "label" : "Extremum to look for",
             "type" : "SELECT",
             "selectChoices" : [
-                    { "value" : "min", "label" : "min"},
-                    { "value" : "max", "label" : "max"},
+                    { "value" : "min", "label" : "Global minimum"},
+                    { "value" : "max", "label" : "Global maximum"},
                 ],
             "defaultValue": "max"
         },
@@ -64,84 +60,84 @@
         },
         {
             "name" : "window_unit",
-            "label" : "Window unit",
+            "label" : "Unit",
             "type" : "SELECT",
             "selectChoices" : [
-                    { "value" : "nanosecond", "label" : "nanosecond"},
-                    { "value" : "microsecond", "label" : "microsecond"},
-                    { "value" : "millisecond", "label" : "millisecond"},
-                    { "value" : "second", "label" : "second"},
-                    { "value" : "minute", "label" : "minute"},
-                    { "value" : "hour", "label" : "hour"},
-                    { "value" : "day", "label" : "day"},
-                    { "value" : "week", "label" : "week"},
-                    { "value" : "month", "label" : "month"},
-                    { "value" : "year", "label" : "year"},
-                    { "value" : "row", "label" : "row"}
+                    { "value" : "nanosecond", "label" : "Nanosecond"},
+                    { "value" : "microsecond", "label" : "Microsecond"},
+                    { "value" : "millisecond", "label" : "Millisecond"},
+                    { "value" : "second", "label" : "Second"},
+                    { "value" : "minute", "label" : "Minute"},
+                    { "value" : "hour", "label" : "Hour"},
+                    { "value" : "day", "label" : "Day"},
+                    { "value" : "week", "label" : "Week"},
+                    { "value" : "month", "label" : "Month"},
+                    { "value" : "year", "label" : "Year"},
+                    { "value" : "row", "label" : "Rows"}
             ],
             "defaultValue": "row"
-        }, 
+        },
         {
             "name": "window_width",
-            "label" : "Window width",
+            "label" : "Width",
             "type": "DOUBLE",
             "defaultValue" : 10
         },
         {
             "name" : "window_type",
-            "label" : "Window type",
+            "label" : "Type",
             "type" : "SELECT",
             "selectChoices" : [
-                    { "value" : "triang", "label":"triangle"},
-                    { "value" : "blackman", "label":"blackman"},
-                    { "value" : "hamming", "label" : "hamming"},
-                    { "value" : "barlett", "label" : "barlett"},
-                    { "value" : "parzan", "label" : "parzan"},
-                    { "value" : "gaussian", "label" : "gaussian"},
-                    { "value" : "none", "label" : "none"}
+                    { "value" : "triang", "label" : "Triangle"},
+                    { "value" : "blackman", "label" : "Blackman"},
+                    { "value" : "hamming", "label" : "Hamming"},
+                    { "value" : "barlett", "label" : "Barlett"},
+                    { "value" : "parzan", "label" : "Parzan"},
+                    { "value" : "gaussian", "label" : "Gaussian"},
+                    { "value" : "none", "label" : "Flat"}
             ],
             "defaultValue": "none"
-        }, 
-        {
-            "name" : "closed_option",
-            "label" : "Interval inclusion",
-            "type" : "SELECT",
-            "selectChoices" : [
-                    { "value" : "left", "label" : "left"},
-                    { "value" : "right", "label" : "right"},
-                    { "value" : "both", "label" : "both"},
-                    { "value" : "neither", "label" : "neither"}
-                ],
-            "defaultValue": "left",
-            "description": "Do we include the left/right endpoints in the interval ?"
-        }, 
+        },
         {
             "name": "gaussian_std",
             "label" : "Gaussian standard deviation",
             "type": "DOUBLE",
-            "default_value": 1.0, 
+            "default_value": 1.0,
             "visibilityCondition": "model.window_type == 'gaussian'"
 
         },
         {
+            "name" : "closed_option",
+            "label" : "Include window boundaries?",
+            "description": "Includes the sides of the window to compute aggregations.",
+            "type" : "SELECT",
+            "selectChoices" : [
+                    { "value" : "left", "label" : "Yes, left only"},
+                    { "value" : "right", "label" : "Yes, right only"},
+                    { "value" : "both", "label" : "Yes, both"},
+                    { "value" : "neither", "label" : "No"}
+                ],
+            "defaultValue": "left"
+        },
+        {
             "name": "sep3",
-            "label": "Advanced",
+            "label": "Partitioning",
             "type": "SEPARATOR"
-        }, 
+        },
         {
             "name": "advance_activate",
-            "label": "Open advanced options",
+            "label": "Timeseries values are folded",
+            "description": "Activate if you use a single column for the values of multiple timeseries.",
             "type": "BOOLEAN"
         },
         {
             "name": "groupby_cols",
-            "label" : "Column to groupby",
+            "label" : "Partitioning column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
             "mandatory" : false,
-            "description": "In case we have one timeserie per value of this column.",
+            "description": "Treats each value of this column as a series identifier.",
             "visibilityCondition": "model.advance_activate"
-
         }
     ]
 }
