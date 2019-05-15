@@ -22,6 +22,8 @@ TIME_STEP_MAPPING = {
     'nanosecond': 'ns'
 }
 
+ROUND_COMPATIBLE_TIME_UNIT = ['hour', 'minute', 'second', 'millisecond', 'microsecond', 'nanosecond']
+
 INTERPOLATION_METHODS = ['None', 'nearest', 'previous',
                          'next', 'linear', 'quadratic', 'cubic', 'barycentric']
 EXTRAPOLATION_METHODS = ['None', 'clip', 'interpolation']
@@ -74,14 +76,17 @@ class Resampler:
         """
         From the resampling config, create the full index of the output dataframe.
         """
+        time_unit = self.params.time_unit
 
         offset_value = self._get_date_offset(self.params.offset)
         crop_value = self._get_date_offset(self.params.crop)
 
-        start_index = pd.to_datetime(df.index.min()).round(TIME_STEP_MAPPING.get(self.params.time_unit)) + offset_value
-        end_index = pd.to_datetime(df.index.max()).round(TIME_STEP_MAPPING.get(self.params.time_unit)) + crop_value
-
-        print(start_index, end_index)
+        if time_unit in ROUND_COMPATIBLE_TIME_UNIT: 
+            start_index = df.index.min() + offset_value
+            end_index = df.index.max() + crop_value
+        else:
+            start_index = df.index.min() + offset_value
+            end_index = df.index.max() + crop_value
         
         full_time_index = pd.date_range(start=start_index,
                                         end=end_index,
