@@ -74,7 +74,7 @@
                     { "value" : "blackman", "label" : "Blackman"},
                     { "value" : "hamming", "label" : "Hamming"},
                     { "value" : "bartlett", "label" : "Barlett"},
-                    { "value" : "parzan", "label" : "Parzan"},
+                    { "value" : "parzen", "label" : "Parzen"},
                     { "value" : "gaussian", "label" : "Gaussian"},
                     { "value" : "none", "label" : "Flat"}
             ],
