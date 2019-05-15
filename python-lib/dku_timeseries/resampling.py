@@ -81,6 +81,8 @@ class Resampler:
         start_index = pd.to_datetime(df.index.min()).round(TIME_STEP_MAPPING.get(self.params.time_unit)) + offset_value
         end_index = pd.to_datetime(df.index.max()).round(TIME_STEP_MAPPING.get(self.params.time_unit)) + crop_value
 
+        print(start_index, end_index)
+        
         full_time_index = pd.date_range(start=start_index,
                                         end=end_index,
                                         freq=self.params.resampling_step)
@@ -131,6 +133,8 @@ class Resampler:
         except Exception as e:
             raise ValueError('{}: Your timeseries contain dupplicate timestamps.'.format(str(e)))
 
+        #return temp_df
+        
         if self.params.interpolation_method == 'next':  # no `next` method with pd.interpolate()
             df_interpolated = temp_df.bfill()
         elif self.params.interpolation_method == 'previous':  # no `previous` method with pd.interpolate()
@@ -162,6 +166,8 @@ class Resampler:
         passed = self._check_df(raw_df)
         if not passed:
             return raw_df
+        
+        raw_df[datetime_column] = pd.to_datetime(raw_df[datetime_column]) # will this pose any pb ?
         df = raw_df.set_index(datetime_column).sort_index()
         self.full_time_index = self._compute_full_time_index(df)
 
