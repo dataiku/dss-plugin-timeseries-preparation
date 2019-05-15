@@ -82,11 +82,11 @@ class Resampler:
         crop_value = self._get_date_offset(self.params.crop)
 
         if time_unit in ROUND_COMPATIBLE_TIME_UNIT: 
-            start_index = df.index.min() + offset_value
-            end_index = df.index.max() + crop_value
-        else:
-            start_index = df.index.min() + offset_value
-            end_index = df.index.max() + crop_value
+            start_index = df.index.min().round(TIME_STEP_MAPPING.get(time_unit)) + offset_value
+            end_index = df.index.max().round(TIME_STEP_MAPPING.get(time_unit)) + crop_value
+        else: # for week, month, year we round up to closest day
+            start_index = df.index.min().round('D')  + offset_value
+            end_index = df.index.max().round('D')  + crop_value
         
         full_time_index = pd.date_range(start=start_index,
                                         end=end_index,
