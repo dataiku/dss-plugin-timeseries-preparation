@@ -91,7 +91,7 @@
                     { "value" : "triang", "label" : "Triangle"},
                     { "value" : "blackman", "label" : "Blackman"},
                     { "value" : "hamming", "label" : "Hamming"},
-                    { "value" : "barlett", "label" : "Barlett"},
+                    { "value" : "bartlett", "label" : "Bartlett"},
                     { "value" : "parzan", "label" : "Parzan"},
                     { "value" : "gaussian", "label" : "Gaussian"},
                     { "value" : "none", "label" : "Flat"}
