@@ -112,6 +112,9 @@ class Resampler:
 
     def _get_date_offset(self, offset_value):
 
+        return pd.DateOffset(**{self.params.time_unit+'s': offset_value})
+
+        """ 
         if self.params.time_unit == 'year':
             return pd.DateOffset(years=offset_value)
         elif self.params.time_unit == 'month':
@@ -130,15 +133,17 @@ class Resampler:
             return pd.DateOffset(microseconds=offset_value)
         elif self.params.time_unit == 'nanosecond':
             return pd.DateOffset(nanoseconds=offset_value)
+        """ 
 
     def _resample(self, df):
 
         try:
             temp_df = df.reindex(df.index | self.full_time_index)
         except Exception as e:
-            raise ValueError('{}: Your timeseries contain dupplicate timestamps.'.format(str(e)))
-
-        #return temp_df
+            if e.message == 'cannot reindex from a duplicate axis':
+                raise ValueError('{}: Your timeseries contain duplicate timestamps.'.format(str(e)))
+            else:
+                raise ValueError(str(e))
         
         if self.params.interpolation_method == 'next':  # no `next` method with pd.interpolate()
             df_interpolated = temp_df.bfill()

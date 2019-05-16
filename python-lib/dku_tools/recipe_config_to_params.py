@@ -21,8 +21,8 @@ def get_resampling_params(recipe_config):
 			                 offset=offset,
 			                 crop=crop)
 
-	if _p('advance_activate'):
-		params.groupby_cols = [_p('groupby_cols')]
+	if _p('advanced_activated'):
+		params.groupby_cols = [_p('groupby_col')]
 
 	params.check()
 	return params
@@ -50,8 +50,8 @@ def get_windowing_params(recipe_config):
 				                gaussian_std = gaussian_std,
 				                closed_option = closed_option)
 
-	if _p('advance_activate'):
-		params.groupby_cols = [_p('groupby_cols')]
+	if _p('advanced_activated'):
+		params.groupby_cols = [_p('groupby_col')]
 
 	params.check()
 	return params
@@ -67,8 +67,8 @@ def get_segmenting_params(recipe_config):
 					                max_noise_duration_value = max_noise_duration_value,
 					                time_unit = time_unit)
 
-	if _p('advance_activate'):
-		params.groupby_cols = [_p('groupby_cols')]
+	if _p('advanced_activated'):
+		params.groupby_cols = [_p('groupby_col')]
 
 	params.check()
 	return params
@@ -98,8 +98,8 @@ def get_extrema_extracting_params(recipe_config):
 						                window_type = window_type,
 						                gaussian_std = gaussian_std,
 						                closed_option = closed_option)
-	if _p('advance_activate'):
-		window_params.groupby_cols = [_p('groupby_cols')]
+	if _p('advanced_activated'):
+		window_params.groupby_cols = [_p('groupby_col')]
 
 	window_roller = WindowRoller(window_params)
 	params = ExtremaExtractorParams(window_roller = window_roller,

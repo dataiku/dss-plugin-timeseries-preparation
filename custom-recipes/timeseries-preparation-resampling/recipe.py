@@ -11,10 +11,12 @@ logging.basicConfig(level=logging.INFO,
 
 
 # --- Get IOs
-try:
-	input_dataset_name = get_input_names_for_role('input_dataset')[0]
-except:
-	raise ValueError('No input dataset.') 
+input_dataset_names = get_input_names_for_role('input_dataset')
+if not input_dataset_names:
+    raise ValueError('No input dataset.') 
+else:
+    input_dataset_name = input_dataset_names[0]
+
 input_dataset = dataiku.Dataset(input_dataset_name)
 
 output_dataset_name = get_output_names_for_role('output_dataset')[0]

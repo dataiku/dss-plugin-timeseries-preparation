@@ -1,6 +1,6 @@
 {
     "meta" : {
-        "label" : "2. Timeseries rolling window aggregations",
+        "label" : "2. Timeseries rolling windows",
         "description" : "Compute aggregations (avg, min/max, quartiles...) of your timeseries along a rolling timeframe (window).",
         "icon" : "icon-repeat"
     },
@@ -70,6 +70,7 @@
             "label" : "Type",
             "type" : "SELECT",
             "selectChoices" : [
+                    { "value" : "boxcar", "label" : "Boxcar"},
                     { "value" : "triang", "label" : "Triangle"},
                     { "value" : "blackman", "label" : "Blackman"},
                     { "value" : "hamming", "label" : "Hamming"},
@@ -107,19 +108,19 @@
             "type": "SEPARATOR"
         },
         {
-            "name": "advance_activate",
+            "name": "advanced_activated",
             "label": "Timeseries values are folded",
             "description": "Activate if you use a single column for the values of multiple timeseries.",
             "type": "BOOLEAN"
         },
         {
-            "name": "groupby_cols",
+            "name": "groupby_col",
             "label" : "Partitioning column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
             "mandatory" : false,
             "description": "Treats each value of this column as a series identifier.",
-            "visibilityCondition": "model.advance_activate"
+            "visibilityCondition": "model.advanced_activated"
 
         }
     ]

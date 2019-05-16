@@ -1,8 +1,6 @@
 # Timeseries Preparation Plugin
 The timeseries preparation plugin is a set of python recipes to help you prepare timeseries data.
 
-Sandbox project: http://challenge.dataiku.com:11700/projects/PlugInTest/flow/
-
 ## Recipe - Resampling
 
 ### Input Dataset:
