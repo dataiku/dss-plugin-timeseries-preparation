@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
+import numpy as np
 import logging
 from scipy import interpolate
 
@@ -105,6 +106,13 @@ class Resampler:
 
         return pd.DateOffset(**{self.params.time_unit + 's': offset_value})
 
+    def _filter_empty_columns(self, df):
+        filtered_columns_to_resample = []
+        for col in self.columns_to_resample:
+            if np.sum(df[col].notnull()) > 0:
+                filtered_columns_to_resample.append(col)
+        return filtered_columns_to_resample
+
     def _resample(self, df):
 
         """
@@ -112,6 +120,7 @@ class Resampler:
         2. Merge the original datetime index with the full_time_index.
         3. Create a numerical index of the df and save the correspond index.
         """
+
         temp_df = df.set_index(self.datetime_column).sort_index()
         try:
             temp_df = temp_df.reindex(temp_df.index | self.full_time_index)
@@ -124,37 +133,39 @@ class Resampler:
                 raise ValueError(str(e))
 
         temp_df = temp_df.rename_axis(self.datetime_column).reset_index()
+        # if we pass an empty column through `interp1d`, it will return an error, so we need to filter these out first
+        filtered_columns_to_resample = self._filter_empty_columns(temp_df)
+        if len(filtered_columns_to_resample) == 0:
+            df_final = temp_df.loc[reference_index]
+            df_final = df_final.drop('reference_index', axis=1)
+            return df_final
 
         interpolation_index_mask = (temp_df[self.datetime_column] >= df[self.datetime_column].min()) & (
                 temp_df[self.datetime_column] <= df[self.datetime_column].max())
         interpolation_index = temp_df.index[interpolation_index_mask]
-        df_to_interpolate = temp_df.loc[interpolation_index]
 
         extrapolation_index_mask = (temp_df[self.datetime_column] < df[self.datetime_column].min()) | (
                 temp_df[self.datetime_column] > df[self.datetime_column].max())
         extrapolation_index = temp_df.index[extrapolation_index_mask]
-        df_to_extrapolate = temp_df.loc[extrapolation_index]
+        # df_to_extrapolate = temp_df.loc[extrapolation_index]
 
-        df_to_fit = df_to_interpolate.dropna()
-        interpolation_function = interpolate.interp1d(df_to_fit.index,
-                                                      df_to_fit[self.columns_to_resample],
+        index_with_data = temp_df.loc[interpolation_index, filtered_columns_to_resample].dropna(how='all').index
+        interpolation_function = interpolate.interp1d(index_with_data,
+                                                      temp_df.loc[index_with_data, filtered_columns_to_resample],
                                                       kind=self.params.interpolation_method,
                                                       axis=0,
                                                       fill_value='extrapolate')
 
-        df_to_interpolate[self.columns_to_resample] = interpolation_function(df_to_interpolate.index)
+        temp_df.loc[interpolation_index, filtered_columns_to_resample] = interpolation_function(
+            temp_df.loc[interpolation_index].index)
 
         if self.params.extrapolation_method == "interpolate":
-            df_to_extrapolate[self.columns_to_resample] = interpolation_function(df_to_extrapolate.index)
-
-        df_resampled = pd.concat([df_to_interpolate, df_to_extrapolate])
-        df_resampled = df_resampled.sort_index()
+            temp_df.loc[extrapolation_index, filtered_columns_to_resample] = interpolation_function(
+                temp_df.loc[extrapolation_index].index)
 
         if self.params.extrapolation_method == "clip":
-            df_resampled = df_resampled.ffill().bfill()
-
-        df_final = df_resampled.loc[reference_index]
-        df_final = df_final.drop('reference_index', axis=1)
+            df_resampled = temp_df.ffill().bfill()
+        df_final = temp_df.loc[reference_index].drop('reference_index', axis=1)
 
         return df_final
 
@@ -166,7 +177,6 @@ class Resampler:
 
         df = raw_df.copy()
         df[datetime_column] = pd.to_datetime(df[datetime_column])
-        # df = raw_df.set_index(datetime_column).sort_index()
 
         # TODO is it good practice to do the following ?
         self.datetime_column = datetime_column
@@ -178,14 +188,10 @@ class Resampler:
             resampled_groups = []
 
             for group_id, group in grouped:
+                group_resampled = self._resample(group)
+                group_resampled[groupby_columns] = group_id
+                resampled_groups.append(group_resampled)
 
-                try: #TODO this temporary fix is to avoid empty/nan group; should we drop them ?
-                    group_resampled = self._resample(group)
-                    group_resampled[groupby_columns] = group_id
-                    resampled_groups.append(group_resampled)
-                except Exception as e:
-                    logging.warning('{}:{}'.format(group_id, e.message))
-                    continue
             df_resampled = pd.concat(resampled_groups)
 
         else:
