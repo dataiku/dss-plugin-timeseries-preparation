@@ -207,7 +207,7 @@ class WindowRoller:
             computed_groups = []
             for group_id, group in grouped:
                 computed_df = self._compute_rolling_stats(group, raw_columns)
-                computed_df[groupby_columns] = group_id
+                computed_df[groupby_columns[0]] = group_id #TODO generalize to multiple groupby cols
                 computed_groups.append(computed_df)
             final_df = pd.concat(computed_groups)
         else:

@@ -178,10 +178,14 @@ class Resampler:
             resampled_groups = []
 
             for group_id, group in grouped:
-                group_resampled = self._resample(group)
-                group_resampled[groupby_columns] = group_id
-                resampled_groups.append(group_resampled)
 
+                try: #TODO this temporary fix is to avoid empty/nan group; should we drop them ?
+                    group_resampled = self._resample(group)
+                    group_resampled[groupby_columns] = group_id
+                    resampled_groups.append(group_resampled)
+                except Exception as e:
+                    logging.warning('{}:{}'.format(group_id, e.message))
+                    continue
             df_resampled = pd.concat(resampled_groups)
 
         else:
