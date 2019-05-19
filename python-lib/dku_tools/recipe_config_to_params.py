@@ -48,9 +48,6 @@ def get_windowing_params(recipe_config):
                                 gaussian_std=gaussian_std,
                                 closed_option=closed_option)
 
-    if _p('advanced_activated'):
-        params.groupby_cols = [_p('groupby_col')]
-
     params.check()
     return params
 
@@ -66,9 +63,6 @@ def get_segmenting_params(recipe_config):
     params = SegmentExtractorParams(min_segment_duration_value=min_segment_duration_value,
                                     max_noise_duration_value=max_noise_duration_value,
                                     time_unit=time_unit)
-
-    if _p('advanced_activated'):
-        params.groupby_cols = [_p('groupby_col')]
 
     params.check()
     return params
@@ -99,8 +93,6 @@ def get_extrema_extracting_params(recipe_config):
                                        window_type=window_type,
                                        gaussian_std=gaussian_std,
                                        closed_option=closed_option)
-    if _p('advanced_activated'):
-        window_params.groupby_cols = [_p('groupby_col')]
 
     window_roller = WindowRoller(window_params)
     params = ExtremaExtractorParams(window_roller=window_roller,

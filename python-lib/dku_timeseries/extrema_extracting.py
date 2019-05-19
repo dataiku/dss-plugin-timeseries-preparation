@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import dataiku
 import pandas as pd
 import logging
 import re
@@ -54,14 +53,15 @@ class ExtremaExtractor:
         """
         From the input dataset, keep only the extrema and theirs surrounding, then compute
         aggregated statistics on what's going on around the extrema.
-        """    
+        """
+
         df = raw_df.set_index(datetime_column).sort_index()
         df = df.fillna(0)
         if groupby_columns:
             grouped = df.groupby(groupby_columns)
             computed_groups = []
             for _, group in grouped:
-                try: #TODO remove the try except
+                try: #TODO remove the try except (it was to avoid empty, nan dataset)
                     extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(group, extrema_column)
                     rolling_df = self.params.window_roller.compute(extrema_neighbor_df)
                     extrema_df = rolling_df.loc[group[extrema_column]==extrema_value]
