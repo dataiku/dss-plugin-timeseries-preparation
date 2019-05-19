@@ -24,14 +24,16 @@ output_dataset = dataiku.Dataset(output_dataset_name)
 recipe_config = get_recipe_config()
 datetime_column = recipe_config.get('datetime_column')
 extrema_column = recipe_config.get('extrema_column')
-if recipe_config.get('advance_activate'):
-	groupby_cols = recipe_config.get('groupby_cols')
+if recipe_config.get('advanced_activated'):
+	groupby_col = recipe_config.get('groupby_cols')
+else:
+	groupby_col = None
 params = get_extrema_extracting_params(recipe_config)
 
 # --- Run
 df = input_dataset.get_dataframe()
 extrema_etractor = ExtremaExtractor(params)
-output_df = extrema_etractor.compute(df, datetime_column, extrema_column, groupby_columns=[groupby_cols])
+output_df = extrema_etractor.compute(df, datetime_column, extrema_column, groupby_columns=groupby_col)
 
 # --- Write output
 output_dataset.write_with_schema(output_df)
