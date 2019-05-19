@@ -60,14 +60,15 @@ class ExtremaExtractor:
         if groupby_columns:
             grouped = df.groupby(groupby_columns)
             computed_groups = []
-            for _, group in grouped:
+            for group_id, group in grouped:
                 try: #TODO remove the try except (it was to avoid empty, nan dataset)
                     extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(group, extrema_column)
                     rolling_df = self.params.window_roller.compute(extrema_neighbor_df)
                     extrema_df = rolling_df.loc[group[extrema_column]==extrema_value]
                     extrema_df = extrema_df.rename_axis(datetime_column).reset_index()
                     computed_groups.append(extrema_df)
-                except:
+                except Exception as e:
+                    logging.warning('{}:{}'.format(group_id, e.message))
                     continue
             final_df = pd.concat(computed_groups)
         else:
