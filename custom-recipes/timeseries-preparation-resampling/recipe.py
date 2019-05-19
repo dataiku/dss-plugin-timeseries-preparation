@@ -25,13 +25,15 @@ output_dataset = dataiku.Dataset(output_dataset_name)
 recipe_config = get_recipe_config()
 datetime_column = recipe_config.get('datetime_column')
 if recipe_config.get('advance_activate'):
-    groupby_col = recipe_config.get('groupby_cols')
+    groupby_col = [recipe_config.get('groupby_cols')]
+else:
+    groupby_col = None
 resampling_params = get_resampling_params(recipe_config)
 
 # --- Run
 df = input_dataset.get_dataframe()
 resampler = Resampler(resampling_params)
-output_df = resampler.transform(df, datetime_column, groupby_columns=[groupby_col])
+output_df = resampler.transform(df, datetime_column, groupby_columns=groupby_col)
 
 # --- Write output
 output_dataset.write_with_schema(output_df)

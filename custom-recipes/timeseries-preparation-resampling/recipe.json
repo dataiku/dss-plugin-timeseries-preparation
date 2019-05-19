@@ -59,7 +59,7 @@
             "defaultValue": "second"
         },
         {
-            "name": "time_step_size",
+            "name": "time_step",
             "label" : "Time step",
             "type": "DOUBLE",
             "defaultValue" : 10
@@ -92,10 +92,11 @@
                     { "value" : "nearest", "label" : "nearest"},
                     { "value" : "previous", "label" : "previous"},
                     { "value" : "next", "label" : "next"},
+                    { "value" : "zero", "label" : "zero"},
+                    { "value" : "slinear", "label" : "slinear"},
                     { "value" : "linear", "label" : "linear"},
                     { "value" : "quadratic", "label" : "quadratic"},
                     { "value" : "cubic", "label" : "cubic"},
-                    { "value" : "barycentric", "label" : "barycentric"},
                     { "value" : "None", "label" : "none"}
             ],
             "defaultValue": "linear"

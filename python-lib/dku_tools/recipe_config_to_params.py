@@ -9,14 +9,14 @@ def get_resampling_params(recipe_config):
 
     interpolation_method = _p('interpolation_method')
     extrapolation_method = _p('extrapolation_method')
-    time_step_size = float(_p('time_step_size'))
+    time_step = float(_p('time_step'))
     time_unit = _p('time_unit')
     offset = int(_p('offset'))  # TODO should be float too ?
     crop = int(_p('crop'))
 
     params = ResamplerParams(interpolation_method=interpolation_method,
                              extrapolation_method=extrapolation_method,
-                             time_step_size=time_step_size,
+                             time_step=time_step,
                              time_unit=time_unit,
                              offset=offset,
                              crop=crop)

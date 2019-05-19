@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import dataiku
 import pandas as pd
 import logging
 from scipy import interpolate
@@ -22,7 +21,6 @@ TIME_STEP_MAPPING = {
 }
 
 ROUND_COMPATIBLE_TIME_UNIT = ['day', 'hour', 'minute', 'second', 'millisecond', 'microsecond', 'nanosecond']
-
 INTERPOLATION_METHODS = ['None', 'linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic', 'previous', 'next']
 EXTRAPOLATION_METHODS = ['None', 'clip', 'interpolation']
 TIME_UNITS = list(TIME_STEP_MAPPING.keys()) + ['row']
@@ -33,15 +31,20 @@ class ResamplerParams:
     def __init__(self,
                  interpolation_method='linear',
                  extrapolation_method='clip',
-                 time_step_size=1,
+                 time_step=1,
                  time_unit='second',
                  offset=0,
                  crop=0):
 
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
-        self.time_step = time_step_size
+        self.time_step = time_step
         self.time_unit = time_unit
+        if self.time_unit not in ROUND_COMPATIBLE_TIME_UNIT:
+            if self.time_step.is_integer():
+                self.time_step = int(self.time_step)
+            else:
+                raise ValueError("Can not use non-integer time step with time unit {}".format(self.time_unit))
         self.resampling_step = str(self.time_step) + TIME_STEP_MAPPING.get(self.time_unit, '')
         self.offset = offset
         self.crop = crop
@@ -59,9 +62,6 @@ class ResamplerParams:
         if self.time_unit not in TIME_UNITS:
             raise ValueError('"{0}" is not a valid unit. Possible time units are: {1}'.format(
                 self.time_unit, TIME_UNITS))
-        if self.time_unit not in ROUND_COMPATIBLE_TIME_UNIT:
-            if not self.time_step.is_integer():
-                raise ValueError("Can not use non-integer time step with time unit {}".format(self.time_unit))
 
 
 class Resampler:
@@ -96,7 +96,7 @@ class Resampler:
 
     def _check_df(self, df):
 
-        if len(df) == 0:
+        if len(df) < 2:
             return False
         else:
             return True
@@ -107,9 +107,16 @@ class Resampler:
 
     def _resample(self, df):
 
+        """
+        1. Move datetime column to the index.
+        2. Merge the original datetime index with the full_time_index.
+        3. Create a numerical index of the df and save the correspond index.
+        """
         temp_df = df.set_index(self.datetime_column).sort_index()
         try:
             temp_df = temp_df.reindex(temp_df.index | self.full_time_index)
+            temp_df['reference_index'] = range(len(temp_df))
+            reference_index = temp_df.loc[self.full_time_index, 'reference_index']
         except Exception as e:
             if e.message == 'cannot reindex from a duplicate axis':
                 raise ValueError('{}: Your timeseries contain duplicate timestamps.'.format(str(e)))
@@ -146,7 +153,10 @@ class Resampler:
         if self.params.extrapolation_method == "clip":
             df_resampled = df_resampled.ffill().bfill()
 
-        return df_resampled
+        df_final = df_resampled.loc[reference_index]
+        df_final = df_final.drop('reference_index', axis=1)
+
+        return df_final
 
     def transform(self, raw_df, datetime_column, groupby_columns=None):
 
@@ -178,4 +188,5 @@ class Resampler:
             df_resampled = self._resample(df)
 
         # put the datetime index back to the dataframe
-        return df_resampled
+        df_final = df_resampled.reset_index(drop=True)
+        return df_final
