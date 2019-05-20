@@ -39,7 +39,7 @@ class WindowRollerParams:  # TODO better naming ?
                  closed_option='left',
                  center=False,
                  window_type=None,
-                 gaussian_std=None,
+                 gaussian_std=1.0,
                  aggregation_types=AGGREGATIONS):
 
         self.window_width = window_width
@@ -60,15 +60,18 @@ class WindowRollerParams:  # TODO better naming ?
     def check(self):
 
         if self.window_type not in WINDOW_TYPES:
-            raise ValueError('{0} is not a valid window type. Possible options are: {1}'.format(self.window_type, WINDOW_TYPES))
+            raise ValueError(
+                '{0} is not a valid window type. Possible options are: {1}'.format(self.window_type, WINDOW_TYPES))
         if self.window_width < 0:
             raise ValueError('Window width can not be negative.')
         if self.window_unit not in WINDOW_UNITS:
-            raise ValueError('"{0}" is not a valid unit. Possible window units are: {1}'.format(self.window_unit, WINDOW_UNITS))
+            raise ValueError(
+                '"{0}" is not a valid unit. Possible window units are: {1}'.format(self.window_unit, WINDOW_UNITS))
         if self.min_period < 1:
             raise ValueError('Min period must be positive.')
         if self.closed_option not in CLOSED_OPTIONS:
-            raise ValueError('"{0}" is not a valid closed option. Possible values are: {1}'.format(self.closed_option, CLOSED_OPTIONS))
+            raise ValueError('"{0}" is not a valid closed option. Possible values are: {1}'.format(self.closed_option,
+                                                                                                   CLOSED_OPTIONS))
 
 
 class WindowRoller:
@@ -82,11 +85,10 @@ class WindowRoller:
 
     def compute(self, raw_df, datetime_column=None, groupby_columns=None):
 
-        if datetime_column:
-            df = raw_df.set_index(datetime_column).sort_index()
-        else:  # otherwise we suppose that the input df already has Datetime Index
-            df = raw_df.copy()
-        frequency = pd.infer_freq(df[~df.index.duplicated()].index[:1000])
+        df = raw_df.copy()
+        df[datetime_column] = pd.to_datetime(df[datetime_column])
+        # df = raw_df.set_index(datetime_column).sort_index()
+        frequency = pd.infer_freq(df[~df[datetime_column].duplicated()].loc[:1000, datetime_column].values)
         logger.info('Timeseries frequency: ', frequency)
 
         if self.params.window_unit != 'rows':
@@ -104,15 +106,14 @@ class WindowRoller:
             grouped = df.groupby(groupby_columns)
             computed_groups = []
             for group_id, group in grouped:
-                computed_df = self._compute_rolling_stats(group, raw_columns)
-                computed_df[groupby_columns[0]] = group_id #TODO generalize to multiple groupby cols
+                computed_df = self._compute_rolling_stats(group, datetime_column, raw_columns)
+                computed_df[groupby_columns[0]] = group_id  # TODO generalize to multiple groupby cols
                 computed_groups.append(computed_df)
             final_df = pd.concat(computed_groups)
         else:
-            final_df = self._compute_rolling_stats(df, raw_columns)
+            final_df = self._compute_rolling_stats(df, datetime_column, raw_columns)
 
-        if datetime_column:
-            final_df = final_df.rename_axis(datetime_column).reset_index()
+        final_df = final_df.rename_axis(datetime_column).reset_index()
 
         return final_df
 
@@ -128,17 +129,15 @@ class WindowRoller:
         demanded_frequency = pd.to_timedelta(to_offset(self.params.window_description))
         n = demanded_frequency / data_frequency
         if n < 1:
-            raise ValueError('The requested window width ({0}) is smaller than the timeseries frequency ({1}). Please increase the former.'.format(data_frequency, demanded_frequency))
+            raise ValueError(
+                'The requested window width ({0}) is smaller than the timeseries frequency ({1}). Please increase the former.'.format(
+                    data_frequency, demanded_frequency))
         return int(math.ceil(n))  # always round up so that we dont miss any data
 
-    def get_window_date_offset(self):
+    def _compute_rolling_stats(self, df, datetime_column, raw_columns):
 
-        return pd.DateOffset(**{self.params.window_unit: self.params.window_width})
-
-    def _compute_rolling_stats(self, df, raw_columns):
-
+        df = df.set_index(datetime_column).sort_index()
         new_df = pd.DataFrame(index=df.index)
-
         # compute all stats except mean and sum, does not change whether or not we have a window type
         if self.params.window_unit == 'rows':  # for now `closed` is only implemented for time-based window
             rolling_without_window = df.rolling(window=self.params.window_description)
