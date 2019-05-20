@@ -147,7 +147,6 @@ class Resampler:
         extrapolation_index_mask = (temp_df[self.datetime_column] < df[self.datetime_column].min()) | (
                 temp_df[self.datetime_column] > df[self.datetime_column].max())
         extrapolation_index = temp_df.index[extrapolation_index_mask]
-        # df_to_extrapolate = temp_df.loc[extrapolation_index]
 
         index_with_data = temp_df.loc[interpolation_index, filtered_columns_to_resample].dropna(how='all').index
         interpolation_function = interpolate.interp1d(index_with_data,
@@ -159,12 +158,13 @@ class Resampler:
         temp_df.loc[interpolation_index, filtered_columns_to_resample] = interpolation_function(
             temp_df.loc[interpolation_index].index)
 
-        if self.params.extrapolation_method == "interpolate":
+        if self.params.extrapolation_method == "interpolation":
             temp_df.loc[extrapolation_index, filtered_columns_to_resample] = interpolation_function(
                 temp_df.loc[extrapolation_index].index)
 
         if self.params.extrapolation_method == "clip":
             df_resampled = temp_df.ffill().bfill()
+
         df_final = temp_df.loc[reference_index].drop('reference_index', axis=1)
 
         return df_final
