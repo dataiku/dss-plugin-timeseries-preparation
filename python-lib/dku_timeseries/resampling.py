@@ -39,7 +39,7 @@ class ResamplerParams:
 
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
-        self.time_step = time_step
+        self.time_step = float(time_step)
         self.time_unit = time_unit
         if self.time_unit not in ROUND_COMPATIBLE_TIME_UNIT:
             if self.time_step.is_integer():
@@ -53,13 +53,18 @@ class ResamplerParams:
     def check(self):
 
         if self.interpolation_method not in INTERPOLATION_METHODS:
-            raise ValueError('Method "{0}" is not valid. Possible interpolation methods are: {1}.'.format(self.interpolation_method, INTERPOLATION_METHODS))
+            raise ValueError(
+                'Method "{0}" is not valid. Possible interpolation methods are: {1}.'.format(self.interpolation_method,
+                                                                                             INTERPOLATION_METHODS))
         if self.extrapolation_method not in EXTRAPOLATION_METHODS:
-            raise ValueError('Method "{0}" is not valid. Possible extrapolation methods are: {1}.'.format(self.extrapolation_method, EXTRAPOLATION_METHODS))
+            raise ValueError(
+                'Method "{0}" is not valid. Possible extrapolation methods are: {1}.'.format(self.extrapolation_method,
+                                                                                             EXTRAPOLATION_METHODS))
         if self.time_step < 0:
             raise ValueError('Time step can not be negative.')
         if self.time_unit not in TIME_UNITS:
-            raise ValueError('"{0}" is not a valid unit. Possible time units are: {1}'.format(self.time_unit, TIME_UNITS))
+            raise ValueError(
+                '"{0}" is not a valid unit. Possible time units are: {1}'.format(self.time_unit, TIME_UNITS))
 
 
 class Resampler:
@@ -110,10 +115,13 @@ class Resampler:
         if self.params.time_unit in ROUND_COMPATIBLE_TIME_UNIT:
             start_index = col.min().round(rounding_freq_string) + offset_value
             end_index = col.max().round(rounding_freq_string) + crop_value
+            return pd.date_range(start=start_index, end=end_index, freq=self.params.resampling_step)
         else:  # for week, month, year we round up to closest day
             start_index = col.min().round('D') + offset_value
             end_index = col.max().round('D') + crop_value
-        return pd.date_range(start=start_index, end=end_index, freq=self.params.resampling_step)
+            # for some reason date_range omit the last entry when dealing with months, years
+            return pd.date_range(start=start_index, end=end_index + self._get_date_offset(self.params.time_step),
+                                 freq=self.params.resampling_step)
 
     def _nothing_to_do(self, df):
         return len(df) < 2
@@ -156,18 +164,20 @@ class Resampler:
             df_final = df_final.drop('reference_index', axis=1)
             return df_final
 
-        interpolation_index_mask = (df_resample[datetime_column] >= df[datetime_column].min()) & (df_resample[datetime_column] <= df[datetime_column].max())
+        interpolation_index_mask = (df_resample[datetime_column] >= df[datetime_column].min()) & (
+                    df_resample[datetime_column] <= df[datetime_column].max())
         interpolation_index = df_resample.index[interpolation_index_mask]
 
-        extrapolation_index_mask = (df_resample[datetime_column] < df[datetime_column].min()) | (df_resample[datetime_column] > df[datetime_column].max())
+        extrapolation_index_mask = (df_resample[datetime_column] < df[datetime_column].min()) | (
+                    df_resample[datetime_column] > df[datetime_column].max())
         extrapolation_index = df_resample.index[extrapolation_index_mask]
 
         index_with_data = df_resample.loc[interpolation_index, filtered_columns_to_resample].dropna(how='all').index
         interpolation_function = interpolate.interp1d(index_with_data,
-                                              df_resample.loc[index_with_data, filtered_columns_to_resample],
-                                              kind=self.params.interpolation_method,
-                                              axis=0,
-                                              fill_value='extrapolate')
+                                                      df_resample.loc[index_with_data, filtered_columns_to_resample],
+                                                      kind=self.params.interpolation_method,
+                                                      axis=0,
+                                                      fill_value='extrapolate')
 
         df_resample.loc[interpolation_index, filtered_columns_to_resample] = interpolation_function(
             df_resample.loc[interpolation_index].index)
