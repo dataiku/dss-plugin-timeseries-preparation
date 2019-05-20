@@ -121,51 +121,52 @@ class Resampler:
         3. Create a numerical index of the df and save the correspond index.
         """
 
-        temp_df = df.set_index(self.datetime_column).sort_index()
+        df_resample = df.set_index(self.datetime_column).sort_index()
         try:
-            temp_df = temp_df.reindex(temp_df.index | self.full_time_index)
-            temp_df['reference_index'] = range(len(temp_df))
-            reference_index = temp_df.loc[self.full_time_index, 'reference_index']
+            df_resample = df_resample.reindex(df_resample.index | self.full_time_index)
+            df_resample['reference_index'] = range(len(df_resample))
+            reference_index = df_resample.loc[self.full_time_index, 'reference_index']
         except Exception as e:
             if e.message == 'cannot reindex from a duplicate axis':
                 raise ValueError('{}: Your timeseries contain duplicate timestamps.'.format(str(e)))
             else:
                 raise ValueError(str(e))
 
-        temp_df = temp_df.rename_axis(self.datetime_column).reset_index()
+        df_resample = df_resample.rename_axis(self.datetime_column).reset_index()
         # if we pass an empty column through `interp1d`, it will return an error, so we need to filter these out first
-        filtered_columns_to_resample = self._filter_empty_columns(temp_df)
+        filtered_columns_to_resample = self._filter_empty_columns(df_resample)
         if len(filtered_columns_to_resample) == 0:
-            df_final = temp_df.loc[reference_index]
+            logger.warning('All numerical columns are empty for this group.')
+            df_final = df_resample.loc[reference_index]
             df_final = df_final.drop('reference_index', axis=1)
             return df_final
 
-        interpolation_index_mask = (temp_df[self.datetime_column] >= df[self.datetime_column].min()) & (
-                temp_df[self.datetime_column] <= df[self.datetime_column].max())
-        interpolation_index = temp_df.index[interpolation_index_mask]
+        interpolation_index_mask = (df_resample[self.datetime_column] >= df[self.datetime_column].min()) & (
+                df_resample[self.datetime_column] <= df[self.datetime_column].max())
+        interpolation_index = df_resample.index[interpolation_index_mask]
 
-        extrapolation_index_mask = (temp_df[self.datetime_column] < df[self.datetime_column].min()) | (
-                temp_df[self.datetime_column] > df[self.datetime_column].max())
-        extrapolation_index = temp_df.index[extrapolation_index_mask]
+        extrapolation_index_mask = (df_resample[self.datetime_column] < df[self.datetime_column].min()) | (
+                df_resample[self.datetime_column] > df[self.datetime_column].max())
+        extrapolation_index = df_resample.index[extrapolation_index_mask]
 
-        index_with_data = temp_df.loc[interpolation_index, filtered_columns_to_resample].dropna(how='all').index
+        index_with_data = df_resample.loc[interpolation_index, filtered_columns_to_resample].dropna(how='all').index
         interpolation_function = interpolate.interp1d(index_with_data,
-                                                      temp_df.loc[index_with_data, filtered_columns_to_resample],
+                                                      df_resample.loc[index_with_data, filtered_columns_to_resample],
                                                       kind=self.params.interpolation_method,
                                                       axis=0,
                                                       fill_value='extrapolate')
 
-        temp_df.loc[interpolation_index, filtered_columns_to_resample] = interpolation_function(
-            temp_df.loc[interpolation_index].index)
+        df_resample.loc[interpolation_index, filtered_columns_to_resample] = interpolation_function(
+            df_resample.loc[interpolation_index].index)
 
         if self.params.extrapolation_method == "interpolation":
-            temp_df.loc[extrapolation_index, filtered_columns_to_resample] = interpolation_function(
-                temp_df.loc[extrapolation_index].index)
+            df_resample.loc[extrapolation_index, filtered_columns_to_resample] = interpolation_function(
+                df_resample.loc[extrapolation_index].index)
 
         if self.params.extrapolation_method == "clip":
-            df_resampled = temp_df.ffill().bfill()
+            df_resample = df_resample.ffill().bfill()
 
-        df_final = temp_df.loc[reference_index].drop('reference_index', axis=1)
+        df_final = df_resample.loc[reference_index].drop('reference_index', axis=1)
 
         return df_final
 
