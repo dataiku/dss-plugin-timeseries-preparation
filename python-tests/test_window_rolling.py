@@ -61,15 +61,30 @@ def test_single_row_df():
     assert output_df.shape == (1, 2)
     assert output_df[DATA_COL][0] == df[DATA_COL][0]
 """
-def test_incremental_df():
+def test_incremental_df_left_closed():
     length = 100
     data = [x for x in range(length)]
     df = _make_df_with_one_col(data)
     print(df.shape)
-    window_roller = _make_window_roller(3)
+    params = dku_timeseries.WindowRollerParams(window_width=3, closed_option='left')
+    window_roller = dku_timeseries.WindowRoller(params)
     output_df = window_roller.compute(df, TIME_COL)
     ground_truth = [np.NaN, 0, 0, 0, 1, 2, 3, 4, 5 ,6, 7]
-    print(output_df[DATA_COL+'_min'][0])
     assert math.isnan(output_df[DATA_COL+'_min'][0])
     for x,y in zip(output_df[DATA_COL+'_min'][1:], ground_truth[1:]):
         assert output_df[DATA_COL][x] == y
+    return output_df
+
+def test_incremental_df_right_closed():
+    length = 100
+    data = [x for x in range(length)]
+    df = _make_df_with_one_col(data)
+    print(df.shape)
+    params = dku_timeseries.WindowRollerParams(window_width=3, closed_option='right')
+    window_roller = dku_timeseries.WindowRoller(params)
+    output_df = window_roller.compute(df, TIME_COL)
+    ground_truth = [0, 0, 0, 1, 2, 3, 4, 5 ,6, 7, 8]
+    for x,y in zip(output_df[DATA_COL+'_min'][1:], ground_truth[1:]):
+        assert output_df[DATA_COL][x] == y
+    return output_df
+
