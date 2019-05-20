@@ -117,6 +117,9 @@ class WindowRoller:
 
         return final_df
 
+    def get_window_date_offset(self):
+        return pd.DateOffset(**{self.params.window_unit: self.params.window_width})
+
     def _check_valid_data(self, df, frequency):
 
         # if non-equispaced + time-based window + using window, it is not possible (scipy limitation)
