@@ -1,12 +1,12 @@
 {
-    "meta" : {
-        "label" : "1. Timeseries resampling",
-        "description" : "Resample timeseries by performing interpolation or extrapolation.",
-        "icon" : "icon-time"
+    "meta": {
+        "label": "1. Timeseries resampling",
+        "description": "Resample timeseries by performing interpolation or extrapolation.",
+        "icon": "icon-time"
     },
-    "kind" : "PYTHON",
-    "selectableFromDataset" : "input_dataset",
-    "inputRoles" : [
+    "kind": "PYTHON",
+    "selectableFromDataset": "input_dataset",
+    "inputRoles": [
         {
             "name": "input_dataset",
             "label": "Input timeseries",
@@ -17,7 +17,7 @@
             "acceptsFolder": false
         }
     ],
-    "outputRoles" : [
+    "outputRoles": [
         {
             "name": "output_dataset",
             "label": "Output timeseries",
@@ -30,7 +30,7 @@
     "params": [
         {
             "name": "datetime_column",
-            "label" : "Timestamp column",
+            "label": "Timestamp column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
             "mandatory": true
@@ -41,42 +41,42 @@
             "type": "SEPARATOR"
         },
         {
-            "name" : "time_unit",
-            "label" : "Time unit",
-            "type" : "SELECT",
-            "selectChoices" : [
-                    { "value" : "nanosecond", "label" : "Nanosecond"},
-                    { "value" : "microsecond", "label" : "Microsecond"},
-                    { "value" : "millisecond", "label" : "Millisecond"},
-                    { "value" : "second", "label" : "Second"},
-                    { "value" : "minute", "label" : "Minute"},
-                    { "value" : "hour", "label" : "Hour"},
-                    { "value" : "day", "label" : "Day"},
-                    { "value" : "week", "label" : "Week"},            
-                    { "value" : "month", "label" : "Month"},            
-                    { "value" : "year", "label" : "Year"}                      
-                ],
-            "defaultValue": "second"
+            "name": "time_unit",
+            "label": "Time unit",
+            "type": "SELECT",
+            "selectChoices": [
+                { "value": "nanoseconds", "label": "Nanoseconds"},
+                { "value": "microseconds", "label": "Microseconds"},
+                { "value": "milliseconds", "label": "Milliseconds"},
+                { "value": "seconds", "label": "Seconds"},
+                { "value": "minutes", "label": "Minutes"},
+                { "value": "hours", "label": "Hours"},
+                { "value": "days", "label": "Days"},
+                { "value": "weeks", "label": "Weeks"},
+                { "value": "months", "label": "Months"},
+                { "value": "years", "label": "Years"}
+            ],
+            "defaultValue": "seconds"
         },
         {
             "name": "time_step",
-            "label" : "Time step",
+            "label": "Time step",
             "type": "DOUBLE",
-            "defaultValue" : 10
+            "defaultValue": 10
         },
         {
             "name": "offset",
-            "label" : "Offset beginning",
+            "label": "Offset beginning",
             "description": "Timesteps to skip at the beginning of the series, in the chosen time unit.",
             "type": "DOUBLE",
-            "defaultValue" : 0
+            "defaultValue": 0
         },
         {
             "name": "crop",
-            "label" : "Crop ending",
+            "label": "Crop ending",
             "description": "Timesteps to skip at the end of the series, in the chosen time unit.",
             "type": "DOUBLE",
-            "defaultValue" : 0
+            "defaultValue": 0
         },
         {
             "name": "sep2",
@@ -84,32 +84,32 @@
             "type": "SEPARATOR"
         },
         {
-            "name" : "interpolation_method",
-            "label" : "Interpolation method",
+            "name": "interpolation_method",
+            "label": "Interpolation method",
             "description": "",
-            "type" : "SELECT",
-            "selectChoices" : [
-                    { "value" : "nearest", "label" : "nearest"},
-                    { "value" : "previous", "label" : "previous"},
-                    { "value" : "next", "label" : "next"},
-                    { "value" : "zero", "label" : "zero"},
-                    { "value" : "slinear", "label" : "slinear"},
-                    { "value" : "linear", "label" : "linear"},
-                    { "value" : "quadratic", "label" : "quadratic"},
-                    { "value" : "cubic", "label" : "cubic"},
-                    { "value" : "None", "label" : "none"}
+            "type": "SELECT",
+            "selectChoices": [
+                { "value": "nearest", "label": "nearest"},
+                { "value": "previous", "label": "previous"},
+                { "value": "next", "label": "next"},
+                { "value": "zero", "label": "zero"},
+                { "value": "slinear", "label": "slinear"},
+                { "value": "linear", "label": "linear"},
+                { "value": "quadratic", "label": "quadratic"},
+                { "value": "cubic", "label": "cubic"},
+                { "value": "None", "label": "none"}
             ],
             "defaultValue": "linear"
         },
         {
-            "name" : "extrapolation_method",
-            "label" : "Extrapolation method",
+            "name": "extrapolation_method",
+            "label": "Extrapolation method",
             "description": "",
-            "type" : "SELECT",
-            "selectChoices" : [
-                    { "value" : "clip", "label" : "clip"},
-                    { "value" : "interpolation", "label" : "same as interpolation"},
-                    { "value" : "None", "label" : "none"}
+            "type": "SELECT",
+            "selectChoices": [
+                { "value": "clip", "label": "clip"},
+                { "value": "interpolation", "label": "same as interpolation"},
+                { "value": "None", "label": "none"}
             ],
             "defaultValue": "clip"
         },
@@ -126,10 +126,10 @@
         },
         {
             "name": "groupby_column",
-            "label" : "Partitioning column",
+            "label": "Partitioning column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
-            "mandatory" : false,
+            "mandatory": false,
             "description": "Treats each value of this column as a series identifier.",
             "visibilityCondition": "model.advanced_activated"
 

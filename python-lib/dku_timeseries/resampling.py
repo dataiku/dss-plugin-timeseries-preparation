@@ -5,26 +5,26 @@ import logging
 from scipy import interpolate
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO,
-                    format='timeseries-preparation plugin %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
 
-TIME_STEP_MAPPING = {
-    'year': 'A',
-    'month': 'M',
-    'week': 'W',
-    'day': 'D',
-    'hour': 'H',
-    'minute': 'T',
-    'second': 'S',
-    'millisecond': 'L',
-    'microsecond': 'us',
-    'nanosecond': 'ns'
+# Frequency strings as defined in https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
+FREQUENCY_STRINGS = {
+    'years': 'A',
+    'months': 'M',
+    'weeks': 'W',
+    'days': 'D',
+    'hours': 'H',
+    'minutes': 'T',
+    'seconds': 'S',
+    'milliseconds': 'L',
+    'microseconds': 'us',
+    'nanoseconds': 'ns'
 }
 
-ROUND_COMPATIBLE_TIME_UNIT = ['day', 'hour', 'minute', 'second', 'millisecond', 'microsecond', 'nanosecond']
+ROUND_COMPATIBLE_TIME_UNIT = ['days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds', 'nanoseconds']
 INTERPOLATION_METHODS = ['None', 'linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic', 'previous', 'next']
 EXTRAPOLATION_METHODS = ['None', 'clip', 'interpolation']
-TIME_UNITS = list(TIME_STEP_MAPPING.keys()) + ['row']
+TIME_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 
 
 class ResamplerParams:
@@ -33,7 +33,7 @@ class ResamplerParams:
                  interpolation_method='linear',
                  extrapolation_method='clip',
                  time_step=1,
-                 time_unit='second',
+                 time_unit='seconds',
                  offset=0,
                  crop=0):
 
@@ -46,115 +46,128 @@ class ResamplerParams:
                 self.time_step = int(self.time_step)
             else:
                 raise ValueError("Can not use non-integer time step with time unit {}".format(self.time_unit))
-        self.resampling_step = str(self.time_step) + TIME_STEP_MAPPING.get(self.time_unit, '')
+        self.resampling_step = str(self.time_step) + FREQUENCY_STRINGS.get(self.time_unit, '')
         self.offset = offset
         self.crop = crop
 
     def check(self):
 
         if self.interpolation_method not in INTERPOLATION_METHODS:
-            raise ValueError('Method "{0}" is not valid. Possible interpolation methods are: {1}.'.format(
-                self.interpolation_method, INTERPOLATION_METHODS))
+            raise ValueError('Method "{0}" is not valid. Possible interpolation methods are: {1}.'.format(self.interpolation_method, INTERPOLATION_METHODS))
         if self.extrapolation_method not in EXTRAPOLATION_METHODS:
-            raise ValueError('Method "{0}" is not valid. Possible extrapolation methods are: {1}.'.format(
-                self.extrapolation_method, EXTRAPOLATION_METHODS))
+            raise ValueError('Method "{0}" is not valid. Possible extrapolation methods are: {1}.'.format(self.extrapolation_method, EXTRAPOLATION_METHODS))
         if self.time_step < 0:
             raise ValueError('Time step can not be negative.')
         if self.time_unit not in TIME_UNITS:
-            raise ValueError('"{0}" is not a valid unit. Possible time units are: {1}'.format(
-                self.time_unit, TIME_UNITS))
+            raise ValueError('"{0}" is not a valid unit. Possible time units are: {1}'.format(self.time_unit, TIME_UNITS))
 
 
 class Resampler:
 
     def __init__(self, params=None):
 
-        assert params is not None, "ResamplerParams not specified."
+        if params is None:
+            raise ValueError('ResamplerParams not specified.')
         self.params = params
         self.params.check()
 
-    def _compute_full_time_index(self, df):
+    def transform(self, raw_df, datetime_column, groupby_columns=None):
+
+        if self._nothing_to_do(raw_df):
+            return raw_df
+
+        df = raw_df.copy()
+        df[datetime_column] = pd.to_datetime(df[datetime_column])
+
+        columns_to_resample = [col for col in df.select_dtypes([int, float]).columns.tolist() if col != 'time_col']
+        full_time_index = self._compute_full_time_index(df, datetime_column)
+
+        if groupby_columns:
+            grouped = df.groupby(groupby_columns)
+            resampled_groups = []
+
+            for group_id, group in grouped:
+                group_resampled = self._resample(group, datetime_column, columns_to_resample, full_time_index)
+                group_resampled[groupby_columns] = group_id
+                resampled_groups.append(group_resampled)
+
+            df_resampled = pd.concat(resampled_groups)
+        else:
+            df_resampled = self._resample(df, datetime_column, columns_to_resample, full_time_index)
+
+        # put the datetime index back to the dataframe
+        df_final = df_resampled.reset_index(drop=True)
+        return df_final
+
+    def _compute_full_time_index(self, df, datetime_column):
         """
         From the resampling config, create the full index of the output dataframe.
         """
-        time_unit = self.params.time_unit
-
+        col = df[datetime_column]
+        rounding_freq_string = FREQUENCY_STRINGS.get(self.params.time_unit)
         offset_value = self._get_date_offset(self.params.offset)
         crop_value = self._get_date_offset(self.params.crop)
-
-        if time_unit in ROUND_COMPATIBLE_TIME_UNIT:
-            start_index = df[self.datetime_column].min().round(TIME_STEP_MAPPING.get(time_unit)) + offset_value
-            end_index = df[self.datetime_column].max().round(TIME_STEP_MAPPING.get(time_unit)) + crop_value
+        if self.params.time_unit in ROUND_COMPATIBLE_TIME_UNIT:
+            start_index = col.min().round(rounding_freq_string) + offset_value
+            end_index = col.max().round(rounding_freq_string) + crop_value
         else:  # for week, month, year we round up to closest day
-            start_index = df[self.datetime_column].min().round('D') + offset_value
-            end_index = df[self.datetime_column].max().round('D') + crop_value
+            start_index = col.min().round('D') + offset_value
+            end_index = col.max().round('D') + crop_value
+        return pd.date_range(start=start_index, end=end_index, freq=self.params.resampling_step)
 
-        full_time_index = pd.date_range(start=start_index,
-                                        end=end_index,
-                                        freq=self.params.resampling_step)
-
-        return full_time_index
-
-    def _check_df(self, df):
-
-        if len(df) < 2:
-            return False
-        else:
-            return True
+    def _nothing_to_do(self, df):
+        return len(df) < 2
 
     def _get_date_offset(self, offset_value):
 
-        return pd.DateOffset(**{self.params.time_unit + 's': offset_value})
+        return pd.DateOffset(**{self.params.time_unit: offset_value})
 
-    def _filter_empty_columns(self, df):
+    def _filter_empty_columns(self, df, columns_to_resample):
         filtered_columns_to_resample = []
-        for col in self.columns_to_resample:
+        for col in columns_to_resample:
             if np.sum(df[col].notnull()) > 0:
                 filtered_columns_to_resample.append(col)
         return filtered_columns_to_resample
 
-    def _resample(self, df):
+    def _resample(self, df, datetime_column, columns_to_resample, full_time_index):
 
         """
         1. Move datetime column to the index.
         2. Merge the original datetime index with the full_time_index.
         3. Create a numerical index of the df and save the correspond index.
         """
-
-        df_resample = df.set_index(self.datetime_column).sort_index()
+        df_resample = df.set_index(datetime_column).sort_index()
         try:
-            df_resample = df_resample.reindex(df_resample.index | self.full_time_index)
+            df_resample = df_resample.reindex(df_resample.index | full_time_index)
             df_resample['reference_index'] = range(len(df_resample))
-            reference_index = df_resample.loc[self.full_time_index, 'reference_index']
+            reference_index = df_resample.loc[full_time_index, 'reference_index']
         except Exception as e:
             if e.message == 'cannot reindex from a duplicate axis':
                 raise ValueError('{}: Your timeseries contain duplicate timestamps.'.format(str(e)))
             else:
                 raise ValueError(str(e))
 
-        df_resample = df_resample.rename_axis(self.datetime_column).reset_index()
+        df_resample = df_resample.rename_axis(datetime_column).reset_index()
         # if we pass an empty column through `interp1d`, it will return an error, so we need to filter these out first
-        filtered_columns_to_resample = self._filter_empty_columns(df_resample)
+        filtered_columns_to_resample = self._filter_empty_columns(df_resample, columns_to_resample)
         if len(filtered_columns_to_resample) == 0:
-            logger.warning('All numerical columns are empty for this group.') 
+            logger.warning('All numerical columns are empty for this group.')
             df_final = df_resample.loc[reference_index]
             df_final = df_final.drop('reference_index', axis=1)
             return df_final
 
-        interpolation_index_mask = (df_resample[self.datetime_column] >= df[self.datetime_column].min()) & (
-                df_resample[self.datetime_column] <= df[self.datetime_column].max())
+        interpolation_index_mask = (df_resample[datetime_column] >= df[datetime_column].min()) & (df_resample[datetime_column] <= df[datetime_column].max())
         interpolation_index = df_resample.index[interpolation_index_mask]
 
-        extrapolation_index_mask = (df_resample[self.datetime_column] < df[self.datetime_column].min()) | (
-                df_resample[self.datetime_column] > df[self.datetime_column].max())
+        extrapolation_index_mask = (df_resample[datetime_column] < df[datetime_column].min()) | (df_resample[datetime_column] > df[datetime_column].max())
         extrapolation_index = df_resample.index[extrapolation_index_mask]
 
         index_with_data = df_resample.loc[interpolation_index, filtered_columns_to_resample].dropna(how='all').index
         interpolation_function = interpolate.interp1d(index_with_data,
-                                                      df_resample.loc[index_with_data, filtered_columns_to_resample],
-                                                      kind=self.params.interpolation_method,
-                                                      axis=0,
-                                                      fill_value='extrapolate')
+                                              df_resample.loc[index_with_data, filtered_columns_to_resample],
+                                              kind=self.params.interpolation_method,
+                                              axis=0,
+                                              fill_value='extrapolate')
 
         df_resample.loc[interpolation_index, filtered_columns_to_resample] = interpolation_function(
             df_resample.loc[interpolation_index].index)
@@ -166,38 +179,4 @@ class Resampler:
         if self.params.extrapolation_method == "clip":
             df_resample = df_resample.ffill().bfill()
 
-        df_final = df_resample.loc[reference_index].drop('reference_index', axis=1)
-
-        return df_final
-
-    def transform(self, raw_df, datetime_column, groupby_columns=None):
-
-        passed = self._check_df(raw_df)
-        if not passed:
-            return raw_df
-
-        df = raw_df.copy()
-        df[datetime_column] = pd.to_datetime(df[datetime_column])
-
-        # TODO is it good practice to do the following ?
-        self.datetime_column = datetime_column
-        self.columns_to_resample = [col for col in df.select_dtypes([int, float]).columns.tolist() if col != 'time_col']
-        self.full_time_index = self._compute_full_time_index(df)
-
-        if groupby_columns:
-            grouped = df.groupby(groupby_columns)
-            resampled_groups = []
-
-            for group_id, group in grouped:
-                group_resampled = self._resample(group)
-                group_resampled[groupby_columns] = group_id
-                resampled_groups.append(group_resampled)
-
-            df_resampled = pd.concat(resampled_groups)
-
-        else:
-            df_resampled = self._resample(df)
-
-        # put the datetime index back to the dataframe
-        df_final = df_resampled.reset_index(drop=True)
-        return df_final
+        return df_resample.loc[reference_index].drop('reference_index', axis=1)

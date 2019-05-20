@@ -1,12 +1,12 @@
 {
-    "meta" : {
-        "label" : "4. Timeseries segmenting",
-        "description" : "Segment timeseries based on thresholds.",
-        "icon" : "icon-reorder"
+    "meta": {
+        "label": "4. Timeseries segmenting",
+        "description": "Segment timeseries based on thresholds.",
+        "icon": "icon-reorder"
     },
-    "kind" : "PYTHON",
-    "selectableFromDataset" : "input_dataset",
-    "inputRoles" : [
+    "kind": "PYTHON",
+    "selectableFromDataset": "input_dataset",
+    "inputRoles": [
         {
             "name": "input_dataset",
             "label": "Input timeseries",
@@ -17,7 +17,7 @@
             "acceptsFolder": false
         }
     ],
-    "outputRoles" : [
+    "outputRoles": [
         {
             "name": "output_dataset",
             "label": "Output timeseries",
@@ -30,7 +30,7 @@
     "params": [
         {
             "name": "datetime_column",
-            "label" : "Timestamp column",
+            "label": "Timestamp column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
             "mandatory": true
@@ -42,22 +42,22 @@
         },
         {
             "name": "segment_column",
-            "label" : "Timeseries to segment",
+            "label": "Timeseries to segment",
             "type": "COLUMN",
             "columnRole":"input_dataset",
             "mandatory": true
         },
         {
             "name": "min_threshold",
-            "label" : "Minimal value (lower boundary)",
+            "label": "Minimal value (lower boundary)",
             "type": "DOUBLE",
-            "defaultValue" : 0
+            "defaultValue": 0
         },
         {
             "name": "max_threshold",
-            "label" : "Maximum value (upper boundary)",
+            "label": "Maximum value (upper boundary)",
             "type": "DOUBLE",
-            "defaultValue" : 10
+            "defaultValue": 10
         },
         {
             "name": "sep1",
@@ -65,34 +65,34 @@
             "type": "SEPARATOR"
         },
         {
-            "name" : "time_unit",
-            "label" : "Unit",
-            "type" : "SELECT",
-            "selectChoices" : [
-                    { "value" : "nanosecond", "label" : "nanosecond"},
-                    { "value" : "microsecond", "label" : "microsecond"},
-                    { "value" : "millisecond", "label" : "millisecond"},
-                    { "value" : "second", "label" : "second"},
-                    { "value" : "minute", "label" : "minute"},
-                    { "value" : "hour", "label" : "hour"},
-                    { "value" : "day", "label" : "day"},
-                    { "value" : "row", "label" : "row"}
+            "name": "time_unit",
+            "label": "Unit",
+            "type": "SELECT",
+            "selectChoices": [
+                { "value": "nanoseconds", "label": "Nanoseconds"},
+                { "value": "microseconds", "label": "Microseconds"},
+                { "value": "milliseconds", "label": "Milliseconds"},
+                { "value": "seconds", "label": "Seconds"},
+                { "value": "minutes", "label": "Minutes"},
+                { "value": "hours", "label": "Hours"},
+                { "value": "days", "label": "Days"},
+                { "value": "rows", "label": "Rows"}
             ],
-            "defaultValue": "row"
+            "defaultValue": "rows"
         },
         {
             "name": "min_segment_duration_value",
-            "label" : "Minimal segment duration",
+            "label": "Minimal segment duration",
             "description": "Values must be within thresholds for more than this duration to create a segment.",
             "type": "DOUBLE",
-            "defaultValue" : 10
+            "defaultValue": 10
         },
         {
             "name": "max_noise_duration_value",
-            "label" : "Maximum aberration duration",
+            "label": "Maximum aberration duration",
             "description": "Exiting thresholds for less than this duration is ignored.",
             "type": "DOUBLE",
-            "defaultValue" : 10
+            "defaultValue": 10
         },
         {
             "name": "sep3",
@@ -107,10 +107,10 @@
         },
         {
             "name": "groupby_column",
-            "label" : "Partitioning column",
+            "label": "Partitioning column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
-            "mandatory" : false,
+            "mandatory": false,
             "description": "Treats each value of this column as a series identifier.",
             "visibilityCondition": "model.advanced_activated"
 

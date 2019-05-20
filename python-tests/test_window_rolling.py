@@ -3,7 +3,7 @@
 # see https://docs.pytest.org for more information
 
 import pandas as pd
-import numpy as np 
+import numpy as np
 import math
 import sys
 import os
@@ -51,25 +51,25 @@ def test_empty_df():
     segment_extractor = _make_window_roller()
     output_df = segment_extractor.compute(df, TIME_COL)
     assert output_df.shape == (0, 2)
-""" 
+"""
 
-"""  
+"""
 def test_single_row_df():
     df = _make_df_with_one_col([33])
     segment_extractor = _make_window_roller()
     output_df = segment_extractor.compute(df, TIME_COL)
     assert output_df.shape == (1, 2)
     assert output_df[DATA_COL][0] == df[DATA_COL][0]
-""" 
+"""
 def test_incremental_df():
     length = 100
     data = [x for x in range(length)]
-    df = _make_df_with_one_col(data) 
+    df = _make_df_with_one_col(data)
     print(df.shape)
     window_roller = _make_window_roller(3)
     output_df = window_roller.compute(df, TIME_COL)
     ground_truth = [np.NaN, 0, 0, 0, 1, 2, 3, 4, 5 ,6, 7]
     print(output_df[DATA_COL+'_min'][0])
-    assert math.isnan(output_df[DATA_COL+'_min'][0]) 
-    for x,y in zip(output_df[DATA_COL+'_min'][1:], ground_truth[1:]): 
+    assert math.isnan(output_df[DATA_COL+'_min'][0])
+    for x,y in zip(output_df[DATA_COL+'_min'][1:], ground_truth[1:]):
         assert output_df[DATA_COL][x] == y

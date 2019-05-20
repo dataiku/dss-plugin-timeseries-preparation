@@ -1,12 +1,12 @@
 {
-    "meta" : {
-        "label" : "2. Timeseries rolling windows",
-        "description" : "Compute aggregations (avg, min/max, quartiles...) of your timeseries along a rolling timeframe (window).",
-        "icon" : "icon-repeat"
+    "meta": {
+        "label": "2. Timeseries rolling windows",
+        "description": "Compute aggregations (avg, min/max, quartiles...) of your timeseries along a rolling timeframe (window).",
+        "icon": "icon-repeat"
     },
-    "kind" : "PYTHON",
-    "selectableFromDataset" : "input_dataset",
-    "inputRoles" : [
+    "kind": "PYTHON",
+    "selectableFromDataset": "input_dataset",
+    "inputRoles": [
         {
             "name": "input_dataset",
             "label": "Input timeseries",
@@ -17,7 +17,7 @@
             "acceptsFolder": false
         }
     ],
-    "outputRoles" : [
+    "outputRoles": [
         {
             "name": "output_dataset",
             "label": "Output dataset",
@@ -30,7 +30,7 @@
     "params": [
         {
             "name": "datetime_column",
-            "label" : "Timestamp column",
+            "label": "Timestamp column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
             "mandatory": true
@@ -41,65 +41,65 @@
             "type": "SEPARATOR"
         },
         {
-            "name" : "window_unit",
-            "label" : "Unit",
-            "type" : "SELECT",
-            "selectChoices" : [
-                    { "value" : "nanosecond", "label" : "Nanosecond"},
-                    { "value" : "microsecond", "label" : "Microsecond"},
-                    { "value" : "millisecond", "label" : "Millisecond"},
-                    { "value" : "second", "label" : "Second"},
-                    { "value" : "minute", "label" : "Minute"},
-                    { "value" : "hour", "label" : "Hour"},
-                    { "value" : "day", "label" : "Day"},
-                    { "value" : "week", "label" : "Week"},
-                    { "value" : "month", "label" : "Month"},
-                    { "value" : "year", "label" : "Year"},
-                    { "value" : "row", "label" : "Rows"}
+            "name": "window_unit",
+            "label": "Unit",
+            "type": "SELECT",
+            "selectChoices": [
+                { "value": "nanoseconds", "label": "Nanoseconds"},
+                { "value": "microseconds", "label": "Microseconds"},
+                { "value": "milliseconds", "label": "Milliseconds"},
+                { "value": "seconds", "label": "Seconds"},
+                { "value": "minutes", "label": "Minutes"},
+                { "value": "hours", "label": "Hours"},
+                { "value": "days", "label": "Days"},
+                { "value": "weeks", "label": "Weeks"},
+                { "value": "months", "label": "Months"},
+                { "value": "years", "label": "Years"},
+                { "value": "rows", "label": "Rows"}
             ],
-            "defaultValue": "row"
+            "defaultValue": "rows"
         },
         {
             "name": "window_width",
-            "label" : "Width",
+            "label": "Width",
             "type": "DOUBLE",
-            "defaultValue" : 10
+            "defaultValue": 10
         },
         {
-            "name" : "window_type",
-            "label" : "Type",
-            "type" : "SELECT",
-            "selectChoices" : [
-                    { "value" : "boxcar", "label" : "Boxcar"},
-                    { "value" : "triang", "label" : "Triangle"},
-                    { "value" : "blackman", "label" : "Blackman"},
-                    { "value" : "hamming", "label" : "Hamming"},
-                    { "value" : "bartlett", "label" : "Bartlett"},
-                    { "value" : "parzen", "label" : "Parzen"},
-                    { "value" : "gaussian", "label" : "Gaussian"},
-                    { "value" : "none", "label" : "Flat"}
+            "name": "window_type",
+            "label": "Type",
+            "type": "SELECT",
+            "selectChoices": [
+                { "value": "boxcar", "label": "Boxcar"},
+                { "value": "triang", "label": "Triangle"},
+                { "value": "blackman", "label": "Blackman"},
+                { "value": "hamming", "label": "Hamming"},
+                { "value": "bartlett", "label": "Bartlett"},
+                { "value": "parzen", "label": "Parzen"},
+                { "value": "gaussian", "label": "Gaussian"},
+                { "value": "none", "label": "Flat"}
             ],
             "defaultValue": "none"
         },
         {
             "name": "gaussian_std",
-            "label" : "Gaussian standard deviation",
+            "label": "Gaussian standard deviation",
             "type": "DOUBLE",
             "default_value": 1.0,
             "visibilityCondition": "model.window_type == 'gaussian'"
 
         },
         {
-            "name" : "closed_option",
-            "label" : "Include window boundaries?",
+            "name": "closed_option",
+            "label": "Include window boundaries?",
             "description": "Includes the sides of the window to compute aggregations.",
-            "type" : "SELECT",
-            "selectChoices" : [
-                    { "value" : "left", "label" : "Yes, left only"},
-                    { "value" : "right", "label" : "Yes, right only"},
-                    { "value" : "both", "label" : "Yes, both"},
-                    { "value" : "neither", "label" : "No"}
-                ],
+            "type": "SELECT",
+            "selectChoices": [
+                { "value": "left", "label": "Yes, left only"},
+                { "value": "right", "label": "Yes, right only"},
+                { "value": "both", "label": "Yes, both"},
+                { "value": "neither", "label": "No"}
+            ],
             "defaultValue": "left"
         },
         {
@@ -115,10 +115,10 @@
         },
         {
             "name": "groupby_column",
-            "label" : "Partitioning column",
+            "label": "Partitioning column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
-            "mandatory" : false,
+            "mandatory": false,
             "description": "Treats each value of this column as a series identifier.",
             "visibilityCondition": "model.advanced_activated"
 
