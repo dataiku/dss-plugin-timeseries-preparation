@@ -104,8 +104,7 @@ def test_half_freq_resampling():
 
 def test_identity_resampling_group():
     """
-    Default sampling rate is 1Hz
-    Since we create test data at 1Hz, default resampling should be identity
+    2 groups, same frequency (1Hz), same date range
     """
     length = 100000
     num_group = 3
@@ -129,6 +128,9 @@ def test_identity_resampling_group():
 
 
 def test_half_freq_resampling_group():
+    """
+    2 groups, same frequency (0.5Hz), same date range
+    """
     length = 100000
     num_group = 3
     print("test_identity_resampling_group with " + str(2 * length) + " records")
@@ -146,5 +148,91 @@ def test_half_freq_resampling_group():
         df_check = df_check.sort_values(TIME_COL)
 
         for y in xrange(1000):
-            # print y, df_check[DATA_COL][y], df_ref[DATA_COL][y]
             assert df_check[DATA_COL][y] == 2 * df_ref[DATA_COL][y]
+
+
+def test_group_inclusion_same_freq():
+    """
+    2 groups, same frequency, different date range: group 1 includes group 2
+    """
+    # 2 group, same frequency, group 1 include group 2
+    start_time_1 = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
+    start_time_2 = pd.Timestamp('20190131 02:00:00').tz_localize('CET')
+    start_time_list = [start_time_1, start_time_2]
+
+    len1 = 100
+    len2 = 10
+    data1 = range(len1)
+    data2 = range(len2)
+    data_list = [data1, data2]
+
+    period1 = pd.DateOffset(seconds=1)
+    period2 = pd.DateOffset(seconds=1)
+    period_list = [period1, period2]
+
+    df_list = []
+    for group_id, data, period, start_time in zip(range(len(data_list)), data_list, period_list, start_time_list):
+        group_name = 'group_{}'.format(group_id)
+        temp_df = _make_df_with_one_col(data, period=period, start_time=start_time)
+        temp_df[GROUP_COL] = group_name
+        df_list.append(temp_df)
+
+    df = pd.concat(df_list, axis=0)
+
+    params = dku_timeseries.ResamplerParams(extrapolation_method='interpolation')
+    resampler = dku_timeseries.Resampler(params)
+    output_df = resampler.transform(df, TIME_COL, groupby_columns=GROUP_COL)
+
+    assert np.array_equal(output_df.groupby(GROUP_COL).size().values, [100, 100])
+
+    ref_data_1 = range(0, len1)
+    resample_data_1 = output_df.groupby(GROUP_COL).get_group('group_0').data_col.values
+    assert np.array_equal(resample_data_1, ref_data_1)
+
+    start_value = -(start_time_2 - start_time_1).seconds
+    ref_data_2 = range(start_value, start_value + len1)
+    resample_data_2 = output_df.groupby(GROUP_COL).get_group('group_1').data_col.values
+    assert np.array_equal(resample_data_2, ref_data_2)
+
+
+def test_group_inclusion_different_freq():
+    """
+    2 groups, different frequency, different date range: group 1 includes group 2
+    """
+    start_time_1 = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
+    start_time_2 = pd.Timestamp('20190131 02:00:00').tz_localize('CET')
+    start_time_list = [start_time_1, start_time_2]
+
+    len1 = 100
+    len2 = 10
+    data1 = range(len1)
+    data2 = range(len2)
+    data_list = [data1, data2]
+
+    period1 = pd.DateOffset(seconds=2)
+    period2 = pd.DateOffset(seconds=1)
+    period_list = [period1, period2]
+
+    df_list = []
+    for group_id, data, period, start_time in zip(range(len(data_list)), data_list, period_list, start_time_list):
+        group_name = 'group_{}'.format(group_id)
+        temp_df = _make_df_with_one_col(data, period=period, start_time=start_time)
+        temp_df[GROUP_COL] = group_name
+        df_list.append(temp_df)
+
+    df = pd.concat(df_list, axis=0)
+
+    params = dku_timeseries.ResamplerParams(extrapolation_method='interpolation')
+    resampler = dku_timeseries.Resampler(params)
+    output_df = resampler.transform(df, TIME_COL, groupby_columns=GROUP_COL)
+
+    assert np.array_equal(output_df.groupby(GROUP_COL).size().values, [199, 199])
+
+    ref_data_0 = np.linspace(0, 99, num=199)
+    resample_data_0 = output_df.groupby(GROUP_COL).get_group('group_0').data_col.values
+    assert np.array_equal(resample_data_0, ref_data_0)
+
+    start_value = -(start_time_2 - start_time_1).seconds
+    ref_data_1 = np.linspace(start_value, start_value + 198, num=199)
+    resample_data_1 = output_df.groupby(GROUP_COL).get_group('group_1').data_col.values
+    assert np.array_equal(resample_data_1, ref_data_1)
