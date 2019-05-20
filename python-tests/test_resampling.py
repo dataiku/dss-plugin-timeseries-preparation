@@ -88,6 +88,18 @@ def test_identity_resampling():
         assert output_df[DATA_COL][x] == df[DATA_COL][x]
 
 
+def test_identity_resampling_month():
+
+    length = 100
+    print("test_identity_resampling with " + str(length) + " records")
+    data = [random.random() for _ in range(length)]
+    df = _make_df_with_one_col(data, period=pd.DateOffset(months=1))
+    params = dku_timeseries.ResamplerParams(time_unit='months')
+    resampler = dku_timeseries.Resampler(params)
+    output_df = resampler.transform(df, TIME_COL)
+    assert output_df.shape == (length, 2)
+
+
 def test_half_freq_resampling():
     length = 100000
     half_length = length / 2
