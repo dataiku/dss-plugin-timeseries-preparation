@@ -38,6 +38,16 @@ class ExtremaExtractor:
         From the input dataset, keep only the extrema and theirs surrounding, then compute
         aggregated statistics on what's going on around the extrema.
         """
+        if not isinstance(extrema_column, basestring):
+            raise ValueError('extrema_column param must be string. Got: ' + str(extrema_column))
+        if not isinstance(datetime_column, basestring):
+            raise ValueError('datetime_column param must be string. Got: ' + str(datetime_column))
+        if groupby_columns:
+            if not isinstance(groupby_columns, list):
+                raise ValueError('groupby_columns param must be an array of strings. Got: '+ str(groupby_columns))
+            for col in groupby_columns:
+                if not isinstance(col, basestring):
+                    raise ValueError('groupby_columns param must be an array of strings. Got: ' + str(col))
 
         if self._nothing_to_do(raw_df):
             return raw_df

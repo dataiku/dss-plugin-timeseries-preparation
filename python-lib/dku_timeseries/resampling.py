@@ -78,6 +78,15 @@ class Resampler:
 
     def transform(self, raw_df, datetime_column, groupby_columns=None):
 
+        if not isinstance(datetime_column, basestring):
+            raise ValueError('datetime_column param must be string. Got: ' + str(datetime_column))
+        if groupby_columns:
+            if not isinstance(groupby_columns, list):
+                raise ValueError('groupby_columns param must be an array of strings. Got: '+ str(groupby_columns))
+            for col in groupby_columns:
+                if not isinstance(col, basestring):
+                    raise ValueError('groupby_columns param must be an array of strings. Got: ' + str(col))
+
         if self._nothing_to_do(raw_df):
             return raw_df
 
@@ -87,7 +96,9 @@ class Resampler:
         columns_to_resample = [col for col in df.select_dtypes([int, float]).columns.tolist() if col != 'time_col']
         full_time_index = self._compute_full_time_index(df, datetime_column)
 
-        if groupby_columns:
+        if groupby_columns :
+            print('*********')
+            print(groupby_columns)
             grouped = df.groupby(groupby_columns)
             resampled_groups = []
 
@@ -151,9 +162,9 @@ class Resampler:
             reference_index = df_resample.loc[full_time_index, 'reference_index']
         except Exception as e:
             if e.message == 'cannot reindex from a duplicate axis':
-                raise ValueError('{}: Your timeseries contain duplicate timestamps.'.format(str(e)))
+                raise ValueError('{}: The timeseries contain duplicate timestamps.'.format(str(e)))
             else:
-                raise ValueError(str(e))
+                raise e
 
         df_resample = df_resample.rename_axis(datetime_column).reset_index()
         # if we pass an empty column through `interp1d`, it will return an error, so we need to filter these out first

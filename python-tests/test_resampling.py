@@ -24,16 +24,16 @@ GROUP_COL = 'group_col'
 
 ### Helpers to create test data, should be fixtures at some point I guess
 def _make_df_with_one_col(column_data, period=pd.DateOffset(seconds=1), start_time=JUST_BEFORE_SPRING_DST):
-    from datetime import datetime
-    top = datetime.now()
     time = pd.date_range(start_time, None, len(column_data), period)
-    top = datetime.now()
-    df = pd.DataFrame({TIME_COL: time, DATA_COL: column_data})
-    return df
+    return pd.DataFrame({TIME_COL: time, DATA_COL: column_data})
 
 
-def _make_df_with_one_col_group(column_data, num_group, period=pd.DateOffset(seconds=1),
-                                start_time=JUST_BEFORE_SPRING_DST):
+def _make_df_with_one_col_one_group_per_col(column_data, period=pd.DateOffset(seconds=1), start_time=JUST_BEFORE_SPRING_DST):
+    time = pd.date_range(start_time, None, len(column_data), period)
+    return pd.DataFrame({TIME_COL: time, DATA_COL: column_data, GROUP_COL: range(len(column_data))})
+
+
+def _make_df_with_one_col_group(column_data, num_group, period=pd.DateOffset(seconds=1), start_time=JUST_BEFORE_SPRING_DST):
     df_list = []
     for x in xrange(num_group):
         group_name = 'group_{}'.format(x)
@@ -77,8 +77,7 @@ def test_identity_resampling():
     Default sampling rate is 1Hz
     Since we create test data at 1Hz, default resampling should be identity
     """
-    length = 100000
-    print("test_identity_resampling with " + str(length) + " records")
+    length = 1000
     data = [random.random() for _ in range(length)]
     df = _make_df_with_one_col(data)
     resampler = _make_resampler()
@@ -89,8 +88,7 @@ def test_identity_resampling():
 
 def test_identity_resampling_nan_data():
 
-    length = 100000
-    print("test_identity_resampling with " + str(length) + " records")
+    length = 1000
     data = [np.nan for _ in range(length)]
     df = _make_df_with_one_col(data)
     resampler = _make_resampler()
@@ -102,7 +100,6 @@ def test_identity_resampling_nan_data():
 def test_identity_resampling_month():
 
     length = 100
-    print("test_identity_resampling with " + str(length) + " records")
     data = [random.random() for _ in range(length)]
     df = _make_df_with_one_col(data, period=pd.DateOffset(months=1))
     params = dku_timeseries.ResamplerParams(time_unit='months')
@@ -112,34 +109,37 @@ def test_identity_resampling_month():
 
 
 def test_half_freq_resampling():
-    length = 100000
+    length = 1000
     half_length = length / 2
-    print("test_double_freq_resampling with " + str(length) + " records")
     data = [x for x in range(length)]
     df = _make_df_with_one_col(data, pd.DateOffset(seconds=0.5))
     resampler = _make_resampler()
     output_df = resampler.transform(df, TIME_COL)
-    print("input length:" + str(length) + " / output length: " + str(output_df.shape[0]))
     assert output_df.shape[0] - 1 == half_length
     for x in range(100):
         assert output_df[DATA_COL][x] == 2 * x
 
+def test_one_group_per_line():
+    length = 100
+    data = [random.random() for _ in range(length)]
+    df = _make_df_with_one_col_one_group_per_col(data)
+    resampler = _make_resampler()
+    output_df = resampler.transform(df, TIME_COL, groupby_columns=[GROUP_COL])
+    assert output_df.shape == (length, 3)
 
 def test_identity_resampling_group():
     """
     2 groups, same frequency (1Hz), same date range
     """
-    length = 100000
+    length = 1000
     num_group = 3
-    print("test_identity_resampling with " + str(length) + " records")
     data = [random.random() for _ in range(length)]
     df = _make_df_with_one_col_group(data, num_group=num_group)
     resampler = _make_resampler()
-    df2 = resampler.transform(df, TIME_COL, groupby_columns=GROUP_COL)
+    df2 = resampler.transform(df, TIME_COL, groupby_columns=[GROUP_COL])
     assert len(df2) == length * num_group
 
     for x in xrange(num_group):
-        print(x)
         df_ref = df.loc[df[GROUP_COL] == 'group_{}'.format(x), [TIME_COL, DATA_COL]].reset_index()
         df_ref = df_ref.sort_values(TIME_COL)
 
@@ -154,16 +154,14 @@ def test_half_freq_resampling_group():
     """
     2 groups, same frequency (0.5Hz), same date range
     """
-    length = 100000
+    length = 1000
     num_group = 3
-    print("test_identity_resampling_group with " + str(2 * length) + " records")
     data = [x for x in np.arange(0, length, 0.5)]
     df = _make_df_with_one_col_group(data, num_group=num_group, period=pd.DateOffset(seconds=0.5))
     resampler = _make_resampler()
-    df2 = resampler.transform(df, TIME_COL, groupby_columns=GROUP_COL)
+    df2 = resampler.transform(df, TIME_COL, groupby_columns=[GROUP_COL])
 
     for x in xrange(num_group):
-        print(x)
         df_ref = df.loc[df[GROUP_COL] == 'group_{}'.format(x), [TIME_COL, DATA_COL]].reset_index()
         df_ref = df_ref.sort_values(TIME_COL)
 
@@ -204,7 +202,7 @@ def test_group_inclusion_same_freq():
 
     params = dku_timeseries.ResamplerParams(extrapolation_method='interpolation')
     resampler = dku_timeseries.Resampler(params)
-    output_df = resampler.transform(df, TIME_COL, groupby_columns=GROUP_COL)
+    output_df = resampler.transform(df, TIME_COL, groupby_columns=[GROUP_COL])
 
     assert np.array_equal(output_df.groupby(GROUP_COL).size().values, [100, 100])
 
@@ -247,7 +245,7 @@ def test_group_inclusion_different_freq():
 
     params = dku_timeseries.ResamplerParams(extrapolation_method='interpolation')
     resampler = dku_timeseries.Resampler(params)
-    output_df = resampler.transform(df, TIME_COL, groupby_columns=GROUP_COL)
+    output_df = resampler.transform(df, TIME_COL, groupby_columns=[GROUP_COL])
 
     assert np.array_equal(output_df.groupby(GROUP_COL).size().values, [199, 199])
 

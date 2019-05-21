@@ -83,7 +83,16 @@ class WindowRoller:
             raise ValueError('WindowRollerParams instance is not specified.')
         self.params.check()
 
-    def compute(self, raw_df, datetime_column=None, groupby_columns=None):
+    def compute(self, raw_df, datetime_column, groupby_columns=None):
+
+        if not isinstance(datetime_column, basestring):
+            raise ValueError('datetime_column param must be string. Got: ' + str(datetime_column))
+        if groupby_columns:
+            if not isinstance(groupby_columns, list):
+                raise ValueError('groupby_columns param must be an array of strings. Got: '+ str(groupby_columns))
+            for col in groupby_columns:
+                if not isinstance(col, basestring):
+                    raise ValueError('groupby_columns param must be an array of strings. Got: ' + str(col))
 
         df = raw_df.copy()
         df[datetime_column] = pd.to_datetime(df[datetime_column])
