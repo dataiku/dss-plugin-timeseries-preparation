@@ -78,6 +78,15 @@ class Resampler:
 
     def transform(self, raw_df, datetime_column, groupby_columns=None):
 
+        if not isinstance(datetime_column, basestring):
+            raise ValueError('datetime_column param must be string. Got: ' + str(datetime_column))
+        if groupby_columns:
+            if not isinstance(groupby_columns, list):
+                raise ValueError('groupby_columns param must be an array of strings. Got: '+ str(groupby_columns))
+            for col in groupby_columns:
+                if not isinstance(col, basestring):
+                    raise ValueError('groupby_columns param must be an array of strings. Got: ' + str(col))
+
         if self._nothing_to_do(raw_df):
             return raw_df
 

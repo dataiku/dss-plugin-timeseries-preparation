@@ -6,8 +6,7 @@ from dku_timeseries import WindowRoller
 from dku_tools import get_windowing_params
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO,
-                    format='timeseries-preparation plugin %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
 
 # --- Get IOs
 try:
@@ -22,16 +21,16 @@ output_dataset = dataiku.Dataset(output_dataset_name)
 # --- Get configuration
 recipe_config = get_recipe_config()
 datetime_column = recipe_config.get('datetime_column')
-if recipe_config.get('advanced_activated'):
-    groupby_column = [recipe_config.get('groupby_column')]
+if recipe_config.get('advanced_activated') and recipe_config.get('groupby_column'):
+    groupby_columns = [recipe_config.get('groupby_column')]
 else:
-    groupby_column = None
+    groupby_columns = None
 params = get_windowing_params(recipe_config)
 
 # --- Run
 df = input_dataset.get_dataframe()
 window_roller = WindowRoller(params)
-output_df = window_roller.compute(df, datetime_column, groupby_columns=groupby_column)
+output_df = window_roller.compute(df, datetime_column, groupby_columns=groupby_columns)
 
 # --- Write output
 output_dataset.write_with_schema(output_df)
