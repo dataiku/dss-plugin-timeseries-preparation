@@ -130,7 +130,7 @@ def test_group_incremental_time_unit_no_noise():
 
     params = dku_timeseries.SegmentExtractorParams(time_unit='seconds', max_noise_duration_value=1)
     segment_extractor = dku_timeseries.SegmentExtractor(params)
-    output_df = segment_extractor.compute(df, TIME_COL, THRESHOLD_DICT, groupby_columns=GROUP_COL)
+    output_df = segment_extractor.compute(df, TIME_COL, THRESHOLD_DICT, groupby_columns=[GROUP_COL])
 
     assert np.array_equal(output_df.groupby(GROUP_COL).get_group('group_0')[DATA_COL].values, range(11))
     assert np.array_equal(output_df.groupby(GROUP_COL).get_group('group_1')[DATA_COL].values, range(10))
