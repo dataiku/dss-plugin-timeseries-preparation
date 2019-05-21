@@ -56,6 +56,7 @@ class ExtremaExtractor:
 
                 computed_groups.append(extrema_df)
             final_df = pd.concat(computed_groups)
+            final_df = final_df.reset_index()
         else:
             extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(df, extrema_column)
             extrema_neighbor_df = extrema_neighbor_df.rename_axis(datetime_column).reset_index()
