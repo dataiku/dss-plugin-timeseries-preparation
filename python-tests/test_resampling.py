@@ -87,6 +87,17 @@ def test_identity_resampling():
     for x in range(1000):
         assert output_df[DATA_COL][x] == df[DATA_COL][x]
 
+def test_identity_resampling_nan_data():
+
+    length = 100000
+    print("test_identity_resampling with " + str(length) + " records")
+    data = [np.nan for _ in range(length)]
+    df = _make_df_with_one_col(data)
+    resampler = _make_resampler()
+    output_df = resampler.transform(df, TIME_COL)
+    assert output_df.shape == (length, 2)
+    assert np.sum(np.isnan((output_df['data_col']))) == length
+
 
 def test_identity_resampling_month():
 
