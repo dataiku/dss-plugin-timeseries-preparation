@@ -77,7 +77,7 @@ def test_identity_resampling():
     Default sampling rate is 1Hz
     Since we create test data at 1Hz, default resampling should be identity
     """
-    length = 100000
+    length = 1000
     print("test_identity_resampling with " + str(length) + " records")
     data = [random.random() for _ in range(length)]
     df = _make_df_with_one_col(data)
@@ -89,7 +89,7 @@ def test_identity_resampling():
 
 def test_identity_resampling_nan_data():
 
-    length = 100000
+    length = 1000
     print("test_identity_resampling with " + str(length) + " records")
     data = [np.nan for _ in range(length)]
     df = _make_df_with_one_col(data)
@@ -112,7 +112,7 @@ def test_identity_resampling_month():
 
 
 def test_half_freq_resampling():
-    length = 100000
+    length = 1000
     half_length = length / 2
     print("test_double_freq_resampling with " + str(length) + " records")
     data = [x for x in range(length)]
@@ -129,7 +129,7 @@ def test_identity_resampling_group():
     """
     2 groups, same frequency (1Hz), same date range
     """
-    length = 100000
+    length = 1000
     num_group = 3
     print("test_identity_resampling with " + str(length) + " records")
     data = [random.random() for _ in range(length)]
@@ -154,7 +154,7 @@ def test_half_freq_resampling_group():
     """
     2 groups, same frequency (0.5Hz), same date range
     """
-    length = 100000
+    length = 1000
     num_group = 3
     print("test_identity_resampling_group with " + str(2 * length) + " records")
     data = [x for x in np.arange(0, length, 0.5)]
