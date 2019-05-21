@@ -24,16 +24,11 @@ GROUP_COL = 'group_col'
 
 ### Helpers to create test data, should be fixtures at some point I guess
 def _make_df_with_one_col(column_data, period=pd.DateOffset(seconds=1), start_time=JUST_BEFORE_SPRING_DST):
-    from datetime import datetime
-    top = datetime.now()
     time = pd.date_range(start_time, None, len(column_data), period)
-    top = datetime.now()
-    df = pd.DataFrame({TIME_COL: time, DATA_COL: column_data})
-    return df
+    return pd.DataFrame({TIME_COL: time, DATA_COL: column_data})
 
 
-def _make_df_with_one_col_group(column_data, num_group, period=pd.DateOffset(seconds=1),
-                                start_time=JUST_BEFORE_SPRING_DST):
+def _make_df_with_one_col_group(column_data, num_group, period=pd.DateOffset(seconds=1), start_time=JUST_BEFORE_SPRING_DST):
     df_list = []
     for x in xrange(num_group):
         group_name = 'group_{}'.format(x)
@@ -135,7 +130,7 @@ def test_identity_resampling_group():
     data = [random.random() for _ in range(length)]
     df = _make_df_with_one_col_group(data, num_group=num_group)
     resampler = _make_resampler()
-    df2 = resampler.transform(df, TIME_COL, groupby_columns=GROUP_COL)
+    df2 = resampler.transform(df, TIME_COL, groupby_columns=[GROUP_COL])
     assert len(df2) == length * num_group
 
     for x in xrange(num_group):
@@ -160,7 +155,7 @@ def test_half_freq_resampling_group():
     data = [x for x in np.arange(0, length, 0.5)]
     df = _make_df_with_one_col_group(data, num_group=num_group, period=pd.DateOffset(seconds=0.5))
     resampler = _make_resampler()
-    df2 = resampler.transform(df, TIME_COL, groupby_columns=GROUP_COL)
+    df2 = resampler.transform(df, TIME_COL, groupby_columns=[GROUP_COL])
 
     for x in xrange(num_group):
         print(x)
@@ -204,7 +199,7 @@ def test_group_inclusion_same_freq():
 
     params = dku_timeseries.ResamplerParams(extrapolation_method='interpolation')
     resampler = dku_timeseries.Resampler(params)
-    output_df = resampler.transform(df, TIME_COL, groupby_columns=GROUP_COL)
+    output_df = resampler.transform(df, TIME_COL, groupby_columns=[GROUP_COL])
 
     assert np.array_equal(output_df.groupby(GROUP_COL).size().values, [100, 100])
 
@@ -247,7 +242,7 @@ def test_group_inclusion_different_freq():
 
     params = dku_timeseries.ResamplerParams(extrapolation_method='interpolation')
     resampler = dku_timeseries.Resampler(params)
-    output_df = resampler.transform(df, TIME_COL, groupby_columns=GROUP_COL)
+    output_df = resampler.transform(df, TIME_COL, groupby_columns=[GROUP_COL])
 
     assert np.array_equal(output_df.groupby(GROUP_COL).size().values, [199, 199])
 
