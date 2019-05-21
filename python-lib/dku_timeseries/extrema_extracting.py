@@ -38,8 +38,11 @@ class ExtremaExtractor:
         From the input dataset, keep only the extrema and theirs surrounding, then compute
         aggregated statistics on what's going on around the extrema.
         """
+
+        if self._nothing_to_do(raw_df):
+            return raw_df
+
         df = raw_df.set_index(datetime_column).sort_index()
-        # df = df.fillna(0)
         if groupby_columns:
             grouped = df.groupby(groupby_columns)
             computed_groups = []
@@ -55,14 +58,18 @@ class ExtremaExtractor:
                     extrema_df[groupby_columns[0]] = group_id
 
                 computed_groups.append(extrema_df)
+
             final_df = pd.concat(computed_groups)
-            final_df = final_df.reset_index()
+            final_df = final_df.reset_index(drop=True)
         else:
             extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(df, extrema_column)
             extrema_neighbor_df = extrema_neighbor_df.rename_axis(datetime_column).reset_index()
             rolling_df = self.params.window_roller.compute(extrema_neighbor_df, datetime_column)
-            final_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value].reset_index()
+            final_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value].reset_index(drop=True)
         return final_df
+
+    def _nothing_to_do(self, df):
+        return len(df) < 2
 
     def _find_extrema_neighbor_zone(self, df, extrema_column):
 
