@@ -22,8 +22,8 @@ FREQUENCY_STRINGS = {
 class SegmentExtractorParams:
 
     def __init__(self,
-                 min_segment_duration_value=0,
-                 max_noise_duration_value=0,
+                 min_segment_duration_value=1,
+                 max_noise_duration_value=1,
                  time_unit='seconds'):
 
         self.min_segment_duration_value = min_segment_duration_value
@@ -34,8 +34,10 @@ class SegmentExtractorParams:
             self.min_segment_duration = self.min_segment_duration_value
             self.max_noise_duration = self.max_noise_duration_value
         else:
-            self.min_segment_duration = pd.Timedelta(str(self.min_segment_duration_value) + FREQUENCY_STRINGS.get(self.time_unit, ''))
-            self.max_noise_duration = pd.Timedelta(str(self.max_noise_duration_value) + FREQUENCY_STRINGS.get(self.time_unit, ''))
+            self.min_segment_duration = pd.Timedelta(
+                str(self.min_segment_duration_value) + FREQUENCY_STRINGS.get(self.time_unit, ''))
+            self.max_noise_duration = pd.Timedelta(
+                str(self.max_noise_duration_value) + FREQUENCY_STRINGS.get(self.time_unit, ''))
 
     def check(self):
 
@@ -44,7 +46,8 @@ class SegmentExtractorParams:
         if self.max_noise_duration_value < 0:
             raise ValueError('Max noisy duration can not be negative.')
         if self.time_unit not in FREQUENCY_STRINGS:
-            raise ValueError('{0} is not a valid time unit. Possible options are: {1}'.format(self.time_unit, FREQUENCY_STRINGS.keys()))
+            raise ValueError('{0} is not a valid time unit. Possible options are: {1}'.format(self.time_unit,
+                                                                                              FREQUENCY_STRINGS.keys()))
 
 
 class SegmentExtractor:
@@ -63,7 +66,7 @@ class SegmentExtractor:
             for _, group in grouped:
                 segment_df = self._detect_segment(group, datetime_column, threshold_dict)
                 segmented_groups.append(segment_df)
-            return pd.concat(segmented_groups)
+            return pd.concat(segmented_groups).reset_index(drop=True)
         else:
             return self._detect_segment(raw_df, datetime_column, threshold_dict)
 
@@ -75,31 +78,32 @@ class SegmentExtractor:
             return []
         filtered_serie = filtered_index.to_series()
 
+        one_unit = pd.Timedelta(str(1) + FREQUENCY_STRINGS.get(self.params.time_unit, ''))
         d1 = filtered_serie.diff(1)
-        d1 = d1.fillna(self.params.max_noise_duration)
+        d1 = d1.fillna(
+            self.params.max_noise_duration + one_unit)
 
         d2 = d1.shift(-1)
-        d2 = d2.fillna(self.params.max_noise_duration)
+        d2 = d2.fillna(self.params.max_noise_duration + one_unit)
 
-        filtered = filtered_serie[d1 >= self.params.max_noise_duration].index.tolist()
-        filtered2 = filtered_serie[d2 >= self.params.max_noise_duration].index.tolist()
+        filtered = filtered_serie[d1 > self.params.max_noise_duration].index.tolist()
+        filtered2 = filtered_serie[d2 > self.params.max_noise_duration].index.tolist()
 
         inds2 = np.vstack((filtered, filtered2)).T
-
         check_segment_duration = lambda x: pd.Timedelta(x[1] - x[0]) >= self.params.min_segment_duration
         return filter(check_segment_duration, inds2)
 
     def _detect_row_segment(self, df, chosen_col, lower_threshold, upper_threshold):
 
-        x = df[chosen_col].values
+        x = df[chosen_col].values.astype('float')  # int array gives error in the next line
         # deal with NaN's (by definition, NaN's are not greater than threshold)
         x[np.isnan(x)] = np.inf
         # indices of data greater than or equal to threshold
         inds = np.nonzero((x >= lower_threshold) & (x <= upper_threshold))[0]
         if inds.size:
             # initial and final indexes of almost continuous data
-            inds = np.vstack((inds[np.diff(np.hstack((-np.inf, inds))) >= self.params.max_noise_duration], \
-                              inds[np.diff(np.hstack((inds, np.inf))) >= self.params.max_noise_duration])).T
+            inds = np.vstack((inds[np.diff(np.hstack((-np.inf, inds))) > self.params.max_noise_duration], \
+                              inds[np.diff(np.hstack((inds, np.inf))) > self.params.max_noise_duration])).T
             # indexes of almost continuous data longer than or equal to n_above
             return inds[inds[:, 1] - inds[:, 0] >= self.params.min_segment_duration, :]
         else:
@@ -110,7 +114,7 @@ class SegmentExtractor:
         # TODO add support for multiple threshold column
         if self.params.time_unit == 'rows':
             df = raw_df.sort_values(datetime_column)
-            df = df.reset_index()
+            df = df.reset_index(drop=True)
         else:
             df = raw_df.set_index(datetime_column).sort_index()
 
