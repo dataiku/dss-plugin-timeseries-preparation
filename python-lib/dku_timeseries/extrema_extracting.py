@@ -64,8 +64,8 @@ class ExtremaExtractor:
                 else:
                     extrema_neighbor_df = extrema_neighbor_df.rename_axis(datetime_column).reset_index()
                     rolling_df = self.params.window_roller.compute(extrema_neighbor_df, datetime_column)
-                    extrema_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value]
-                    extrema_df[groupby_columns[0]] = group_id
+                    extrema_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value].copy() # avoid .loc warning
+                    extrema_df.loc[:, groupby_columns[0]] = group_id
 
                 computed_groups.append(extrema_df)
 

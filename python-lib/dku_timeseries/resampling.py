@@ -163,6 +163,7 @@ class Resampler:
             logger.warning('The partition/dataset has less than 2 rows, can not resample.')
             return df
 
+        df[datetime_column] = pd.to_datetime(df[datetime_column])
         df_resample = df.set_index(datetime_column).sort_index()
         try:
             df_resample = df_resample.reindex(df_resample.index | full_time_index)

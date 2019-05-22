@@ -49,7 +49,7 @@ class WindowRollerParams:  # TODO better naming ?
             self.window_description = self.window_width
         else:
             self.window_description = str(self.window_width) + FREQUENCY_STRINGS.get(self.window_unit, '')
-
+        self.window_description_in_row = None
         self.min_period = min_period
         self.closed_option = closed_option
         self.center = center
@@ -151,26 +151,22 @@ class WindowRoller:
         if self._nothing_to_do(df):
             return df
 
-        df.loc[:, datetime_column] = pd.to_datetime(df[datetime_column])
+        #df.loc[:, datetime_column] = pd.to_datetime(df[datetime_column])
+        df = df.set_index(datetime_column).sort_index()
 
+        frequency = None
         if len(df) > 2:
-            frequency = pd.infer_freq(df[~df[datetime_column].duplicated()].loc[:1000, datetime_column].values)
+            frequency = pd.infer_freq(df[~df.index.duplicated()][:1000].index)
             logger.info('Timeseries frequency: ', frequency)
         elif len(df) == 2:
-            datetime_values = df[datetime_column].sort_values()
-            frequency = datetime_values[1] - datetime_values[0]
+            frequency = df.index[1] - df.index[0]
 
         self._check_valid_data(df, frequency)
 
-        if self.params.window_unit != 'rows':
-            window_width_in_row = self._convert_time_freq_to_row_freq(frequency)
-
         if frequency and self.params.window_unit != 'rows' and self.params.window_type is not None:
-            self.params.window_description_in_row = window_width_in_row
-        else:
-            self.params.window_description_in_row = None
+            self.params.window_description_in_row = self._convert_time_freq_to_row_freq(frequency)
 
-        df = df.set_index(datetime_column).sort_index()
+        #df = df.set_index(datetime_column).sort_index()
         new_df = pd.DataFrame(index=df.index)
         # compute all stats except mean and sum, does not change whether or not we have a window type
         if self.params.window_unit == 'rows':  # for now `closed` is only implemented for time-based window
