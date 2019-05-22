@@ -69,6 +69,7 @@ def test_two_rows_df():
     output_df = window_roller.compute(df, TIME_COL)
     assert output_df[DATA_COL+'_min'][1] == 0
 
+
 def test_incremental_df_left_closed():
     length = 100
     data = [x for x in range(length)]

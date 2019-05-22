@@ -57,6 +57,14 @@ def test_empty():
     output_df = segment_extractor.compute(df, TIME_COL, THRESHOLD_DICT)
     assert output_df.shape == (0, 2)
 
+def test_nan_data():
+
+    length = 1000
+    data = [np.nan for _ in range(length)]
+    df = _make_df_with_one_col(data)
+    segment_extractor = _make_segment_extractor()
+    output_df = segment_extractor.compute(df, TIME_COL, THRESHOLD_DICT)
+    assert output_df.shape == (0, 2)
 
 def test_single_row_out_range():
     df = _make_df_with_one_col([50])

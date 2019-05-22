@@ -86,7 +86,7 @@ def test_identity_resampling():
     for x in range(1000):
         assert output_df[DATA_COL][x] == df[DATA_COL][x]
 
-def test_identity_resampling_nan_data():
+def test_nan_data():
 
     length = 1000
     data = [np.nan for _ in range(length)]
