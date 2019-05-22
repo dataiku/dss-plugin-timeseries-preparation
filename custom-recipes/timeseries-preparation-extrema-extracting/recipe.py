@@ -23,8 +23,8 @@ output_dataset = dataiku.Dataset(output_dataset_name)
 recipe_config = get_recipe_config()
 datetime_column = recipe_config.get('datetime_column')
 extrema_column = recipe_config.get('extrema_column')
-if recipe_config.get('advanced_activated') and recipe_config.get('groupby_cols'):
-	groupby_columns = recipe_config.get('groupby_cols')
+if recipe_config.get('advanced_activated') and recipe_config.get('groupby_column'):
+	groupby_columns = [recipe_config.get('groupby_column')]
 else:
 	groupby_columns = None
 params = get_extrema_extracting_params(recipe_config)

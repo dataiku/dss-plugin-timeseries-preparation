@@ -131,7 +131,7 @@
             "type": "BOOLEAN"
         },
         {
-            "name": "groupby_col",
+            "name": "groupby_column",
             "label": "Partitioning column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
