@@ -89,28 +89,26 @@ class WindowRoller:
             raise ValueError('datetime_column param must be string. Got: ' + str(datetime_column))
         if groupby_columns:
             if not isinstance(groupby_columns, list):
-                raise ValueError('groupby_columns param must be an array of strings. Got: '+ str(groupby_columns))
+                raise ValueError('groupby_columns param must be an array of strings. Got: ' + str(groupby_columns))
             for col in groupby_columns:
                 if not isinstance(col, basestring):
                     raise ValueError('groupby_columns param must be an array of strings. Got: ' + str(col))
 
         df = raw_df.copy()
-        df[datetime_column] = pd.to_datetime(df[datetime_column])
-        # df = raw_df.set_index(datetime_column).sort_index()
+        raw_columns = df.select_dtypes(include=['float', 'int']).columns.tolist()
+        """ 
         frequency = pd.infer_freq(df[~df[datetime_column].duplicated()].loc[:1000, datetime_column].values)
         logger.info('Timeseries frequency: ', frequency)
+        self._check_valid_data(df, frequency)
 
         if self.params.window_unit != 'rows':
             window_width_in_row = self._convert_time_freq_to_row_freq(frequency)
-
-        raw_columns = df.select_dtypes(include=['float', 'int']).columns.tolist()
-        self._check_valid_data(df, frequency)
 
         if frequency and self.params.window_unit != 'rows' and self.params.window_type is not None:
             self.params.window_description_in_row = window_width_in_row
         else:
             self.params.window_description_in_row = None
-
+        """
         if groupby_columns:
             grouped = df.groupby(groupby_columns)
             computed_groups = []
@@ -122,15 +120,17 @@ class WindowRoller:
         else:
             final_df = self._compute_rolling_stats(df, datetime_column, raw_columns)
 
-        final_df = final_df.rename_axis(datetime_column).reset_index()
+        final_df = final_df.reset_index(drop=True)
 
         return final_df
+
+    def _nothing_to_do(self, df):
+        return len(df) < 2
 
     def get_window_date_offset(self):
         return pd.DateOffset(**{self.params.window_unit: self.params.window_width})
 
     def _check_valid_data(self, df, frequency):
-
         # if non-equispaced + time-based window + using window, it is not possible (scipy limitation)
         if not frequency and self.params.window_unit != 'rows' and self.params.window_type is not None:
             raise ValueError('The input dataset is not equispaced thus we can not apply window fucntions on it.')
@@ -148,6 +148,28 @@ class WindowRoller:
 
     def _compute_rolling_stats(self, df, datetime_column, raw_columns):
 
+        if self._nothing_to_do(df):
+            return df
+
+        df.loc[:, datetime_column] = pd.to_datetime(df[datetime_column])
+
+        if len(df) > 2:
+            frequency = pd.infer_freq(df[~df[datetime_column].duplicated()].loc[:1000, datetime_column].values)
+            logger.info('Timeseries frequency: ', frequency)
+        elif len(df) == 2:
+            datetime_values = df[datetime_column].sort_values()
+            frequency = datetime_values[1] - datetime_values[0]
+
+        self._check_valid_data(df, frequency)
+
+        if self.params.window_unit != 'rows':
+            window_width_in_row = self._convert_time_freq_to_row_freq(frequency)
+
+        if frequency and self.params.window_unit != 'rows' and self.params.window_type is not None:
+            self.params.window_description_in_row = window_width_in_row
+        else:
+            self.params.window_description_in_row = None
+
         df = df.set_index(datetime_column).sort_index()
         new_df = pd.DataFrame(index=df.index)
         # compute all stats except mean and sum, does not change whether or not we have a window type
@@ -161,19 +183,19 @@ class WindowRoller:
             new_df[raw_columns] = df[raw_columns]
         if 'min' in self.params.aggregation_types:
             col_names = ['{}_min'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window[raw_columns].apply(min)  # raw=True
+            new_df[col_names] = rolling_without_window[raw_columns].apply(min, raw=True)  # raw=True
         if 'max' in self.params.aggregation_types:
             col_names = ['{}_max'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window[raw_columns].apply(max)
+            new_df[col_names] = rolling_without_window[raw_columns].apply(max, raw=True)
         if 'q25' in self.params.aggregation_types:
             col_names = ['{}_q25'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window[raw_columns].quantile(0.25)
+            new_df[col_names] = rolling_without_window[raw_columns].quantile(0.25, raw=True)
         if 'median' in self.params.aggregation_types:
             col_names = ['{}_median'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window[raw_columns].quantile(0.5)
+            new_df[col_names] = rolling_without_window[raw_columns].quantile(0.5, raw=True)
         if 'q75' in self.params.aggregation_types:
             col_names = ['{}_q75'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window[raw_columns].quantile(0.75)
+            new_df[col_names] = rolling_without_window[raw_columns].quantile(0.75, raw=True)
         if 'first_order_derivative' in self.params.aggregation_types:
             col_names = ['{}_1st_derivative'.format(col) for col in raw_columns]
             new_df[col_names] = df[raw_columns].diff()
@@ -219,4 +241,5 @@ class WindowRoller:
                 col_names = ['{}_sum'.format(col) for col in raw_columns]
                 new_df[col_names] = rolling_without_window[raw_columns].sum()
 
+        new_df = new_df.rename_axis(datetime_column).reset_index()
         return new_df

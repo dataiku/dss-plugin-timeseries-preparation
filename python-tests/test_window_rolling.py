@@ -25,8 +25,6 @@ JUST_BEFORE_FALL_DST = pd.Timestamp('20191027 02:59:00').tz_localize('CET',
 TIME_COL = 'time_col'
 DATA_COL = 'data_col'
 GROUP_COL = 'group_col'
-THRESHOLD_DICT = {DATA_COL: (0, 100)}
-
 
 ### Helpers to create test data, should be fixtures at some point I guess
 def _make_df_with_one_col(column_data, period=pd.DateOffset(seconds=1), start_time=JUST_BEFORE_SPRING_DST):
@@ -49,23 +47,27 @@ def _make_window_roller(window_width=1):
 
 
 ### Test cases
-"""
+
 def test_empty_df():
     df = _make_df_with_one_col([])
-    segment_extractor = _make_window_roller()
-    output_df = segment_extractor.compute(df, TIME_COL)
+    window_roller = _make_window_roller()
+    output_df = window_roller.compute(df, TIME_COL)
     assert output_df.shape == (0, 2)
-"""
 
-"""
 def test_single_row_df():
     df = _make_df_with_one_col([33])
-    segment_extractor = _make_window_roller()
-    output_df = segment_extractor.compute(df, TIME_COL)
+    window_roller = _make_window_roller()
+    output_df = window_roller.compute(df, TIME_COL)
     assert output_df.shape == (1, 2)
     assert output_df[DATA_COL][0] == df[DATA_COL][0]
-"""
 
+def test_two_rows_df():
+    length = 2
+    data = [x for x in range(length)]
+    df = _make_df_with_one_col(data)
+    window_roller = _make_window_roller()
+    output_df = window_roller.compute(df, TIME_COL)
+    assert output_df[DATA_COL+'_min'][1] == 0
 
 def test_incremental_df_left_closed():
     length = 100
@@ -115,7 +117,7 @@ def test_group_window_time_unit():
     for group_id, data, period, start_time in zip(range(len(data_list)), data_list, period_list, start_time_list):
         group_name = 'group_{}'.format(group_id)
         temp_df = _make_df_with_one_col(data, period=period, start_time=start_time)
-        temp_df[GROUP_COL] = group_name
+        temp_df.loc[:, GROUP_COL] = group_name
         df_list.append(temp_df)
 
     df = pd.concat(df_list, axis=0)
