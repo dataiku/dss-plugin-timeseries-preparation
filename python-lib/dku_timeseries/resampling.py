@@ -82,21 +82,21 @@ class Resampler:
             raise ValueError('datetime_column param must be string. Got: ' + str(datetime_column))
         if groupby_columns:
             if not isinstance(groupby_columns, list):
-                raise ValueError('groupby_columns param must be an array of strings. Got: '+ str(groupby_columns))
+                raise ValueError('groupby_columns param must be an array of strings. Got: ' + str(groupby_columns))
             for col in groupby_columns:
                 if not isinstance(col, basestring):
                     raise ValueError('groupby_columns param must be an array of strings. Got: ' + str(col))
 
-        if self._nothing_to_do(raw_df):
-            return raw_df
+        # if self._nothing_to_do(raw_df):
+        #    return raw_df
 
         df = raw_df.copy()
-        df[datetime_column] = pd.to_datetime(df[datetime_column])
+        # df[datetime_column] = pd.to_datetime(df[datetime_column])
 
         columns_to_resample = [col for col in df.select_dtypes([int, float]).columns.tolist() if col != 'time_col']
         full_time_index = self._compute_full_time_index(df, datetime_column)
 
-        if groupby_columns :
+        if groupby_columns:
             print('*********')
             print(groupby_columns)
             grouped = df.groupby(groupby_columns)
@@ -120,19 +120,23 @@ class Resampler:
         From the resampling config, create the full index of the output dataframe.
         """
         col = df[datetime_column]
-        rounding_freq_string = FREQUENCY_STRINGS.get(self.params.time_unit)
-        offset_value = self._get_date_offset(self.params.offset)
-        crop_value = self._get_date_offset(self.params.crop)
-        if self.params.time_unit in ROUND_COMPATIBLE_TIME_UNIT:
-            start_index = col.min().round(rounding_freq_string) + offset_value
-            end_index = col.max().round(rounding_freq_string) + crop_value
-            return pd.date_range(start=start_index, end=end_index, freq=self.params.resampling_step)
-        else:  # for week, month, year we round up to closest day
-            start_index = col.min().round('D') + offset_value
-            end_index = col.max().round('D') + crop_value
-            # for some reason date_range omit the last entry when dealing with months, years
-            return pd.date_range(start=start_index, end=end_index + self._get_date_offset(self.params.time_step),
-                                 freq=self.params.resampling_step)
+        print(col)
+        if len(col):
+            rounding_freq_string = FREQUENCY_STRINGS.get(self.params.time_unit)
+            offset_value = self._get_date_offset(self.params.offset)
+            crop_value = self._get_date_offset(self.params.crop)
+            if self.params.time_unit in ROUND_COMPATIBLE_TIME_UNIT:
+                start_index = col.min().round(rounding_freq_string) + offset_value
+                end_index = col.max().round(rounding_freq_string) + crop_value
+                return pd.date_range(start=start_index, end=end_index, freq=self.params.resampling_step)
+            else:  # for week, month, year we round up to closest day
+                start_index = col.min().round('D') + offset_value
+                end_index = col.max().round('D') + crop_value
+                # for some reason date_range omit the last entry when dealing with months, years
+                return pd.date_range(start=start_index, end=end_index + self._get_date_offset(self.params.time_step),
+                                     freq=self.params.resampling_step)
+        else:
+            return None
 
     def _nothing_to_do(self, df):
         return len(df) < 2
@@ -155,6 +159,10 @@ class Resampler:
         2. Merge the original datetime index with the full_time_index.
         3. Create a numerical index of the df and save the correspond index.
         """
+        if self._nothing_to_do(df):
+            logger.warning('The partition/dataset has less than 2 rows, can not resample.')
+            return df
+
         df_resample = df.set_index(datetime_column).sort_index()
         try:
             df_resample = df_resample.reindex(df_resample.index | full_time_index)
@@ -176,11 +184,11 @@ class Resampler:
             return df_final
 
         interpolation_index_mask = (df_resample[datetime_column] >= df[datetime_column].min()) & (
-                    df_resample[datetime_column] <= df[datetime_column].max())
+                df_resample[datetime_column] <= df[datetime_column].max())
         interpolation_index = df_resample.index[interpolation_index_mask]
 
         extrapolation_index_mask = (df_resample[datetime_column] < df[datetime_column].min()) | (
-                    df_resample[datetime_column] > df[datetime_column].max())
+                df_resample[datetime_column] > df[datetime_column].max())
         extrapolation_index = df_resample.index[extrapolation_index_mask]
 
         index_with_data = df_resample.loc[interpolation_index, filtered_columns_to_resample].dropna(how='all').index
