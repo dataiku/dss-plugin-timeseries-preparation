@@ -87,14 +87,10 @@ class Resampler:
                 if not isinstance(col, basestring):
                     raise ValueError('groupby_columns param must be an array of strings. Got: ' + str(col))
 
-        # if self._nothing_to_do(raw_df):
-        #    return raw_df
-
         df = raw_df.copy()
-        # df[datetime_column] = pd.to_datetime(df[datetime_column])
-
-        columns_to_resample = [col for col in df.select_dtypes([int, float]).columns.tolist() if col != 'time_col']
+        df.loc[:, datetime_column] = pd.to_datetime(df[datetime_column])
         full_time_index = self._compute_full_time_index(df, datetime_column)
+        columns_to_resample = [col for col in df.select_dtypes([int, float]).columns.tolist() if col != 'time_col']
 
         if groupby_columns:
             print('*********')
@@ -120,7 +116,6 @@ class Resampler:
         From the resampling config, create the full index of the output dataframe.
         """
         col = df[datetime_column]
-        print(col)
         if len(col):
             rounding_freq_string = FREQUENCY_STRINGS.get(self.params.time_unit)
             offset_value = self._get_date_offset(self.params.offset)
@@ -163,7 +158,6 @@ class Resampler:
             logger.warning('The partition/dataset has less than 2 rows, can not resample.')
             return df
 
-        df[datetime_column] = pd.to_datetime(df[datetime_column])
         df_resample = df.set_index(datetime_column).sort_index()
         try:
             df_resample = df_resample.reindex(df_resample.index | full_time_index)

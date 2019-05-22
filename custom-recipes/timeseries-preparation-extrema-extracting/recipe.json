@@ -117,7 +117,8 @@
                 { "value": "both", "label": "Yes, both"},
                 { "value": "neither", "label": "No"}
             ],
-            "defaultValue": "left"
+            "defaultValue": "left",
+            "visibilityCondition": "model.window_unit != 'rows'"
         },
         {
             "name": "sep3",

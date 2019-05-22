@@ -26,6 +26,7 @@ TIME_COL = 'time_col'
 DATA_COL = 'data_col'
 GROUP_COL = 'group_col'
 
+
 ### Helpers to create test data, should be fixtures at some point I guess
 def _make_df_with_one_col(column_data, period=pd.DateOffset(seconds=1), start_time=JUST_BEFORE_SPRING_DST):
     from datetime import datetime
@@ -54,6 +55,7 @@ def test_empty_df():
     output_df = window_roller.compute(df, TIME_COL)
     assert output_df.shape == (0, 2)
 
+
 def test_single_row_df():
     df = _make_df_with_one_col([33])
     window_roller = _make_window_roller()
@@ -61,13 +63,14 @@ def test_single_row_df():
     assert output_df.shape == (1, 2)
     assert output_df[DATA_COL][0] == df[DATA_COL][0]
 
+
 def test_two_rows_df():
     length = 2
     data = [x for x in range(length)]
     df = _make_df_with_one_col(data)
     window_roller = _make_window_roller()
     output_df = window_roller.compute(df, TIME_COL)
-    assert output_df[DATA_COL+'_min'][1] == 0
+    assert output_df[DATA_COL + '_min'][1] == 0
 
 
 def test_incremental_df_left_closed():
@@ -82,7 +85,6 @@ def test_incremental_df_left_closed():
     assert math.isnan(output_df[DATA_COL + '_min'][0])
     for x, y in zip(output_df[DATA_COL + '_min'][1:], ground_truth[1:]):
         assert output_df[DATA_COL][x] == y
-    return output_df
 
 
 def test_incremental_df_right_closed():
@@ -96,7 +98,6 @@ def test_incremental_df_right_closed():
     ground_truth = [0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8]
     for x, y in zip(output_df[DATA_COL + '_min'][1:], ground_truth[1:]):
         assert output_df[DATA_COL][x] == y
-    return output_df
 
 
 def test_group_window_time_unit():
@@ -134,6 +135,7 @@ def test_group_window_time_unit():
     output_1 = output_df.groupby(GROUP_COL).get_group('group_1').data_col_min.values[:10]
     assert math.isnan(output_1[0])
     assert np.array_equal(output_1[1:], ground_truth[1:])
+
 
 def test_group_window_row_unit():
     start_time_1 = pd.Timestamp('20190131 01:59:00').tz_localize('CET')

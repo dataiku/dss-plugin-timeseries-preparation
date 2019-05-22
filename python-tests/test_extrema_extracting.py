@@ -98,6 +98,7 @@ def test_extrema_without_neighbors():
     assert output_df.shape == (1, 2)
     assert output_df[DATA_COL][0] == 99
 
+
 def test_group_extrema_without_neighbors():
     start_time_1 = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
     start_time_2 = pd.Timestamp('20190131 02:00:00').tz_localize('CET')
@@ -127,7 +128,8 @@ def test_group_extrema_without_neighbors():
     extrema_extractor = dku_timeseries.ExtremaExtractor(params)
     output_df = extrema_extractor.compute(df, TIME_COL, DATA_COL, groupby_columns=[GROUP_COL])
     assert output_df.shape == (2, 3)
-    assert np.array_equal(output_df[DATA_COL], (99,9))
+    assert np.array_equal(output_df[DATA_COL], [99, 9])
+
 
 def test_incremental_group_df():
     start_time_1 = pd.Timestamp('20190131 01:59:00').tz_localize('CET')

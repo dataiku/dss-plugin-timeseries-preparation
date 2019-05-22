@@ -95,20 +95,9 @@ class WindowRoller:
                     raise ValueError('groupby_columns param must be an array of strings. Got: ' + str(col))
 
         df = raw_df.copy()
+        df.loc[:, datetime_column] = pd.to_datetime(df[datetime_column])
         raw_columns = df.select_dtypes(include=['float', 'int']).columns.tolist()
-        """ 
-        frequency = pd.infer_freq(df[~df[datetime_column].duplicated()].loc[:1000, datetime_column].values)
-        logger.info('Timeseries frequency: ', frequency)
-        self._check_valid_data(df, frequency)
 
-        if self.params.window_unit != 'rows':
-            window_width_in_row = self._convert_time_freq_to_row_freq(frequency)
-
-        if frequency and self.params.window_unit != 'rows' and self.params.window_type is not None:
-            self.params.window_description_in_row = window_width_in_row
-        else:
-            self.params.window_description_in_row = None
-        """
         if groupby_columns:
             grouped = df.groupby(groupby_columns)
             computed_groups = []
@@ -133,7 +122,9 @@ class WindowRoller:
     def _check_valid_data(self, df, frequency):
         # if non-equispaced + time-based window + using window, it is not possible (scipy limitation)
         if not frequency and self.params.window_unit != 'rows' and self.params.window_type is not None:
-            raise ValueError('The input dataset is not equispaced thus we can not apply window fucntions on it.')
+            raise ValueError(
+                'The input dataset is not equispaced thus we can not apply rolling {} window with time unit.'.format(
+                    self.params.window_type))
 
     def _convert_time_freq_to_row_freq(self, frequency):
 
@@ -142,8 +133,8 @@ class WindowRoller:
         n = demanded_frequency / data_frequency
         if n < 1:
             raise ValueError(
-                'The requested window width ({0}) is smaller than the timeseries frequency ({1}). Please increase the former.'.format(
-                    data_frequency, demanded_frequency))
+                'The requested window width ({0}) is smaller than the timeseries frequency ({1}). Please increase the '
+                'former.'.format(data_frequency, demanded_frequency))
         return int(math.ceil(n))  # always round up so that we dont miss any data
 
     def _compute_rolling_stats(self, df, datetime_column, raw_columns):
@@ -151,7 +142,6 @@ class WindowRoller:
         if self._nothing_to_do(df):
             return df
 
-        #df.loc[:, datetime_column] = pd.to_datetime(df[datetime_column])
         df = df.set_index(datetime_column).sort_index()
 
         frequency = None
@@ -166,7 +156,6 @@ class WindowRoller:
         if frequency and self.params.window_unit != 'rows' and self.params.window_type is not None:
             self.params.window_description_in_row = self._convert_time_freq_to_row_freq(frequency)
 
-        #df = df.set_index(datetime_column).sort_index()
         new_df = pd.DataFrame(index=df.index)
         # compute all stats except mean and sum, does not change whether or not we have a window type
         if self.params.window_unit == 'rows':  # for now `closed` is only implemented for time-based window

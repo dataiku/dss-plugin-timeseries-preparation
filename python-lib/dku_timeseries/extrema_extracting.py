@@ -52,7 +52,10 @@ class ExtremaExtractor:
         if self._nothing_to_do(raw_df):
             return raw_df
 
-        df = raw_df.set_index(datetime_column).sort_index()
+        df = raw_df.copy()
+        df.loc[:, datetime_column] = pd.to_datetime(df[datetime_column])
+        df = df.set_index(datetime_column).sort_index()
+
         if groupby_columns:
             grouped = df.groupby(groupby_columns)
             computed_groups = []
