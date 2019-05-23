@@ -78,6 +78,7 @@ def test_single_row_in_range():
     segment_extractor = _make_segment_extractor()
     output_df = segment_extractor.compute(df, TIME_COL, THRESHOLD_DICT)
     assert output_df.shape == (0, 2)
+    #assert output_df[DATA_COL].values[0] == 8
 
 
 def test_incremental_time_unit():

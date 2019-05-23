@@ -24,7 +24,7 @@ FREQUENCY_STRINGS = {
 class SegmentExtractorParams:
 
     def __init__(self,
-                 min_segment_duration_value=0,
+                 min_segment_duration_value=1,
                  max_noise_duration_value=0,
                  time_unit='seconds'):
 
@@ -93,6 +93,9 @@ class SegmentExtractor:
             new_df[(new_df[chosen_col] < lower_threshold) | (new_df[chosen_col] > upper_threshold)][
                 'numerical_index'].values
 
+        if len(filtered_numerical_index) == len(df):  # all data is artefact
+            return []
+
         artefact_index_list = []
         # [1,2,3,5,6] -> [[1,2,3], [5,6]
         for k, g in groupby(enumerate(filtered_numerical_index), lambda (i, x): i - x):
@@ -126,26 +129,49 @@ class SegmentExtractor:
         final_indexes = []
         for group in list_of_groups:
             duration = group[1] - group[0]
-            if duration > self.params.min_segment_duration:
+            if duration >= self.params.min_segment_duration:
                 final_indexes.append(group)
 
         return final_indexes
 
     def _detect_row_segment(self, df, chosen_col, lower_threshold, upper_threshold):
 
-        x = df[chosen_col].values.astype('float')  # int array gives error in the next line
-        # deal with NaN's (by definition, NaN's are not greater than threshold)
-        x[np.isnan(x)] = np.inf
-        # indices of data greater than or equal to threshold
-        inds = np.nonzero((x >= lower_threshold) & (x <= upper_threshold))[0]
-        if inds.size:
-            # initial and final indexes of almost continuous data
-            inds = np.vstack((inds[np.diff(np.hstack((-np.inf, inds))) > self.params.max_noise_duration],
-                              inds[np.diff(np.hstack((inds, np.inf))) > self.params.max_noise_duration])).T
-            # indexes of almost continuous data longer than or equal to n_above
-            return inds[inds[:, 1] - inds[:, 0] >= self.params.min_segment_duration, :]
-        else:
-            return np.array([])  # standardize inds shape for output
+        new_df = df.copy()
+        filtered_numerical_index = \
+        np.nonzero((new_df[chosen_col] < lower_threshold) | (new_df[chosen_col] > upper_threshold))[0]
+        if len(filtered_numerical_index) == len(df):  # all data is artefact
+            return []
+
+        artefact_index_list = []
+        for k, g in groupby(enumerate(filtered_numerical_index), lambda (i, x): i - x):
+            artefact_index_list.append(map(itemgetter(1), g))
+
+        border_list = []
+        for artefact_indexes in artefact_index_list:
+            new_list = list(artefact_indexes)
+            new_list.insert(0, max(artefact_indexes[0] - 1, 0))
+            new_list.append(min(artefact_indexes[-1] + 1, len(df) - 1))
+            border_list.append([new_list[0], new_list[1], new_list[-2], new_list[-1]])
+
+        noise_filtered_indexes = []
+        for border_index in border_list:
+            start = border_index[1]
+            end = border_index[-2]
+            is_noise = (end - start) >= self.params.max_noise_duration
+            if is_noise:
+                noise_filtered_indexes.extend([border_index[0], border_index[-1]])
+
+        proposed_indexes = [new_df.index[0]] + noise_filtered_indexes + [new_df.index[-1]]
+        list_of_groups = zip(*(iter(proposed_indexes),) * 2)  # [a,b,c,d] -> [(a,b), (c,d)]
+
+        final_indexes = []
+        for group in list_of_groups:
+            duration = group[1] - group[0]
+            print(group, duration)
+            if duration >= self.params.min_segment_duration:
+                final_indexes.append(group)
+
+        return final_indexes
 
     def _detect_segment(self, raw_df, datetime_column, threshold_dict):
 
