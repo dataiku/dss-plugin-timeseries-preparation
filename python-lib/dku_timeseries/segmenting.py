@@ -129,6 +129,7 @@ class SegmentExtractor:
             df.loc[:, datetime_column] = pd.to_datetime(df[datetime_column])
             df = df.set_index(datetime_column).sort_index()
 
+        segment_indexes = []
         for chosen_column, threshold_tuple in threshold_dict.items():
             lower_threshold, upper_threshold = threshold_tuple
             if self.params.time_unit == 'rows':
