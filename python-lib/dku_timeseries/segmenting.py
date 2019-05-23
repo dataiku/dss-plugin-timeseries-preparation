@@ -43,8 +43,8 @@ class SegmentExtractorParams:
 
     def check(self):
 
-        if self.min_segment_duration_value < 1:
-            raise ValueError('Min segment duration can not be less than 1.')
+        if self.min_segment_duration_value <= 0:
+            raise ValueError('Min segment duration must be positive.')
         if self.max_noise_duration_value < 0:
             raise ValueError('Max noisy duration can not be negative.')
         if self.time_unit not in FREQUENCY_STRINGS:
