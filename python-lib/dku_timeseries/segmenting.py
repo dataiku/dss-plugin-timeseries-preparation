@@ -2,6 +2,8 @@
 import pandas as pd
 import numpy as np
 import logging
+from operator import itemgetter
+from itertools import *
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
@@ -22,8 +24,8 @@ FREQUENCY_STRINGS = {
 class SegmentExtractorParams:
 
     def __init__(self,
-                 min_segment_duration_value=1,
-                 max_noise_duration_value=1,
+                 min_segment_duration_value=0,
+                 max_noise_duration_value=0,
                  time_unit='seconds'):
 
         self.min_segment_duration_value = min_segment_duration_value
@@ -64,7 +66,7 @@ class SegmentExtractor:
             raise ValueError('datetime_column param must be string. Got: ' + str(datetime_column))
         if groupby_columns:
             if not isinstance(groupby_columns, list):
-                raise ValueError('groupby_columns param must be an array of strings. Got: '+ str(groupby_columns))
+                raise ValueError('groupby_columns param must be an array of strings. Got: ' + str(groupby_columns))
             for col in groupby_columns:
                 if not isinstance(col, basestring):
                     raise ValueError('groupby_columns param must be an array of strings. Got: ' + str(col))
@@ -79,28 +81,55 @@ class SegmentExtractor:
         else:
             return self._detect_segment(raw_df, datetime_column, threshold_dict)
 
+    def _nothing_to_do(self, df):
+        return len(df) == 0
+
     def _detect_time_segment(self, df, chosen_col, lower_threshold, upper_threshold):
 
-        filtered_index = df[(df[chosen_col] >= lower_threshold) & (df[chosen_col] <= upper_threshold)].index
+        new_df = df.copy()
+        new_df['numerical_index'] = range(len(new_df))
 
-        if len(filtered_index) == 0:
-            return []
-        filtered_serie = filtered_index.to_series()
+        filtered_numerical_index = \
+            new_df[(new_df[chosen_col] < lower_threshold) | (new_df[chosen_col] > upper_threshold)][
+                'numerical_index'].values
 
-        one_unit = pd.Timedelta(str(1) + FREQUENCY_STRINGS.get(self.params.time_unit, ''))
-        d1 = filtered_serie.diff(1)
-        d1 = d1.fillna(
-            self.params.max_noise_duration + one_unit)
+        artefact_index_list = []
+        # [1,2,3,5,6] -> [[1,2,3], [5,6]
+        for k, g in groupby(enumerate(filtered_numerical_index), lambda (i, x): i - x):
+            artefact_index_list.append(map(itemgetter(1), g))
 
-        d2 = d1.shift(-1)
-        d2 = d2.fillna(self.params.max_noise_duration + one_unit)
+        border_list = []
+        for artefact_indexes in artefact_index_list:
+            new_list = list(artefact_indexes)
+            new_list.insert(0, max(artefact_indexes[0] - 1, 0))
+            new_list.append(min(artefact_indexes[-1] + 1, len(new_df) - 1))
+            border_list.append([new_list[0], new_list[1], new_list[-2], new_list[-1]])
 
-        filtered = filtered_serie[d1 > self.params.max_noise_duration].index.tolist()
-        filtered2 = filtered_serie[d2 > self.params.max_noise_duration].index.tolist()
+        border_timestamp_list = []
+        for border in border_list:
+            temp_timestamp = []
+            for border_index in border:
+                temp_timestamp.append(new_df.loc[new_df['numerical_index'] == border_index].index[0])
+            border_timestamp_list.append(temp_timestamp)
 
-        inds2 = np.vstack((filtered, filtered2)).T
-        check_segment_duration = lambda x: pd.Timedelta(x[1] - x[0]) >= self.params.min_segment_duration
-        return filter(check_segment_duration, inds2)
+        noise_filtered_indexes = []
+        for border_timestamp in border_timestamp_list:
+            start = border_timestamp[1]
+            end = border_timestamp[-2]
+            is_noise = (end - start) >= self.params.max_noise_duration
+            if is_noise:
+                noise_filtered_indexes.extend([border_timestamp[0], border_timestamp[-1]])
+
+        proposed_indexes = [new_df.index[0]] + noise_filtered_indexes + [new_df.index[-1]]
+        list_of_groups = zip(*(iter(proposed_indexes),) * 2)  # [a,b,c,d] -> [(a,b), (c,d)]
+
+        final_indexes = []
+        for group in list_of_groups:
+            duration = group[1] - group[0]
+            if duration > self.params.min_segment_duration:
+                final_indexes.append(group)
+
+        return final_indexes
 
     def _detect_row_segment(self, df, chosen_col, lower_threshold, upper_threshold):
 
@@ -111,7 +140,7 @@ class SegmentExtractor:
         inds = np.nonzero((x >= lower_threshold) & (x <= upper_threshold))[0]
         if inds.size:
             # initial and final indexes of almost continuous data
-            inds = np.vstack((inds[np.diff(np.hstack((-np.inf, inds))) > self.params.max_noise_duration], \
+            inds = np.vstack((inds[np.diff(np.hstack((-np.inf, inds))) > self.params.max_noise_duration],
                               inds[np.diff(np.hstack((inds, np.inf))) > self.params.max_noise_duration])).T
             # indexes of almost continuous data longer than or equal to n_above
             return inds[inds[:, 1] - inds[:, 0] >= self.params.min_segment_duration, :]
@@ -119,6 +148,10 @@ class SegmentExtractor:
             return np.array([])  # standardize inds shape for output
 
     def _detect_segment(self, raw_df, datetime_column, threshold_dict):
+
+        if self._nothing_to_do(raw_df):
+            logger.warning('The partition/dataset is empty, can not segmenting.')
+            return raw_df
 
         # TODO add support for multiple threshold column
         if self.params.time_unit == 'rows':
