@@ -43,8 +43,8 @@ class SegmentExtractorParams:
 
     def check(self):
 
-        if self.min_segment_duration_value <= 0:
-            raise ValueError('Min segment duration must be positive.')
+        # if self.min_segment_duration_value <= 0:
+        #    raise ValueError('Min segment duration must be positive.')
         if self.max_noise_duration_value < 0:
             raise ValueError('Max noisy duration can not be negative.')
         if self.time_unit not in FREQUENCY_STRINGS:
@@ -123,7 +123,18 @@ class SegmentExtractor:
             if is_noise:
                 noise_filtered_indexes.extend([border_timestamp[0], border_timestamp[-1]])
 
-        proposed_indexes = [new_df.index[0]] + noise_filtered_indexes + [new_df.index[-1]]
+        if len(noise_filtered_indexes) > 0:
+            if (noise_filtered_indexes[0] == new_df.index[0]) and (noise_filtered_indexes[-1] == new_df.index[-1]):
+                proposed_indexes = noise_filtered_indexes
+            elif noise_filtered_indexes[0] == new_df.index[0]:
+                proposed_indexes = noise_filtered_indexes + [new_df.index[-1]]
+            elif noise_filtered_indexes[-1] == new_df.index[-1]:
+                proposed_indexes = [new_df.index[0]] + noise_filtered_indexes
+            else:
+                proposed_indexes = [new_df.index[0]] + noise_filtered_indexes + [new_df.index[-1]]
+        else: # no artifact
+            proposed_indexes = [new_df.index[0], new_df.index[-1]]
+
         list_of_groups = zip(*(iter(proposed_indexes),) * 2)  # [a,b,c,d] -> [(a,b), (c,d)]
 
         final_indexes = []
@@ -138,7 +149,7 @@ class SegmentExtractor:
 
         new_df = df.copy()
         filtered_numerical_index = \
-        np.nonzero((new_df[chosen_col] < lower_threshold) | (new_df[chosen_col] > upper_threshold))[0]
+            np.nonzero((new_df[chosen_col] < lower_threshold) | (new_df[chosen_col] > upper_threshold))[0]
         if len(filtered_numerical_index) == len(df):  # all data is artefact
             return []
 
@@ -161,7 +172,18 @@ class SegmentExtractor:
             if is_noise:
                 noise_filtered_indexes.extend([border_index[0], border_index[-1]])
 
-        proposed_indexes = [new_df.index[0]] + noise_filtered_indexes + [new_df.index[-1]]
+        if len(noise_filtered_indexes) > 0:
+            if (noise_filtered_indexes[0] == new_df.index[0]) and (noise_filtered_indexes[-1] == new_df.index[-1]):
+                proposed_indexes = noise_filtered_indexes
+            elif noise_filtered_indexes[0] == new_df.index[0]:
+                proposed_indexes = noise_filtered_indexes + [new_df.index[-1]]
+            elif noise_filtered_indexes[-1] == new_df.index[-1]:
+                proposed_indexes = [new_df.index[0]] + noise_filtered_indexes
+            else:
+                proposed_indexes = [new_df.index[0]] + noise_filtered_indexes + [new_df.index[-1]]
+        else: # no artifact
+            proposed_indexes = [new_df.index[0], new_df.index[-1]]
+
         list_of_groups = zip(*(iter(proposed_indexes),) * 2)  # [a,b,c,d] -> [(a,b), (c,d)]
 
         final_indexes = []
