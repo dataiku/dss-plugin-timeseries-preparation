@@ -34,6 +34,7 @@
             "label": "Timestamp column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
+            "allowedColumnTypes": ["date"],
             "mandatory": true
         },
         {
@@ -41,6 +42,7 @@
             "label": "Find extremum in column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
+            "allowedColumnTypes": ["date"],
             "mandatory": true
         },
         {
@@ -49,7 +51,7 @@
             "type": "SELECT",
             "selectChoices": [
                 { "value": "min", "label": "Global minimum"},
-                { "value": "max", "label": "Global maximum"},
+                { "value": "max", "label": "Global maximum"}
             ],
             "defaultValue": "max"
         },
