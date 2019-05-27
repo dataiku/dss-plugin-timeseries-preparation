@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
+import numpy as np
 import logging
 import re
 from pandas.tseries.frequencies import to_offset
@@ -22,12 +23,36 @@ FREQUENCY_STRINGS = {
     'nanoseconds': 'ns'
 }
 
+TIMEDELTA_STRINGS = {
+    'years': 'Y',
+    'months': 'M',
+    'weeks': 'W',
+    'days': 'D',
+    'hours': 'h',
+    'minutes': 'm',
+    'seconds': 's',
+    'milliseconds': 'ms',
+    'microseconds': 'us',
+    'nanoseconds': 'ns'}
+
+UNIT_ORDER = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds',
+              'nanoseconds']
+
 WINDOW_TYPES = ['boxcar', 'triang', 'blackman', 'hamming', 'bartlett', 'parzen', 'gaussian', None]
 WINDOW_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 CLOSED_OPTIONS = ['right', 'left', 'both', 'neither']
 AGGREGATIONS = ['retrieve', 'average', 'min', 'max', 'std', 'q25', 'median', 'q75', 'sum',
                 'first_order_derivative', 'second_order_derivative',
                 'count']  # No lag for instance, UI concern (where to put offset value)
+
+
+def get_smaller_unit(window_unit):
+    index = UNIT_ORDER.index(window_unit)
+    next_index = index + 1
+    if next_index >= len(UNIT_ORDER):
+        next_index = len(UNIT_ORDER) - 1
+
+    return UNIT_ORDER[next_index]
 
 
 class WindowRollerParams:  # TODO better naming ?
@@ -108,6 +133,7 @@ class WindowRoller:
             final_df = pd.concat(computed_groups)
         else:
             final_df = self._compute_rolling_stats(df, datetime_column, raw_columns)
+            # return final_df
 
         final_df = final_df.reset_index(drop=True)
 
@@ -143,6 +169,7 @@ class WindowRoller:
             return df
 
         df = df.set_index(datetime_column).sort_index()
+        # return df
 
         frequency = None
         if len(df) > 2:
@@ -183,10 +210,40 @@ class WindowRoller:
             new_df[col_names] = rolling_without_window[raw_columns].quantile(0.75, raw=True)
         if 'first_order_derivative' in self.params.aggregation_types:
             col_names = ['{}_1st_derivative'.format(col) for col in raw_columns]
-            new_df[col_names] = df[raw_columns].diff()
+            if self.params.window_width < 1:
+                derivative_time_unit = get_smaller_unit(self.params.window_unit)
+            else:
+                derivative_time_unit = TIMEDELTA_STRINGS.get(self.params.window_unit)
+
+            data_lag_diff = df[raw_columns].diff()
+            # the division is to express the diff in the correct time unit
+            time_lag_diff = df.index.to_series().diff()
+            time_lag_diff_normalized = time_lag_diff / (np.timedelta64(1, derivative_time_unit))
+
+            timedelta_unit = TIMEDELTA_STRINGS.get(self.params.window_unit)
+            is_inside_window_mask = (time_lag_diff <= self.params.window_width * np.timedelta64(1, timedelta_unit)).astype(
+                'float').replace({0: np.nan})
+            new_df[col_names] = (data_lag_diff.div(time_lag_diff_normalized, axis=0)).multiply(is_inside_window_mask,
+                                                                                               axis=0)
+
         if 'second_order_derivative' in self.params.aggregation_types:
             col_names = ['{}_2nd_derivative'.format(col) for col in raw_columns]
-            new_df[col_names] = df[raw_columns].diff().diff()
+            if self.params.window_width < 1:
+                derivative_time_unit = get_smaller_unit(self.params.window_unit)
+            else:
+                derivative_time_unit = TIMEDELTA_STRINGS.get(self.params.window_unit)
+
+            data_lag_two_diff = df[raw_columns].diff().diff()
+            # the division is to express the diff in the correct time unit
+            time_lag_diff = df.index.to_series().diff()
+            time_lag_diff_normalized = time_lag_diff / (np.timedelta64(1, derivative_time_unit))
+
+            timedelta_unit = TIMEDELTA_STRINGS.get(self.params.window_unit)
+            is_inside_window_mask = (time_lag_diff <= self.params.window_width * np.timedelta64(1, timedelta_unit)).astype(
+                'float').replace({0: np.nan})
+            new_df[col_names] = (data_lag_two_diff.div(time_lag_diff_normalized, axis=0)).multiply(
+                is_inside_window_mask, axis=0)
+
         if 'std' in self.params.aggregation_types:
             col_names = ['{}_std'.format(col) for col in raw_columns]
             new_df[col_names] = rolling_without_window[raw_columns].std()
