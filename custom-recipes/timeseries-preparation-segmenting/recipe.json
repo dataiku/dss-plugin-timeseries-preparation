@@ -33,6 +33,7 @@
             "label": "Timestamp column",
             "type": "COLUMN",
             "columnRole":"input_dataset",
+            "allowedColumnTypes": ["date"],
             "mandatory": true
         },
         {
