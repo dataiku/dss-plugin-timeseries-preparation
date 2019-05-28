@@ -67,7 +67,7 @@ def get_smaller_unit(window_unit):
     return UNIT_ORDER[next_index]
 
 
-class WindowRollerParams:  # TODO better naming ?
+class WindowAggregatorParams:  # TODO better naming ?
 
     def __init__(self,
                  window_width=1,
@@ -108,13 +108,13 @@ class WindowRollerParams:  # TODO better naming ?
             raise ValueError('"{0}" is not a valid closed option. Possible values are: {1}'.format(self.closed_option, CLOSED_OPTIONS))
 
 
-class WindowRoller:
+class WindowAggregator:
 
     def __init__(self, params=None):
 
         self.params = params
         if params is None:
-            raise ValueError('WindowRollerParams instance is not specified.')
+            raise ValueError('WindowAggregatorParams instance is not specified.')
         self.params.check()
 
     def compute(self, raw_df, datetime_column, groupby_columns=None):
@@ -155,9 +155,8 @@ class WindowRoller:
         return pd.DateOffset(**{self.params.window_unit: self.params.window_width})
 
     def _check_valid_data(self, df, frequency):
-        # if non-equispaced + time-based window + using window, it is not possible (scipy limitation)
         if not frequency and self.params.window_unit != 'rows' and self.params.window_type is not None:
-            raise ValueError('The input dataset is not equispaced thus we can not apply rolling {} window with time unit.'.format(self.params.window_type))
+            raise ValueError('The input dataset is not equispaced. Cannot apply window with time unit.') # scipy limitation
 
     def _convert_time_freq_to_row_freq(self, frequency):
 
@@ -174,12 +173,11 @@ class WindowRoller:
             return df
 
         df = df.set_index(datetime_column).sort_index()
-        # return df
 
         frequency = None
         if len(df) > 2:
             frequency = pd.infer_freq(df[~df.index.duplicated()][:1000].index)
-            logger.info('Timeseries frequency: ', frequency)
+            logger.info('Inferred frequency: ', frequency)
         elif len(df) == 2:
             frequency = df.index[1] - df.index[0]
 
@@ -199,7 +197,7 @@ class WindowRoller:
             new_df[raw_columns] = df[raw_columns]
         if 'min' in self.params.aggregation_types:
             col_names = ['{}_min'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window[raw_columns].apply(min, raw=True)  # raw=True
+            new_df[col_names] = rolling_without_window[raw_columns].apply(min, raw=True)
         if 'max' in self.params.aggregation_types:
             col_names = ['{}_max'.format(col) for col in raw_columns]
             new_df[col_names] = rolling_without_window[raw_columns].apply(max, raw=True)

@@ -12,13 +12,13 @@ EXTREMA_TYPES = ['min', 'max']
 
 class ExtremaExtractorParams:
 
-    def __init__(self, window_roller=None, extrema_type='max'):
-        self.window_roller = window_roller
+    def __init__(self, window_aggregator=None, extrema_type='max'):
+        self.window_aggregator = window_aggregator
         self.extrema_type = extrema_type
 
     def check(self):
-        if self.window_roller is None:
-            raise ValueError('WindowRoller object is not specified.')
+        if self.window_aggregator is None:
+            raise ValueError('WindowAggregator object is not specified.')
         if self.extrema_type not in EXTREMA_TYPES:
             raise ValueError('{0} is not a valid options. Possible extrema types are: {1}'.format(self.extrema_type, EXTREMA_TYPES))
 
@@ -62,7 +62,7 @@ class ExtremaExtractor:
                     extrema_df = pd.DataFrame({groupby_columns[0]: [group_id]})
                 else:
                     extrema_neighbor_df = extrema_neighbor_df.rename_axis(datetime_column).reset_index()
-                    rolling_df = self.params.window_roller.compute(extrema_neighbor_df, datetime_column)
+                    rolling_df = self.params.window_aggregator.compute(extrema_neighbor_df, datetime_column)
                     extrema_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value].copy() # avoid .loc warning
                     extrema_df.loc[:, groupby_columns[0]] = group_id
 
@@ -73,7 +73,7 @@ class ExtremaExtractor:
         else:
             extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(df, extrema_column)
             extrema_neighbor_df = extrema_neighbor_df.rename_axis(datetime_column).reset_index()
-            rolling_df = self.params.window_roller.compute(extrema_neighbor_df, datetime_column)
+            rolling_df = self.params.window_aggregator.compute(extrema_neighbor_df, datetime_column)
             final_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value].reset_index(drop=True)
         return final_df
 
@@ -86,7 +86,7 @@ class ExtremaExtractor:
         extrema = df[df[extrema_column] == extrema_value]
         extrema_neigbors = []
         for extremum in extrema.index:
-            date_offset = self.params.window_roller.get_window_date_offset()
+            date_offset = self.params.window_aggregator.get_window_date_offset()
             start_time = extremum - date_offset
             end_time = extremum + date_offset
             df_neighbor = df.loc[start_time:end_time]

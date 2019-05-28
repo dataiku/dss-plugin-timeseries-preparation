@@ -2,7 +2,7 @@
 import dataiku
 from dataiku.customrecipe import *
 import logging
-from dku_timeseries import WindowRoller
+from dku_timeseries import WindowAggregator
 from dku_tools import get_windowing_params
 
 logger = logging.getLogger(__name__)
@@ -29,8 +29,8 @@ params = get_windowing_params(recipe_config)
 
 # --- Run
 df = input_dataset.get_dataframe()
-window_roller = WindowRoller(params)
-output_df = window_roller.compute(df, datetime_column, groupby_columns=groupby_columns)
+window_aggregator = WindowAggregator(params)
+output_df = window_aggregator.compute(df, datetime_column, groupby_columns=groupby_columns)
 
 # --- Write output
 output_dataset.write_with_schema(output_df)

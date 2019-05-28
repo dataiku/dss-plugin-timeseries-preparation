@@ -1,5 +1,5 @@
 # coding: utf-8
-from dku_timeseries import ResamplerParams, WindowRoller, WindowRollerParams, SegmentExtractorParams, \
+from dku_timeseries import ResamplerParams, WindowAggregator, WindowAggregatorParams, SegmentExtractorParams, \
     ExtremaExtractorParams
 
 
@@ -42,7 +42,7 @@ def get_windowing_params(recipe_config):
 
     closed_option = _p('closed_option')
 
-    params = WindowRollerParams(window_unit=window_unit,
+    params = WindowAggregatorParams(window_unit=window_unit,
                                 window_width=window_width,
                                 window_type=window_type,
                                 gaussian_std=gaussian_std,
@@ -88,14 +88,14 @@ def get_extrema_extraction_params(recipe_config):
 
     extrema_type = _p('extrema_type')
 
-    window_params = WindowRollerParams(window_unit=window_unit,
+    window_params = WindowAggregatorParams(window_unit=window_unit,
                                        window_width=window_width,
                                        window_type=window_type,
                                        gaussian_std=gaussian_std,
                                        closed_option=closed_option)
 
-    window_roller = WindowRoller(window_params)
-    params = ExtremaExtractorParams(window_roller=window_roller,
+    window_aggregator = WindowAggregator(window_params)
+    params = ExtremaExtractorParams(window_aggregator=window_aggregator,
                                     extrema_type=extrema_type)
 
     params.check()

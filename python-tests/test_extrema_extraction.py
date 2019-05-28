@@ -36,18 +36,18 @@ def _make_df_with_one_col(column_data, period=pd.DateOffset(seconds=1), start_ti
     return df
 
 
-def _make_window_roller_params():
-    params = dku_timeseries.WindowRollerParams(window_width=3)
+def _make_window_aggregator_params():
+    params = dku_timeseries.WindowAggregatorParams(window_width=3)
     return params
 
 
-def _make_window_roller():
-    params = _make_window_roller_params()
-    return dku_timeseries.WindowRoller(params)
+def _make_window_aggregator():
+    params = _make_window_aggregator_params()
+    return dku_timeseries.WindowAggregator(params)
 
 
 def _make_extrema_extraction_params():
-    window = _make_window_roller()
+    window = _make_window_aggregator()
     params = dku_timeseries.ExtremaExtractorParams(window)
     return params
 
@@ -90,8 +90,8 @@ def test_extrema_without_neighbors():
     data = [x for x in range(length)]
     df = _make_df_with_one_col(data)
 
-    window_roller = dku_timeseries.WindowRoller(dku_timeseries.WindowRollerParams(window_unit='milliseconds'))
-    params = dku_timeseries.ExtremaExtractorParams(window_roller=window_roller)
+    window_aggregator = dku_timeseries.WindowAggregator(dku_timeseries.WindowAggregatorParams(window_unit='milliseconds'))
+    params = dku_timeseries.ExtremaExtractorParams(window_aggregator=window_aggregator)
     extrema_extractor = dku_timeseries.ExtremaExtractor(params)
     output_df = extrema_extractor.compute(df, TIME_COL, DATA_COL)
     # only have DATE_TIME col and DATA_COL of the extrema, no stats because no neighbors
@@ -123,8 +123,8 @@ def test_group_extrema_without_neighbors():
 
     df = pd.concat(df_list, axis=0)
 
-    window_roller = dku_timeseries.WindowRoller(dku_timeseries.WindowRollerParams(window_unit='milliseconds'))
-    params = dku_timeseries.ExtremaExtractorParams(window_roller=window_roller)
+    window_aggregator = dku_timeseries.WindowAggregator(dku_timeseries.WindowAggregatorParams(window_unit='milliseconds'))
+    params = dku_timeseries.ExtremaExtractorParams(window_aggregator=window_aggregator)
     extrema_extractor = dku_timeseries.ExtremaExtractor(params)
     output_df = extrema_extractor.compute(df, TIME_COL, DATA_COL, groupby_columns=[GROUP_COL])
     assert output_df.shape == (2, 3)

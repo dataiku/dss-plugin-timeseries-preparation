@@ -36,29 +36,29 @@ def _make_df_with_one_col(column_data, period=pd.DateOffset(seconds=1), start_ti
     return df
 
 
-def _make_window_roller_params(window_width=1):
-    params = dku_timeseries.WindowRollerParams(window_width=window_width)
+def _make_window_aggregator_params(window_width=1):
+    params = dku_timeseries.WindowAggregatorParams(window_width=window_width)
     return params
 
 
-def _make_window_roller(window_width=1):
-    params = _make_window_roller_params(window_width)
-    return dku_timeseries.WindowRoller(params)
+def _make_window_aggregator(window_width=1):
+    params = _make_window_aggregator_params(window_width)
+    return dku_timeseries.WindowAggregator(params)
 
 
 ### Test cases
 
 def test_empty_df():
     df = _make_df_with_one_col([])
-    window_roller = _make_window_roller()
-    output_df = window_roller.compute(df, TIME_COL)
+    window_aggregator = _make_window_aggregator()
+    output_df = window_aggregator.compute(df, TIME_COL)
     assert output_df.shape == (0, 2)
 
 
 def test_single_row_df():
     df = _make_df_with_one_col([33])
-    window_roller = _make_window_roller()
-    output_df = window_roller.compute(df, TIME_COL)
+    window_aggregator = _make_window_aggregator()
+    output_df = window_aggregator.compute(df, TIME_COL)
     assert output_df.shape == (1, 2)
     assert output_df[DATA_COL][0] == df[DATA_COL][0]
 
@@ -67,8 +67,8 @@ def test_two_rows_df():
     length = 2
     data = [x for x in range(length)]
     df = _make_df_with_one_col(data)
-    window_roller = _make_window_roller()
-    output_df = window_roller.compute(df, TIME_COL)
+    window_aggregator = _make_window_aggregator()
+    output_df = window_aggregator.compute(df, TIME_COL)
     assert output_df[DATA_COL + '_min'][1] == 0
 
 
@@ -77,9 +77,9 @@ def test_incremental_df_left_closed():
     data = [x for x in range(length)]
     df = _make_df_with_one_col(data)
     print(df.shape)
-    params = dku_timeseries.WindowRollerParams(window_width=3, closed_option='left')
-    window_roller = dku_timeseries.WindowRoller(params)
-    output_df = window_roller.compute(df, TIME_COL)
+    params = dku_timeseries.WindowAggregatorParams(window_width=3, closed_option='left')
+    window_aggregator = dku_timeseries.WindowAggregator(params)
+    output_df = window_aggregator.compute(df, TIME_COL)
     ground_truth = [np.NaN, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7]
     assert math.isnan(output_df[DATA_COL + '_min'][0])
     for x, y in zip(output_df[DATA_COL + '_min'][1:], ground_truth[1:]):
@@ -91,9 +91,9 @@ def test_incremental_df_right_closed():
     data = [x for x in range(length)]
     df = _make_df_with_one_col(data)
     print(df.shape)
-    params = dku_timeseries.WindowRollerParams(window_width=3, closed_option='right', window_type='gaussian')
-    window_roller = dku_timeseries.WindowRoller(params)
-    output_df = window_roller.compute(df, TIME_COL)
+    params = dku_timeseries.WindowAggregatorParams(window_width=3, closed_option='right', window_type='gaussian')
+    window_aggregator = dku_timeseries.WindowAggregator(params)
+    output_df = window_aggregator.compute(df, TIME_COL)
     ground_truth = [0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8]
     for x, y in zip(output_df[DATA_COL + '_min'][1:], ground_truth[1:]):
         assert output_df[DATA_COL][x] == y
@@ -123,9 +123,9 @@ def test_group_window_time_unit():
 
     df = pd.concat(df_list, axis=0)
 
-    params = dku_timeseries.WindowRollerParams(window_width=3, closed_option='left', window_type='boxcar')
-    window_roller = dku_timeseries.WindowRoller(params)
-    output_df = window_roller.compute(df, datetime_column=TIME_COL, groupby_columns=[GROUP_COL])
+    params = dku_timeseries.WindowAggregatorParams(window_width=3, closed_option='left', window_type='boxcar')
+    window_aggregator = dku_timeseries.WindowAggregator(params)
+    output_df = window_aggregator.compute(df, datetime_column=TIME_COL, groupby_columns=[GROUP_COL])
 
     ground_truth = [np.NaN, 0, 0, 0, 1, 2, 3, 4, 5, 6]
     output_0 = output_df.groupby(GROUP_COL).get_group('group_0').data_col_min.values[:10]
@@ -160,9 +160,9 @@ def test_group_window_row_unit():
 
     df = pd.concat(df_list, axis=0)
 
-    params = dku_timeseries.WindowRollerParams(window_width=3, window_unit='rows', window_type='boxcar')
-    window_roller = dku_timeseries.WindowRoller(params)
-    output_df = window_roller.compute(df, datetime_column=TIME_COL, groupby_columns=[GROUP_COL])
+    params = dku_timeseries.WindowAggregatorParams(window_width=3, window_unit='rows', window_type='boxcar')
+    window_aggregator = dku_timeseries.WindowAggregator(params)
+    output_df = window_aggregator.compute(df, datetime_column=TIME_COL, groupby_columns=[GROUP_COL])
 
     ground_truth = [np.nan, np.nan, 0, 1, 2, 3, 4, 5, 6, 7]
     output_0 = output_df.groupby(GROUP_COL).get_group('group_0').data_col_min.values[:10]
