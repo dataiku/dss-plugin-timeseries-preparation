@@ -50,7 +50,8 @@ class IntervalRestrictorParams:
         if self.min_deviation_duration_value < 0:
             raise ValueError('Min deviation duration cannot be negative.')
         if self.time_unit not in FREQUENCY_STRINGS:
-            raise ValueError('{0} is not a valid time unit. Possible options are: {1}'.format(self.time_unit, FREQUENCY_STRINGS.keys()))
+            raise ValueError('{0} is not a valid time unit. Possible options are: {1}'.format(self.time_unit,
+                                                                                              FREQUENCY_STRINGS.keys()))
 
 
 class IntervalRestrictor:
@@ -130,7 +131,7 @@ class IntervalRestrictor:
                 proposed_indexes = [new_df.index[0]] + deviations_indices
             else:
                 proposed_indexes = [new_df.index[0]] + deviations_indices + [new_df.index[-1]]
-        else: # no artifact
+        else:  # no artifact
             proposed_indexes = [new_df.index[0], new_df.index[-1]]
 
         list_of_groups = zip(*(iter(proposed_indexes),) * 2)  # [a,b,c,d] -> [(a,b), (c,d)]
@@ -179,7 +180,7 @@ class IntervalRestrictor:
                 proposed_indexes = [new_df.index[0]] + deviations_indices
             else:
                 proposed_indexes = [new_df.index[0]] + deviations_indices + [new_df.index[-1]]
-        else: # no artifact
+        else:  # no artifact
             proposed_indexes = [new_df.index[0], new_df.index[-1]]
 
         list_of_groups = zip(*(iter(proposed_indexes),) * 2)  # [a,b,c,d] -> [(a,b), (c,d)]
@@ -194,6 +195,9 @@ class IntervalRestrictor:
         return final_indexes
 
     def _detect_segment(self, df, datetime_column, threshold_dict, df_id=''):
+
+        if have_duplicate(df, datetime_column):
+            raise ValueError('The timeseries {} contain duplicate timestamps.'.format(df_id))
 
         if nothing_to_do(df, min_len=0):
             logger.warning('The timeseries {} is empty, can not compute.'.format(df_id))

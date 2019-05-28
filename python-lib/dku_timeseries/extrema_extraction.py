@@ -77,8 +77,8 @@ class ExtremaExtractor:
 
         df = df.set_index(datetime_column).sort_index()
 
-        # if have_duplicate(df, datetime_column):
-        #    raise ValueError('The timeseries contain duplicate timestamps.')
+        if have_duplicate(df, datetime_column):
+            raise ValueError('The timeseries contain duplicate timestamps.')
 
         extrema_value = df[extrema_column].agg(self.params.extrema_type)
         extrema = df[df[extrema_column] == extrema_value]
