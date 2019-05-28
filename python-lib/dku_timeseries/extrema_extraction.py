@@ -67,7 +67,8 @@ class ExtremaExtractor:
             final_df = pd.concat(computed_groups)
             final_df = final_df.reset_index(drop=True)
         else:
-            extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(df_copy, datetime_column, extrema_column)
+            extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(df_copy, datetime_column,
+                                                                                  extrema_column)
             rolling_df = self.params.window_aggregator.compute(extrema_neighbor_df, datetime_column)
             final_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value].reset_index(drop=True)
         return final_df
@@ -90,9 +91,6 @@ class ExtremaExtractor:
             df_neighbor = df.loc[start_time:end_time]
             extrema_neigbors.append(df_neighbor)
 
-        if len(extrema_neigbors) > 0:
-            extrema_neighbor_df = pd.concat(extrema_neigbors).drop_duplicates()
-            extrema_neighbor_df = extrema_neighbor_df.rename_axis(datetime_column).reset_index()
-            return extrema_neighbor_df, extrema_value
-        else:
-            return None, None # TODO this situation never happens ?
+        extrema_neighbor_df = pd.concat(extrema_neigbors).drop_duplicates()
+        extrema_neighbor_df = extrema_neighbor_df.rename_axis(datetime_column).reset_index()
+        return extrema_neighbor_df, extrema_value
