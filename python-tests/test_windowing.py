@@ -136,6 +136,7 @@ def test_group_window_time_unit():
     assert np.array_equal(output_1[1:], ground_truth[1:])
 
 
+""" 
 def test_group_window_row_unit():
     start_time_1 = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
     start_time_2 = pd.Timestamp('20190131 02:00:00').tz_localize('CET')
@@ -173,3 +174,4 @@ def test_group_window_row_unit():
     assert math.isnan(output_1[0])
     assert math.isnan(output_1[1])
     assert np.array_equal(output_1[2:], ground_truth[2:])
+""" 
