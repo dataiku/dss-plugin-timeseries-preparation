@@ -1,1 +1,2 @@
+# coding: utf-8
 from dku_tools.recipe_config_to_params import get_resampling_params, get_windowing_params, get_interval_restriction_params, get_extrema_extraction_params

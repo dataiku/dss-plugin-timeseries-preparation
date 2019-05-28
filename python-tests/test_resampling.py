@@ -94,7 +94,7 @@ def test_nan_data():
     resampler = _make_resampler()
     output_df = resampler.transform(df, TIME_COL)
     assert output_df.shape == (length, 2)
-    assert np.sum(np.isnan((output_df['data_col']))) == length
+    assert np.sum(output_df[DATA_COL].isnull()) == length
 
 
 def test_identity_resampling_month():
