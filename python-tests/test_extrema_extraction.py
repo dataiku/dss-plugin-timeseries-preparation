@@ -46,14 +46,14 @@ def _make_window_roller():
     return dku_timeseries.WindowRoller(params)
 
 
-def _make_extrema_extracting_params():
+def _make_extrema_extraction_params():
     window = _make_window_roller()
     params = dku_timeseries.ExtremaExtractorParams(window)
     return params
 
 
 def _make_extrema_extractor():
-    params = _make_extrema_extracting_params()
+    params = _make_extrema_extraction_params()
     return dku_timeseries.ExtremaExtractor(params)
 
 

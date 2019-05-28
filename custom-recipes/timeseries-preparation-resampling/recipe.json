@@ -1,6 +1,6 @@
 {
     "meta": {
-        "label": "1. Timeseries resampling",
+        "label": "Timeseries resampling",
         "description": "Resample timeseries by performing interpolation or extrapolation.",
         "icon": "icon-time"
     },
@@ -32,7 +32,7 @@
             "name": "datetime_column",
             "label": "Timestamp column",
             "type": "COLUMN",
-            "columnRole":"input_dataset",
+            "columnRole": "input_dataset",
             "allowedColumnTypes": ["date"],
             "mandatory": true
         },
@@ -43,7 +43,7 @@
         },
         {
             "name": "time_unit",
-            "label": "Time unit",
+            "label": "Time step unit",
             "type": "SELECT",
             "selectChoices": [
                 { "value": "nanoseconds", "label": "Nanoseconds"},
@@ -61,21 +61,21 @@
         },
         {
             "name": "time_step",
-            "label": "Time step",
+            "label": "Time step length",
             "type": "DOUBLE",
             "defaultValue": 1
         },
         {
-            "name": "offset",
-            "label": "Offset beginning",
-            "description": "Timesteps to skip at the beginning of the series, in the chosen time unit.",
+            "name": "clip_start",
+            "label": "Clip start",
+            "description": "Number of time steps to skip at the beginning of the series",
             "type": "DOUBLE",
             "defaultValue": 0
         },
         {
-            "name": "crop",
-            "label": "Crop ending",
-            "description": "Timesteps to skip at the end of the series, in the chosen time unit.",
+            "name": "clip_end",
+            "label": "Clip end",
+            "description": "Number of time steps to skip at the end of the series",
             "type": "DOUBLE",
             "defaultValue": 0
         },
@@ -121,17 +121,17 @@
         },
         {
             "name": "advanced_activated",
-            "label": "Timeseries values are folded",
-            "description": "Activate if you use a single column for the values of multiple timeseries.",
+            "label": "Activate partitioning",
+            "description": "If the input dataset contains multiple time series indicated by a column value",
             "type": "BOOLEAN"
         },
         {
             "name": "groupby_column",
             "label": "Partitioning column",
             "type": "COLUMN",
-            "columnRole":"input_dataset",
+            "columnRole": "input_dataset",
             "mandatory": false,
-            "description": "Treats each value of this column as a series identifier.",
+            "description": "",
             "visibilityCondition": "model.advanced_activated"
 
         }

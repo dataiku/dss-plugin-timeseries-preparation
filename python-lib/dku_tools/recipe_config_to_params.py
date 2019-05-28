@@ -11,15 +11,15 @@ def get_resampling_params(recipe_config):
     extrapolation_method = _p('extrapolation_method')
     time_step = float(_p('time_step'))
     time_unit = _p('time_unit')
-    offset = int(_p('offset'))  # TODO should be float too ?
-    crop = int(_p('crop'))
+    clip_start = int(_p('clip_start'))  # TODO should be float too ?
+    clip_end = int(_p('clip_end'))
 
     params = ResamplerParams(interpolation_method=interpolation_method,
                              extrapolation_method=extrapolation_method,
                              time_step=time_step,
                              time_unit=time_unit,
-                             offset=offset,
-                             crop=crop)
+                             clip_start=clip_start,
+                             clip_end=clip_end)
     params.check()
     return params
 
@@ -68,7 +68,7 @@ def get_segmenting_params(recipe_config):
     return params
 
 
-def get_extrema_extracting_params(recipe_config):
+def get_extrema_extraction_params(recipe_config):
     def _p(param_name, default=None):
         return recipe_config.get(param_name, default)
 

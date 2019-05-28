@@ -19,8 +19,7 @@ sys.path.append(os.path.join(os.environ['OLDPWD'], 'src/main/python/'))
 import dku_timeseries
 
 JUST_BEFORE_SPRING_DST = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
-JUST_BEFORE_FALL_DST = pd.Timestamp('20191027 02:59:00').tz_localize('CET',
-                                                                     ambiguous=True)  # It's ambiguous because there are 2 instants with these dates! We select the first
+JUST_BEFORE_FALL_DST = pd.Timestamp('20191027 02:59:00').tz_localize('CET', ambiguous=True)  # It's ambiguous because there are 2 instants with these dates! We select the first
 
 TIME_COL = 'time_col'
 DATA_COL = 'data_col'

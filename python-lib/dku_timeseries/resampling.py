@@ -34,8 +34,8 @@ class ResamplerParams:
                  extrapolation_method='clip',
                  time_step=1,
                  time_unit='seconds',
-                 offset=0,
-                 crop=0):
+                 clip_start=0,
+                 clip_end=0):
 
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
@@ -47,8 +47,8 @@ class ResamplerParams:
             else:
                 raise ValueError("Can not use non-integer time step with time unit {}".format(self.time_unit))
         self.resampling_step = str(self.time_step) + FREQUENCY_STRINGS.get(self.time_unit, '')
-        self.offset = offset
-        self.crop = crop
+        self.clip_start = clip_start
+        self.clip_end = clip_end
 
     def check(self):
 
@@ -118,15 +118,15 @@ class Resampler:
         col = df[datetime_column]
         if len(col):
             rounding_freq_string = FREQUENCY_STRINGS.get(self.params.time_unit)
-            offset_value = self._get_date_offset(self.params.offset)
-            crop_value = self._get_date_offset(self.params.crop)
+            clip_start_value = self._get_date_offset(self.params.clip_start)
+            clip_end_value = self._get_date_offset(self.params.clip_end)
             if self.params.time_unit in ROUND_COMPATIBLE_TIME_UNIT:
-                start_index = col.min().round(rounding_freq_string) + offset_value
-                end_index = col.max().round(rounding_freq_string) + crop_value
+                start_index = col.min().round(rounding_freq_string) + clip_start_value
+                end_index = col.max().round(rounding_freq_string) - clip_end_value
                 return pd.date_range(start=start_index, end=end_index, freq=self.params.resampling_step)
             else:  # for week, month, year we round up to closest day
-                start_index = col.min().round('D') + offset_value
-                end_index = col.max().round('D') + crop_value
+                start_index = col.min().round('D') + clip_start_value
+                end_index = col.max().round('D') - clip_end_value
                 # for some reason date_range omit the last entry when dealing with months, years
                 return pd.date_range(start=start_index, end=end_index + self._get_date_offset(self.params.time_step),
                                      freq=self.params.resampling_step)

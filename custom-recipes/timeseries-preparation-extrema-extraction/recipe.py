@@ -3,7 +3,7 @@ import dataiku
 from dataiku.customrecipe import *
 import logging
 from dku_timeseries import ExtremaExtractor
-from dku_tools import get_extrema_extracting_params
+from dku_tools import get_extrema_extraction_params
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
@@ -27,7 +27,7 @@ if recipe_config.get('advanced_activated') and recipe_config.get('groupby_column
 	groupby_columns = [recipe_config.get('groupby_column')]
 else:
 	groupby_columns = None
-params = get_extrema_extracting_params(recipe_config)
+params = get_extrema_extraction_params(recipe_config)
 
 # --- Run
 df = input_dataset.get_dataframe()

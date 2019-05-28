@@ -20,8 +20,7 @@ class ExtremaExtractorParams:
         if self.window_roller is None:
             raise ValueError('WindowRoller object is not specified.')
         if self.extrema_type not in EXTREMA_TYPES:
-            raise ValueError(
-                '{0} is not a valid options. Possible extrema types are: {1}'.format(self.extrema_type, EXTREMA_TYPES))
+            raise ValueError('{0} is not a valid options. Possible extrema types are: {1}'.format(self.extrema_type, EXTREMA_TYPES))
 
 
 class ExtremaExtractor:
@@ -34,10 +33,7 @@ class ExtremaExtractor:
         self.params.check()
 
     def compute(self, raw_df, datetime_column, extrema_column, groupby_columns=None):
-        """
-        From the input dataset, keep only the extrema and theirs surrounding, then compute
-        aggregated statistics on what's going on around the extrema.
-        """
+
         if not isinstance(extrema_column, basestring):
             raise ValueError('extrema_column param must be string. Got: ' + str(extrema_column))
         if not isinstance(datetime_column, basestring):

@@ -33,17 +33,29 @@ TIMEDELTA_STRINGS = {
     'seconds': 's',
     'milliseconds': 'ms',
     'microseconds': 'us',
-    'nanoseconds': 'ns'}
+    'nanoseconds': 'ns'
+}
 
-UNIT_ORDER = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds',
-              'nanoseconds']
+UNIT_ORDER = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds', 'nanoseconds']
 
-WINDOW_TYPES = ['boxcar', 'triang', 'blackman', 'hamming', 'bartlett', 'parzen', 'gaussian', None]
+WINDOW_TYPES = ['boxcar', 'triang', 'blackman', 'hamming', 'bartlett', 'parzen', 'gaussian'] # None for global extrema
 WINDOW_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 CLOSED_OPTIONS = ['right', 'left', 'both', 'neither']
-AGGREGATIONS = ['retrieve', 'average', 'min', 'max', 'std', 'q25', 'median', 'q75', 'sum',
-                'first_order_derivative', 'second_order_derivative',
-                'count']  # No lag for instance, UI concern (where to put offset value)
+AGGREGATION_TYPES = [
+    'retrieve',
+    'average',
+    'min',
+    'max',
+    'std',
+    'q25',
+    'median',
+    'q75',
+    'sum',
+    'first_order_derivative',
+    'second_order_derivative',
+    'count'
+    # No lag, UI concern (where to put offset value)
+    ]
 
 
 def get_smaller_unit(window_unit):
@@ -65,7 +77,7 @@ class WindowRollerParams:  # TODO better naming ?
                  center=False,
                  window_type=None,
                  gaussian_std=1.0,
-                 aggregation_types=AGGREGATIONS):
+                 aggregation_types=AGGREGATION_TYPES):
 
         self.window_width = window_width
         self.window_unit = window_unit
@@ -84,19 +96,16 @@ class WindowRollerParams:  # TODO better naming ?
 
     def check(self):
 
-        if self.window_type not in WINDOW_TYPES:
-            raise ValueError(
-                '{0} is not a valid window type. Possible options are: {1}'.format(self.window_type, WINDOW_TYPES))
+        if self.window_type is not None and self.window_type not in WINDOW_TYPES:
+            raise ValueError('{0} is not a valid window type. Possible options are: {1}'.format(self.window_type, WINDOW_TYPES))
         if self.window_width < 0:
             raise ValueError('Window width can not be negative.')
         if self.window_unit not in WINDOW_UNITS:
-            raise ValueError(
-                '"{0}" is not a valid unit. Possible window units are: {1}'.format(self.window_unit, WINDOW_UNITS))
+            raise ValueError('"{0}" is not a valid unit. Possible window units are: {1}'.format(self.window_unit, WINDOW_UNITS))
         if self.min_period < 1:
             raise ValueError('Min period must be positive.')
         if self.closed_option not in CLOSED_OPTIONS:
-            raise ValueError('"{0}" is not a valid closed option. Possible values are: {1}'.format(self.closed_option,
-                                                                                                   CLOSED_OPTIONS))
+            raise ValueError('"{0}" is not a valid closed option. Possible values are: {1}'.format(self.closed_option, CLOSED_OPTIONS))
 
 
 class WindowRoller:
@@ -148,9 +157,7 @@ class WindowRoller:
     def _check_valid_data(self, df, frequency):
         # if non-equispaced + time-based window + using window, it is not possible (scipy limitation)
         if not frequency and self.params.window_unit != 'rows' and self.params.window_type is not None:
-            raise ValueError(
-                'The input dataset is not equispaced thus we can not apply rolling {} window with time unit.'.format(
-                    self.params.window_type))
+            raise ValueError('The input dataset is not equispaced thus we can not apply rolling {} window with time unit.'.format(self.params.window_type))
 
     def _convert_time_freq_to_row_freq(self, frequency):
 
@@ -158,9 +165,7 @@ class WindowRoller:
         demanded_frequency = pd.to_timedelta(to_offset(self.params.window_description))
         n = demanded_frequency / data_frequency
         if n < 1:
-            raise ValueError(
-                'The requested window width ({0}) is smaller than the timeseries frequency ({1}). Please increase the '
-                'former.'.format(data_frequency, demanded_frequency))
+            raise ValueError('The requested window width ({0}) is smaller than the timeseries frequency ({1}).'.format(data_frequency, demanded_frequency))
         return int(math.ceil(n))  # always round up so that we dont miss any data
 
     def _compute_rolling_stats(self, df, datetime_column, raw_columns):
@@ -188,8 +193,7 @@ class WindowRoller:
         if self.params.window_unit == 'rows':  # for now `closed` is only implemented for time-based window
             rolling_without_window = df.rolling(window=self.params.window_description)
         else:
-            rolling_without_window = df.rolling(window=self.params.window_description,
-                                                closed=self.params.closed_option)
+            rolling_without_window = df.rolling(window=self.params.window_description, closed=self.params.closed_option)
 
         if 'retrieve' in self.params.aggregation_types:
             new_df[raw_columns] = df[raw_columns]
