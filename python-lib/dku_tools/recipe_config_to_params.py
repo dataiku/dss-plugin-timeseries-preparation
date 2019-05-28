@@ -1,5 +1,5 @@
 # coding: utf-8
-from dku_timeseries import ResamplerParams, WindowAggregator, WindowAggregatorParams, SegmentExtractorParams, \
+from dku_timeseries import ResamplerParams, WindowAggregator, WindowAggregatorParams, IntervalRestrictorParams, \
     ExtremaExtractorParams
 
 
@@ -52,16 +52,16 @@ def get_windowing_params(recipe_config):
     return params
 
 
-def get_segmenting_params(recipe_config):
+def get_interval_restriction_params(recipe_config):
     def _p(param_name, default=None):
         return recipe_config.get(param_name, default)
 
-    min_segment_duration_value = _p('min_segment_duration_value')
-    max_noise_duration_value = _p('max_noise_duration_value')
+    min_valid_values_duration_value = _p('min_valid_values_duration_value')
+    min_deviation_duration_value = _p('min_deviation_duration_value')
     time_unit = _p('time_unit')
 
-    params = SegmentExtractorParams(min_segment_duration_value=min_segment_duration_value,
-                                    max_noise_duration_value=max_noise_duration_value,
+    params = IntervalRestrictorParams(min_valid_values_duration_value=min_valid_values_duration_value,
+                                    min_deviation_duration_value=min_deviation_duration_value,
                                     time_unit=time_unit)
 
     params.check()

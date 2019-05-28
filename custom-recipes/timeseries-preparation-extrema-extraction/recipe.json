@@ -60,6 +60,21 @@
             "type": "SEPARATOR"
         },
         {
+            "name": "window_type",
+            "label": "Type",
+            "type": "SELECT",
+            "selectChoices": [
+                { "value": "triang", "label": "Triangle"},
+                { "value": "blackman", "label": "Blackman"},
+                { "value": "hamming", "label": "Hamming"},
+                { "value": "bartlett", "label": "Bartlett"},
+                { "value": "parzen", "label": "Parzen"},
+                { "value": "gaussian", "label": "Gaussian"},
+                { "value": "none", "label": "Flat"}
+            ],
+            "defaultValue": "none"
+        },
+        {
             "name": "window_unit",
             "label": "Unit",
             "type": "SELECT",
@@ -85,21 +100,6 @@
             "defaultValue": 1
         },
         {
-            "name": "window_type",
-            "label": "Type",
-            "type": "SELECT",
-            "selectChoices": [
-                { "value": "triang", "label": "Triangle"},
-                { "value": "blackman", "label": "Blackman"},
-                { "value": "hamming", "label": "Hamming"},
-                { "value": "bartlett", "label": "Bartlett"},
-                { "value": "parzen", "label": "Parzen"},
-                { "value": "gaussian", "label": "Gaussian"},
-                { "value": "none", "label": "Flat"}
-            ],
-            "defaultValue": "none"
-        },
-        {
             "name": "gaussian_std",
             "label": "Gaussian standard deviation",
             "type": "DOUBLE",
@@ -110,12 +110,12 @@
         {
             "name": "closed_option",
             "label": "Include window bounds",
-            "description": "Includes the sides of the window to compute aggregations.",
+            "description": "",
             "type": "SELECT",
             "selectChoices": [
-                { "value": "left", "label": "Yes, left only"},
-                { "value": "right", "label": "Yes, right only"},
-                { "value": "both", "label": "Yes, both"},
+                { "value": "left", "label": "Left only"},
+                { "value": "right", "label": "Right only"},
+                { "value": "both", "label": "Both"},
                 { "value": "neither", "label": "No"}
             ],
             "defaultValue": "left",

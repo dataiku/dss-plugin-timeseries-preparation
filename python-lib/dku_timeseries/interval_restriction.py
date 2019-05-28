@@ -21,42 +21,41 @@ FREQUENCY_STRINGS = {
 }
 
 
-class SegmentExtractorParams:
+class IntervalRestrictorParams:
 
     def __init__(self,
-                 min_segment_duration_value=1,
-                 max_noise_duration_value=0,
+                 min_valid_values_duration_value=1,
+                 min_deviation_duration_value=0,
                  time_unit='seconds'):
 
-        self.min_segment_duration_value = min_segment_duration_value
-        self.max_noise_duration_value = max_noise_duration_value
+        self.min_valid_values_duration_value = min_valid_values_duration_value
+        self.min_deviation_duration_value = min_deviation_duration_value
         self.time_unit = time_unit
 
         if self.time_unit == 'rows':
-            self.min_segment_duration = self.min_segment_duration_value
-            self.max_noise_duration = self.max_noise_duration_value
+            self.min_valid_values_duration = self.min_valid_values_duration_value
+            self.min_deviation_duration = self.min_deviation_duration_value
         else:
-            self.min_segment_duration = pd.Timedelta(
-                str(self.min_segment_duration_value) + FREQUENCY_STRINGS.get(self.time_unit, ''))
-            self.max_noise_duration = pd.Timedelta(
-                str(self.max_noise_duration_value) + FREQUENCY_STRINGS.get(self.time_unit, ''))
+            self.min_valid_values_duration = pd.Timedelta(
+                str(self.min_valid_values_duration_value) + FREQUENCY_STRINGS.get(self.time_unit, ''))
+            self.min_deviation_duration = pd.Timedelta(
+                str(self.min_deviation_duration_value) + FREQUENCY_STRINGS.get(self.time_unit, ''))
 
     def check(self):
 
-        # if self.min_segment_duration_value <= 0:
-        #    raise ValueError('Min segment duration must be positive.')
-        if self.max_noise_duration_value < 0:
-            raise ValueError('Max noisy duration can not be negative.')
+        # if self.min_valid_values_duration_value <= 0:
+        #    raise ValueError('Min valid values duration must be positive.')
+        if self.min_deviation_duration_value < 0:
+            raise ValueError('Min deviation duration cannot be negative.')
         if self.time_unit not in FREQUENCY_STRINGS:
-            raise ValueError('{0} is not a valid time unit. Possible options are: {1}'.format(self.time_unit,
-                                                                                              FREQUENCY_STRINGS.keys()))
+            raise ValueError('{0} is not a valid time unit. Possible options are: {1}'.format(self.time_unit, FREQUENCY_STRINGS.keys()))
 
 
-class SegmentExtractor:
+class IntervalRestrictor:
 
     def __init__(self, params):
         if params is None:
-            raise ValueError('SegmentExtractorParams instance is not specified.')
+            raise ValueError('IntervalRestrictorParams instance is not specified.')
         self.params = params
         self.params.check()
 
@@ -73,11 +72,11 @@ class SegmentExtractor:
 
         if groupby_columns:
             grouped = raw_df.groupby(groupby_columns)
-            segmented_groups = []
+            filtered_groups = []
             for _, group in grouped:
-                segment_df = self._detect_segment(group, datetime_column, threshold_dict)
-                segmented_groups.append(segment_df)
-            return pd.concat(segmented_groups).reset_index(drop=True)
+                filtered_df = self._detect_segment(group, datetime_column, threshold_dict)
+                filtered_groups.append(filtered_df)
+            return pd.concat(filtered_groups).reset_index(drop=True)
         else:
             return self._detect_segment(raw_df, datetime_column, threshold_dict)
 
@@ -115,23 +114,23 @@ class SegmentExtractor:
                 temp_timestamp.append(new_df.loc[new_df['numerical_index'] == border_index].index[0])
             border_timestamp_list.append(temp_timestamp)
 
-        noise_filtered_indexes = []
+        deviations_indices = []
         for border_timestamp in border_timestamp_list:
             start = border_timestamp[1]
             end = border_timestamp[-2]
-            is_noise = (end - start) >= self.params.max_noise_duration
-            if is_noise:
-                noise_filtered_indexes.extend([border_timestamp[0], border_timestamp[-1]])
+            is_deviation = (end - start) >= self.params.min_deviation_duration
+            if is_deviation:
+                deviations_indices.extend([border_timestamp[0], border_timestamp[-1]])
 
-        if len(noise_filtered_indexes) > 0:
-            if (noise_filtered_indexes[0] == new_df.index[0]) and (noise_filtered_indexes[-1] == new_df.index[-1]):
-                proposed_indexes = noise_filtered_indexes
-            elif noise_filtered_indexes[0] == new_df.index[0]:
-                proposed_indexes = noise_filtered_indexes + [new_df.index[-1]]
-            elif noise_filtered_indexes[-1] == new_df.index[-1]:
-                proposed_indexes = [new_df.index[0]] + noise_filtered_indexes
+        if len(deviations_indices) > 0:
+            if (deviations_indices[0] == new_df.index[0]) and (deviations_indices[-1] == new_df.index[-1]):
+                proposed_indexes = deviations_indices
+            elif deviations_indices[0] == new_df.index[0]:
+                proposed_indexes = deviations_indices + [new_df.index[-1]]
+            elif deviations_indices[-1] == new_df.index[-1]:
+                proposed_indexes = [new_df.index[0]] + deviations_indices
             else:
-                proposed_indexes = [new_df.index[0]] + noise_filtered_indexes + [new_df.index[-1]]
+                proposed_indexes = [new_df.index[0]] + deviations_indices + [new_df.index[-1]]
         else: # no artifact
             proposed_indexes = [new_df.index[0], new_df.index[-1]]
 
@@ -140,7 +139,7 @@ class SegmentExtractor:
         final_indexes = []
         for group in list_of_groups:
             duration = group[1] - group[0]
-            if duration >= self.params.min_segment_duration:
+            if duration >= self.params.min_valid_values_duration:
                 final_indexes.append(group)
 
         return final_indexes
@@ -164,23 +163,23 @@ class SegmentExtractor:
             new_list.append(min(artefact_indexes[-1] + 1, len(df) - 1))
             border_list.append([new_list[0], new_list[1], new_list[-2], new_list[-1]])
 
-        noise_filtered_indexes = []
+        deviations_indices = []
         for border_index in border_list:
             start = border_index[1]
             end = border_index[-2]
-            is_noise = (end - start) >= self.params.max_noise_duration
-            if is_noise:
-                noise_filtered_indexes.extend([border_index[0], border_index[-1]])
+            is_deviation = (end - start) >= self.params.min_deviation_duration
+            if is_deviation:
+                deviations_indices.extend([border_index[0], border_index[-1]])
 
-        if len(noise_filtered_indexes) > 0:
-            if (noise_filtered_indexes[0] == new_df.index[0]) and (noise_filtered_indexes[-1] == new_df.index[-1]):
-                proposed_indexes = noise_filtered_indexes
-            elif noise_filtered_indexes[0] == new_df.index[0]:
-                proposed_indexes = noise_filtered_indexes + [new_df.index[-1]]
-            elif noise_filtered_indexes[-1] == new_df.index[-1]:
-                proposed_indexes = [new_df.index[0]] + noise_filtered_indexes
+        if len(deviations_indices) > 0:
+            if (deviations_indices[0] == new_df.index[0]) and (deviations_indices[-1] == new_df.index[-1]):
+                proposed_indexes = deviations_indices
+            elif deviations_indices[0] == new_df.index[0]:
+                proposed_indexes = deviations_indices + [new_df.index[-1]]
+            elif deviations_indices[-1] == new_df.index[-1]:
+                proposed_indexes = [new_df.index[0]] + deviations_indices
             else:
-                proposed_indexes = [new_df.index[0]] + noise_filtered_indexes + [new_df.index[-1]]
+                proposed_indexes = [new_df.index[0]] + deviations_indices + [new_df.index[-1]]
         else: # no artifact
             proposed_indexes = [new_df.index[0], new_df.index[-1]]
 
@@ -190,7 +189,7 @@ class SegmentExtractor:
         for group in list_of_groups:
             duration = group[1] - group[0]
             print(group, duration)
-            if duration >= self.params.min_segment_duration:
+            if duration >= self.params.min_valid_values_duration:
                 final_indexes.append(group)
 
         return final_indexes
@@ -198,7 +197,6 @@ class SegmentExtractor:
     def _detect_segment(self, raw_df, datetime_column, threshold_dict):
 
         if self._nothing_to_do(raw_df):
-            logger.warning('The partition/dataset is empty, can not segmenting.')
             return raw_df
 
         # TODO add support for multiple threshold column
