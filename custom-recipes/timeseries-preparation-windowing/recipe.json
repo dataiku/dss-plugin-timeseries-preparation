@@ -1,7 +1,7 @@
 {
     "meta": {
         "label": "Timeseries windowing",
-        "description": "Compute aggregations on a timeseries using rolling window.",
+        "description": "Compute aggregations or filter a timeseries using rolling window.",
         "icon": "icon-repeat"
     },
     "kind": "PYTHON",
@@ -42,6 +42,21 @@
             "type": "SEPARATOR"
         },
         {
+            "name": "window_type",
+            "label": "Type",
+            "type": "SELECT",
+            "selectChoices": [
+                { "value": "boxcar", "label": "Boxcar"},
+                { "value": "triang", "label": "Triangle"},
+                { "value": "blackman", "label": "Blackman"},
+                { "value": "hamming", "label": "Hamming"},
+                { "value": "bartlett", "label": "Bartlett"},
+                { "value": "parzen", "label": "Parzen"},
+                { "value": "gaussian", "label": "Gaussian"}
+            ],
+            "defaultValue": "boxcar"
+        },
+        {
             "name": "window_unit",
             "label": "Unit",
             "type": "SELECT",
@@ -65,22 +80,6 @@
             "label": "Width",
             "type": "DOUBLE",
             "defaultValue": 1
-        },
-        {
-            "name": "window_type",
-            "label": "Type",
-            "type": "SELECT",
-            "selectChoices": [
-                { "value": "boxcar", "label": "Boxcar"},
-                { "value": "triang", "label": "Triangle"},
-                { "value": "blackman", "label": "Blackman"},
-                { "value": "hamming", "label": "Hamming"},
-                { "value": "bartlett", "label": "Bartlett"},
-                { "value": "parzen", "label": "Parzen"},
-                { "value": "gaussian", "label": "Gaussian"},
-                { "value": "none", "label": "Flat"}
-            ],
-            "defaultValue": "none"
         },
         {
             "name": "gaussian_std",

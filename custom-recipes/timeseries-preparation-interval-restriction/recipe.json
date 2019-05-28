@@ -1,7 +1,7 @@
 {
     "meta": {
-        "label": "Timeseries segmenting",
-        "description": "Segment timeseries based on thresholds.",
+        "label": "Timeseries interval restriction",
+        "description": "Restrict a timeseries to a value interval.",
         "icon": "icon-reorder"
     },
     "kind": "PYTHON",
@@ -42,27 +42,27 @@
             "type": "SEPARATOR"
         },
         {
-            "name": "segment_column",
-            "label": "Timeseries to segment",
+            "name": "value_column",
+            "label": "Value column",
             "type": "COLUMN",
             "columnRole": "input_dataset",
             "mandatory": true
         },
         {
             "name": "min_threshold",
-            "label": "Minimal value (lower boundary)",
+            "label": "Minimal valid value",
             "type": "DOUBLE",
             "defaultValue": 0
         },
         {
             "name": "max_threshold",
-            "label": "Maximum value (upper boundary)",
+            "label": "Maximum valid value",
             "type": "DOUBLE",
             "defaultValue": 10
         },
         {
             "name": "sep1",
-            "label": "Segmentation parameters",
+            "label": "Validation parameters",
             "type": "SEPARATOR"
         },
         {
@@ -82,18 +82,18 @@
             "defaultValue": "rows"
         },
         {
-            "name": "min_segment_duration_value",
-            "label": "Minimal segment duration",
-            "description": "Values must be within thresholds for more than this duration to create a segment.",
+            "name": "min_valid_values_duration_value",
+            "label": "Minimal valid values duration",
+            "description": "Values must be within the valid interval for more than this duration",
             "type": "DOUBLE",
             "defaultValue": 10
         },
         {
-            "name": "max_noise_duration_value",
-            "label": "Maximum aberration duration",
-            "description": "Exiting thresholds for less than this duration is ignored.",
+            "name": "min_deviation_duration_value",
+            "label": "Minimum deviation duration",
+            "description": "Exiting the valid interval for less than this duration is ignored.",
             "type": "DOUBLE",
-            "defaultValue": 10
+            "defaultValue": 2
         },
         {
             "name": "sep3",
@@ -114,7 +114,6 @@
             "mandatory": false,
             "description": "",
             "visibilityCondition": "model.advanced_activated"
-
         }
     ]
 }

@@ -18,8 +18,7 @@ sys.path.append(os.path.join(os.environ['OLDPWD'], 'src/main/python/'))
 import dku_timeseries
 
 JUST_BEFORE_SPRING_DST = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
-JUST_BEFORE_FALL_DST = pd.Timestamp('20191027 02:59:00').tz_localize('CET',
-                                                                     ambiguous=True)  # It's ambiguous because there are 2 instants with these dates! We select the first
+JUST_BEFORE_FALL_DST = pd.Timestamp('20191027 02:59:00').tz_localize('CET', ambiguous=True)  # It's ambiguous because there are 2 instants with these dates! We select the first
 
 TIME_COL = 'time_col'
 DATA_COL = 'data_col'
@@ -39,22 +38,22 @@ def _make_df_with_one_col(column_data, period=pd.DateOffset(seconds=1), start_ti
     return df
 
 
-def _make_segment_extractor_params(max_noise_duration_value=1):
-    params = dku_timeseries.SegmentExtractorParams(max_noise_duration_value=max_noise_duration_value)
+def _make_interval_restrictor_params(min_deviation_duration_value=1):
+    params = dku_timeseries.IntervalRestrictorParams(min_deviation_duration_value=min_deviation_duration_value)
     return params
 
 
-def _make_segment_extractor(max_noise_duration_value=1):
-    params = _make_segment_extractor_params(max_noise_duration_value)
-    return dku_timeseries.SegmentExtractor(params)
+def _make_interval_restrictor(min_deviation_duration_value=1):
+    params = _make_interval_restrictor_params(min_deviation_duration_value)
+    return dku_timeseries.IntervalRestrictor(params)
 
 
 ### Test cases
 
 def test_empty():
     df = _make_df_with_one_col([])
-    segment_extractor = _make_segment_extractor()
-    output_df = segment_extractor.compute(df, TIME_COL, THRESHOLD_DICT)
+    interval_restrictor = _make_interval_restrictor()
+    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
     assert output_df.shape == (0, 2)
 
 def test_nan_data():
@@ -62,42 +61,41 @@ def test_nan_data():
     length = 1000
     data = [np.nan for _ in range(length)]
     df = _make_df_with_one_col(data)
-    segment_extractor = _make_segment_extractor()
-    output_df = segment_extractor.compute(df, TIME_COL, THRESHOLD_DICT)
+    interval_restrictor = _make_interval_restrictor()
+    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
     assert output_df.shape == (1000, 2)
 
 def test_single_row_out_range():
     df = _make_df_with_one_col([50])
-    segment_extractor = _make_segment_extractor()
-    output_df = segment_extractor.compute(df, TIME_COL, THRESHOLD_DICT)
+    interval_restrictor = _make_interval_restrictor()
+    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
     assert output_df.shape == (0, 2)
 
 
 def test_single_row_in_range():
     df = _make_df_with_one_col([8])
-    segment_extractor = _make_segment_extractor()
-    output_df = segment_extractor.compute(df, TIME_COL, THRESHOLD_DICT)
+    interval_restrictor = _make_interval_restrictor()
+    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
     assert output_df.shape == (0, 2)
-    #assert output_df[DATA_COL].values[0] == 8
 
 
 def test_incremental_time_unit():
     length = 1000
     data = [x for x in range(length)]
     df = _make_df_with_one_col(data)
-    segment_extractor = _make_segment_extractor()
-    output_df = segment_extractor.compute(df, TIME_COL, THRESHOLD_DICT)
+    interval_restrictor = _make_interval_restrictor()
+    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
     for x, y in enumerate(range(MIN_THRESHOLD, MAX_THRESHOLD)):
         assert output_df[DATA_COL][x] == y
 
 
-def test_incremental_row_unit_no_noise():
+def test_incremental_row_unit_no_deviation():
     length = 1000
     data = [x for x in range(length)]
     df = _make_df_with_one_col(data)
-    params = dku_timeseries.SegmentExtractorParams(time_unit='rows', max_noise_duration_value=3)
-    segment_extractor = dku_timeseries.SegmentExtractor(params)
-    output_df = segment_extractor.compute(df, TIME_COL, THRESHOLD_DICT)
+    params = dku_timeseries.IntervalRestrictorParams(time_unit='rows', min_deviation_duration_value=3)
+    interval_restrictor = dku_timeseries.IntervalRestrictor(params)
+    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
     for x, y in enumerate(range(MIN_THRESHOLD, MAX_THRESHOLD)):
         assert output_df[DATA_COL][x] == y
 
@@ -107,13 +105,13 @@ def test_incremental_time_unit_with_noise():
     data = [x for x in range(length)]
     df = _make_df_with_one_col(data)
     df.loc[5:6, DATA_COL] = [50, 51]
-    segment_extractor = _make_segment_extractor(max_noise_duration_value=3)
-    output_df = segment_extractor.compute(df, TIME_COL, THRESHOLD_DICT)
+    interval_restrictor = _make_interval_restrictor(min_deviation_duration_value=3)
+    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
     for x, y in zip(range(len(output_df)), pd.date_range(JUST_BEFORE_SPRING_DST, None, 10, pd.DateOffset(seconds=1))):
         assert output_df[TIME_COL][x] == y
 
 
-def test_group_incremental_time_unit_no_noise():
+def test_group_incremental_time_unit_no_deviation():
     start_time_1 = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
     start_time_2 = pd.Timestamp('20190131 02:00:00').tz_localize('CET')
     start_time_list = [start_time_1, start_time_2]
@@ -137,9 +135,9 @@ def test_group_incremental_time_unit_no_noise():
 
     df = pd.concat(df_list, axis=0)
 
-    params = dku_timeseries.SegmentExtractorParams(time_unit='seconds', max_noise_duration_value=1)
-    segment_extractor = dku_timeseries.SegmentExtractor(params)
-    output_df = segment_extractor.compute(df, TIME_COL, THRESHOLD_DICT, groupby_columns=[GROUP_COL])
+    params = dku_timeseries.IntervalRestrictorParams(time_unit='seconds', min_deviation_duration_value=1)
+    interval_restrictor = dku_timeseries.IntervalRestrictor(params)
+    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT, groupby_columns=[GROUP_COL])
 
     assert np.array_equal(output_df.groupby(GROUP_COL).get_group('group_0')[DATA_COL].values, range(11))
     assert np.array_equal(output_df.groupby(GROUP_COL).get_group('group_1')[DATA_COL].values, range(10))
