@@ -174,4 +174,4 @@ def test_group_window_row_unit():
     assert math.isnan(output_1[0])
     assert math.isnan(output_1[1])
     assert np.array_equal(output_1[2:], ground_truth[2:])
-""" 
+"""

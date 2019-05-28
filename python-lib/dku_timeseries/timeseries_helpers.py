@@ -1,5 +1,8 @@
 # coding: utf-8
 import pandas as pd
+from pandas.tseries.frequencies import to_offset
+import math
+
 # Frequency strings as defined in https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
 FREQUENCY_STRINGS = {
     'years': 'A',
@@ -15,6 +18,8 @@ FREQUENCY_STRINGS = {
 }
 
 ROUND_COMPATIBLE_TIME_UNIT = ['days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds', 'nanoseconds']
+UNIT_ORDER = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds',
+              'nanoseconds']
 
 
 def get_date_offset(time_unit, offset_value):
@@ -34,3 +39,32 @@ def generate_date_range(start_time, end_time, clip_start, clip_end, frequency, t
         end_index = end_time.round('D') - clip_end_value + get_date_offset(time_unit, time_step)
 
     return pd.date_range(start=start_index, end=end_index, freq=frequency)
+
+
+def get_smaller_unit(window_unit):
+    index = UNIT_ORDER.index(window_unit)
+    next_index = index + 1
+    if next_index >= len(UNIT_ORDER):
+        next_index = len(UNIT_ORDER) - 1
+
+    return UNIT_ORDER[next_index]
+
+
+def convert_time_freq_to_row_freq(frequency, window_description):
+    data_frequency = pd.to_timedelta(to_offset(frequency))
+    demanded_frequency = pd.to_timedelta(to_offset(window_description))
+    n = demanded_frequency / data_frequency
+    if n < 1:
+        raise ValueError('The requested window width ({0}) is smaller than the timeseries frequency ({1}).'.format(
+            data_frequency, demanded_frequency))
+    return int(math.ceil(n))  # always round up so that we dont miss any data
+
+
+def infer_frequency(df):
+    if len(df) > 2:
+        frequency = pd.infer_freq(df[~df.index.duplicated()][:10000].index)
+    elif len(df) == 2:
+        frequency = df.index[1] - df.index[0]
+    else:
+        frequency = None
+    return frequency

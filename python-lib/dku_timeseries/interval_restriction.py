@@ -4,6 +4,8 @@ import numpy as np
 import logging
 from operator import itemgetter
 from itertools import *
+from dataframe_helpers import have_duplicate, nothing_to_do, filter_empty_columns, check_transform_arguments
+from timeseries_helpers import get_date_offset, generate_date_range
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
@@ -59,37 +61,34 @@ class IntervalRestrictor:
         self.params = params
         self.params.check()
 
-    def compute(self, raw_df, datetime_column, threshold_dict, groupby_columns=None):
+    def compute(self, df, datetime_column, threshold_dict, groupby_columns=None):
 
-        if not isinstance(datetime_column, basestring):
-            raise ValueError('datetime_column param must be string. Got: ' + str(datetime_column))
-        if groupby_columns:
-            if not isinstance(groupby_columns, list):
-                raise ValueError('groupby_columns param must be an array of strings. Got: ' + str(groupby_columns))
-            for col in groupby_columns:
-                if not isinstance(col, basestring):
-                    raise ValueError('groupby_columns param must be an array of strings. Got: ' + str(col))
+        check_transform_arguments(datetime_column, groupby_columns)
+        df_copy = df.copy()
+
+        # drop all rows where the timestamp is null
+        df_copy = df_copy.dropna(subset=[datetime_column])
+        if nothing_to_do(df_copy, min_len=0):
+            logger.warning('The timeseries is empty, can not compute.')
+            return pd.DataFrame(columns=df_copy.columns)
 
         if groupby_columns:
-            grouped = raw_df.groupby(groupby_columns)
+            grouped = df.groupby(groupby_columns)
             filtered_groups = []
             for _, group in grouped:
                 filtered_df = self._detect_segment(group, datetime_column, threshold_dict)
                 filtered_groups.append(filtered_df)
             return pd.concat(filtered_groups).reset_index(drop=True)
         else:
-            return self._detect_segment(raw_df, datetime_column, threshold_dict)
+            return self._detect_segment(df, datetime_column, threshold_dict)
 
-    def _nothing_to_do(self, df):
-        return len(df) == 0
-
-    def _detect_time_segment(self, df, chosen_col, lower_threshold, upper_threshold):
+    def _detect_time_segment(self, df, chosen_column, lower_threshold, upper_threshold):
 
         new_df = df.copy()
         new_df['numerical_index'] = range(len(new_df))
 
         filtered_numerical_index = \
-            new_df[(new_df[chosen_col] < lower_threshold) | (new_df[chosen_col] > upper_threshold)][
+            new_df[(new_df[chosen_column] < lower_threshold) | (new_df[chosen_column] > upper_threshold)][
                 'numerical_index'].values
 
         if len(filtered_numerical_index) == len(df):  # all data is artefact
@@ -144,11 +143,11 @@ class IntervalRestrictor:
 
         return final_indexes
 
-    def _detect_row_segment(self, df, chosen_col, lower_threshold, upper_threshold):
+    def _detect_row_segment(self, df, chosen_column, lower_threshold, upper_threshold):
 
         new_df = df.copy()
         filtered_numerical_index = \
-            np.nonzero((new_df[chosen_col] < lower_threshold) | (new_df[chosen_col] > upper_threshold))[0]
+            np.nonzero((new_df[chosen_column] < lower_threshold) | (new_df[chosen_column] > upper_threshold))[0]
         if len(filtered_numerical_index) == len(df):  # all data is artefact
             return []
 
@@ -194,36 +193,36 @@ class IntervalRestrictor:
 
         return final_indexes
 
-    def _detect_segment(self, raw_df, datetime_column, threshold_dict):
+    def _detect_segment(self, df, datetime_column, threshold_dict, df_id=''):
 
-        if self._nothing_to_do(raw_df):
-            return raw_df
+        if nothing_to_do(df, min_len=0):
+            logger.warning('The timeseries {} is empty, can not compute.'.format(df_id))
+            return pd.DataFrame(columns=df.columns)
 
         # TODO add support for multiple threshold column
         if self.params.time_unit == 'rows':
-            df = raw_df.sort_values(datetime_column)
-            df = df.reset_index(drop=True)
+            df_copy = df.sort_values(datetime_column).reset_index(drop=True).copy()
         else:
-            df = raw_df.copy()
-            df.loc[:, datetime_column] = pd.to_datetime(df[datetime_column])
-            df = df.set_index(datetime_column).sort_index()
+            df_copy = df.copy()
+            df_copy.loc[:, datetime_column] = pd.to_datetime(df_copy[datetime_column])
+            df_copy = df_copy.set_index(datetime_column).sort_index()
 
         segment_indexes = []
         for chosen_column, threshold_tuple in threshold_dict.items():
             lower_threshold, upper_threshold = threshold_tuple
             if self.params.time_unit == 'rows':
-                segment_indexes = self._detect_row_segment(df, chosen_column, lower_threshold, upper_threshold)
+                segment_indexes = self._detect_row_segment(df_copy, chosen_column, lower_threshold, upper_threshold)
             else:
-                segment_indexes = self._detect_time_segment(df, chosen_column, lower_threshold, upper_threshold)
+                segment_indexes = self._detect_time_segment(df_copy, chosen_column, lower_threshold, upper_threshold)
 
         mask_list = []
         if len(segment_indexes) > 0:
             for start, end in segment_indexes:
-                mask = (df.index >= start) & (df.index <= end)
+                mask = (df_copy.index >= start) & (df_copy.index <= end)
                 mask_list.append(mask)
-            segment_df = df.loc[np.logical_or.reduce(mask_list)]
+            segment_df = df_copy.loc[np.logical_or.reduce(mask_list)]
         else:
-            segment_df = pd.DataFrame(columns=df.columns)
+            segment_df = pd.DataFrame(columns=df_copy.columns)
 
         if self.params.time_unit != 'rows':
             segment_df = segment_df.rename_axis(datetime_column).reset_index()

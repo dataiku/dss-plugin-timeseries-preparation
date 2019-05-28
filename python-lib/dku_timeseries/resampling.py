@@ -4,11 +4,10 @@ import numpy as np
 import logging
 from scipy import interpolate
 from dataframe_helpers import have_duplicate, nothing_to_do, filter_empty_columns, check_transform_arguments
-from timeseries_helpers import  get_date_offset, generate_date_range
+from timeseries_helpers import get_date_offset, generate_date_range
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
-
 
 # Frequency strings as defined in https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
 FREQUENCY_STRINGS = {
@@ -79,31 +78,29 @@ class Resampler:
         self.params = params
         self.params.check()
 
-    def transform(self, raw_df, datetime_column, groupby_columns=None):
+    def transform(self, df, datetime_column, groupby_columns=None):
 
         check_transform_arguments(datetime_column, groupby_columns)
-
-        df = raw_df.copy()
+        df_copy = df.copy()
 
         # drop all rows where the timestamp is null
-        df = df.dropna(subset=[datetime_column])
-        if nothing_to_do(df, min_len=2):
+        df_copy = df_copy.dropna(subset=[datetime_column])
+        if nothing_to_do(df_copy, min_len=2):
             logger.warning('The timeseries has less than 2 rows with values, can not resample.')
-            return df
+            return df_copy
 
-        df.loc[:, datetime_column] = pd.to_datetime(df[datetime_column])
+        df_copy.loc[:, datetime_column] = pd.to_datetime(df_copy[datetime_column])
         # when having multiple partitions, their time range is not necessarily the same
         # we thus compute a unified time index for all partitions
-        reference_time_index = self._compute_full_time_index(df, datetime_column)
-        columns_to_resample = [col for col in df.select_dtypes([int, float]).columns.tolist() if col != datetime_column]
+        reference_time_index = self._compute_full_time_index(df_copy, datetime_column)
+        columns_to_resample = [col for col in df_copy.select_dtypes([int, float]).columns.tolist() if col != datetime_column]
 
         if groupby_columns:
-            print('*********')
-            print(groupby_columns)
-            grouped = df.groupby(groupby_columns)
+            grouped = df_copy.groupby(groupby_columns)
             resampled_groups = []
 
             for group_id, group in grouped:
+                logger.info("Computing for group: ", group_id)
                 group_resampled = self._resample(group, datetime_column, columns_to_resample, reference_time_index,
                                                  df_id=group_id)
                 group_resampled[groupby_columns] = group_id
@@ -111,7 +108,7 @@ class Resampler:
 
             df_resampled = pd.concat(resampled_groups)
         else:
-            df_resampled = self._resample(df, datetime_column, columns_to_resample, reference_time_index)
+            df_resampled = self._resample(df_copy, datetime_column, columns_to_resample, reference_time_index)
 
         return df_resampled.reset_index(drop=True)
 

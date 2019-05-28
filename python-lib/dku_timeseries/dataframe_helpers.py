@@ -1,7 +1,6 @@
 # coding: utf-8
 import numpy as np
 
-
 def have_duplicate(df, column):
     return any(df.duplicated(subset=[column], keep=False))
 
