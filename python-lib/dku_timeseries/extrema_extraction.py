@@ -75,10 +75,10 @@ class ExtremaExtractor:
 
     def _find_extrema_neighbor_zone(self, df, datetime_column, extrema_column, df_id=''):
 
-        df = df.set_index(datetime_column).sort_index()
-
         if have_duplicate(df, datetime_column):
-            raise ValueError('The timeseries contain duplicate timestamps.')
+            raise ValueError('The timeseries {} contain duplicate timestamps.'.format(df_id))
+
+        df = df.set_index(datetime_column).sort_index()
 
         extrema_value = df[extrema_column].agg(self.params.extrema_type)
         extrema = df[df[extrema_column] == extrema_value]
