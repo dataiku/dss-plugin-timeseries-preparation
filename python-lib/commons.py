@@ -1,7 +1,21 @@
 # coding: utf-8
-from dku_timeseries import ResamplerParams, WindowAggregator, WindowAggregatorParams, IntervalRestrictorParams, \
-    ExtremaExtractorParams
+import dataiku
+from dataiku.customrecipe import *
 
+from dku_timeseries import ResamplerParams
+from dku_timeseries import WindowAggregator
+from dku_timeseries import WindowAggregatorParams
+from dku_timeseries import IntervalRestrictorParams
+from dku_timeseries import ExtremaExtractorParams
+
+def get_input_output():
+    if len(get_input_names_for_role('input_dataset') == 0):
+        raise ValueError('No input dataset.')
+    input_dataset_name = get_input_names_for_role('input_dataset')[0]
+    input_dataset = dataiku.Dataset(input_dataset_name)
+    output_dataset_name = get_output_names_for_role('output_dataset')[0]
+    output_dataset = dataiku.Dataset(output_dataset_name)
+    return (input_dataset, output_dataset)
 
 def get_resampling_params(recipe_config):
     def _p(param_name, default=None):
@@ -83,11 +97,8 @@ def get_extrema_extraction_params(recipe_config):
         gaussian_std = _p('gaussian_std')
     else:
         gaussian_std = None
-
     closed_option = _p('closed_option')
-
     extrema_type = _p('extrema_type')
-
     window_params = WindowAggregatorParams(window_unit=window_unit,
                                        window_width=window_width,
                                        window_type=window_type,
@@ -95,8 +106,6 @@ def get_extrema_extraction_params(recipe_config):
                                        closed_option=closed_option)
 
     window_aggregator = WindowAggregator(window_params)
-    params = ExtremaExtractorParams(window_aggregator=window_aggregator,
-                                    extrema_type=extrema_type)
-
+    params = ExtremaExtractorParams(window_aggregator=window_aggregator, extrema_type=extrema_type)
     params.check()
     return params

@@ -3,11 +3,10 @@ import pandas as pd
 import logging
 import re
 from pandas.tseries.frequencies import to_offset
-from dataframe_helpers import have_duplicate, nothing_to_do, filter_empty_columns, check_transform_arguments
+from dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
 from timeseries_helpers import get_date_offset, generate_date_range
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
 
 EXTREMA_TYPES = ['min', 'max']
 
@@ -37,7 +36,7 @@ class ExtremaExtractor:
 
     def compute(self, df, datetime_column, extrema_column, groupby_columns=None):
 
-        check_transform_arguments(datetime_column, groupby_columns)
+        generic_check_compute_arguments(datetime_column, groupby_columns)
         df_copy = df.copy()
 
         # drop all rows where the timestamp is null
@@ -75,7 +74,7 @@ class ExtremaExtractor:
 
     def _find_extrema_neighbor_zone(self, df, datetime_column, extrema_column, df_id=''):
 
-        if have_duplicate(df, datetime_column):
+        if has_duplicates(df, datetime_column):
             raise ValueError('The timeseries {} contain duplicate timestamps.'.format(df_id))
 
         df = df.set_index(datetime_column).sort_index()
