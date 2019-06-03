@@ -1,13 +1,13 @@
 {
-    "id" : "timeseries-preparation",
-    "version" : "0.0.1",
-    "meta" : {
-        "label" : "Timeseries Preparation",
-        "description" : "",
-        "author" : "Dataiku (Du PHAN)",
-        "icon" : "icon-time",
-        "licenseInfo" : "Apache Software License",
-        "url" : "https://www.dataiku.com/community/plugins/info/timeseries-preparation.html",
-        "tags" : ["Timeseries"]
+    "id": "timeseries-preparation",
+    "version": "1.0.0",
+    "meta": {
+        "label": "Timeseries Preparation",
+        "description": "",
+        "author": "Dataiku (Du PHAN)",
+        "icon": "icon-time",
+        "licenseInfo": "Apache Software License",
+        "url": "https://www.dataiku.com/community/plugins/info/timeseries-preparation.html",
+        "tags": ["Timeseries"]
     }
 }

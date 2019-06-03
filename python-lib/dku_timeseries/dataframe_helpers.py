@@ -1,7 +1,7 @@
 # coding: utf-8
 import numpy as np
 
-def have_duplicate(df, column):
+def has_duplicates(df, column):
     return any(df.duplicated(subset=[column], keep=False))
 
 
@@ -17,7 +17,7 @@ def filter_empty_columns(df, columns):
     return filtered_columns
 
 
-def check_transform_arguments(datetime_column, groupby_columns):
+def generic_check_compute_arguments(datetime_column, groupby_columns):
     if not isinstance(datetime_column, basestring):
         raise ValueError('datetime_column param must be string. Got: ' + str(datetime_column))
     if groupby_columns:

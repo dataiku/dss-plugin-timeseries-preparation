@@ -11,7 +11,7 @@ import logging
 import dku_timeseries
 
 from dku_timeseries import ResamplerParams, Resampler
-from dku_tools import get_resampling_params
+from commons import get_resampling_params
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO,

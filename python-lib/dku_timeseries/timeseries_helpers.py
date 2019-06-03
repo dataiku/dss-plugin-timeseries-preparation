@@ -18,8 +18,7 @@ FREQUENCY_STRINGS = {
 }
 
 ROUND_COMPATIBLE_TIME_UNIT = ['days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds', 'nanoseconds']
-UNIT_ORDER = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds',
-              'nanoseconds']
+UNIT_ORDER = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds', 'nanoseconds']
 
 
 def get_date_offset(time_unit, offset_value):
@@ -37,7 +36,6 @@ def generate_date_range(start_time, end_time, clip_start, clip_end, frequency, t
         start_index = start_time.round('D') + clip_start_value
         # for some reason date_range omit the last entry when dealing with months, years
         end_index = end_time.round('D') - clip_end_value + get_date_offset(time_unit, time_step)
-
     return pd.date_range(start=start_index, end=end_index, freq=frequency)
 
 
@@ -46,7 +44,6 @@ def get_smaller_unit(window_unit):
     next_index = index + 1
     if next_index >= len(UNIT_ORDER):
         next_index = len(UNIT_ORDER) - 1
-
     return UNIT_ORDER[next_index]
 
 
@@ -55,8 +52,7 @@ def convert_time_freq_to_row_freq(frequency, window_description):
     demanded_frequency = pd.to_timedelta(to_offset(window_description))
     n = demanded_frequency / data_frequency
     if n < 1:
-        raise ValueError('The requested window width ({0}) is smaller than the timeseries frequency ({1}).'.format(
-            data_frequency, demanded_frequency))
+        raise ValueError('The requested window width ({0}) is smaller than the timeseries frequency ({1}).'.format(data_frequency, demanded_frequency))
     return int(math.ceil(n))  # always round up so that we dont miss any data
 
 

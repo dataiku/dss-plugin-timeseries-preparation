@@ -4,11 +4,10 @@ import numpy as np
 import logging
 from operator import itemgetter
 from itertools import *
-from dataframe_helpers import have_duplicate, nothing_to_do, filter_empty_columns, check_transform_arguments
+from dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
 from timeseries_helpers import get_date_offset, generate_date_range
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
 
 # Frequency strings as defined in https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
 FREQUENCY_STRINGS = {
@@ -25,10 +24,7 @@ FREQUENCY_STRINGS = {
 
 class IntervalRestrictorParams:
 
-    def __init__(self,
-                 min_valid_values_duration_value=1,
-                 min_deviation_duration_value=0,
-                 time_unit='seconds'):
+    def __init__(self, min_valid_values_duration_value=1, min_deviation_duration_value=0, time_unit='seconds'):
 
         self.min_valid_values_duration_value = min_valid_values_duration_value
         self.min_deviation_duration_value = min_deviation_duration_value
@@ -64,7 +60,7 @@ class IntervalRestrictor:
 
     def compute(self, df, datetime_column, threshold_dict, groupby_columns=None):
 
-        check_transform_arguments(datetime_column, groupby_columns)
+        generic_check_compute_arguments(datetime_column, groupby_columns)
         df_copy = df.copy()
 
         # drop all rows where the timestamp is null
@@ -88,9 +84,7 @@ class IntervalRestrictor:
         new_df = df.copy()
         new_df['numerical_index'] = range(len(new_df))
 
-        filtered_numerical_index = \
-            new_df[(new_df[chosen_column] < lower_threshold) | (new_df[chosen_column] > upper_threshold)][
-                'numerical_index'].values
+        filtered_numerical_index = new_df[(new_df[chosen_column] < lower_threshold) | (new_df[chosen_column] > upper_threshold)]['numerical_index'].values
 
         if len(filtered_numerical_index) == len(df):  # all data is artefact
             return []
@@ -147,8 +141,7 @@ class IntervalRestrictor:
     def _detect_row_segment(self, df, chosen_column, lower_threshold, upper_threshold):
 
         new_df = df.copy()
-        filtered_numerical_index = \
-            np.nonzero((new_df[chosen_column] < lower_threshold) | (new_df[chosen_column] > upper_threshold))[0]
+        filtered_numerical_index = np.nonzero((new_df[chosen_column] < lower_threshold) | (new_df[chosen_column] > upper_threshold))[0]
         if len(filtered_numerical_index) == len(df):  # all data is artefact
             return []
 
@@ -196,7 +189,7 @@ class IntervalRestrictor:
 
     def _detect_segment(self, df, datetime_column, threshold_dict, df_id=''):
 
-        if have_duplicate(df, datetime_column):
+        if has_duplicates(df, datetime_column):
             raise ValueError('The timeseries {} contain duplicate timestamps.'.format(df_id))
 
         if nothing_to_do(df, min_len=0):
