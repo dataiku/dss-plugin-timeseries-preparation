@@ -97,18 +97,18 @@
         },
         {
             "name": "sep3",
-            "label": "Partitioning",
+            "label": "Data format",
             "type": "SEPARATOR"
         },
         {
             "name": "advanced_activated",
-            "label": "Activate partitioning",
-            "description": "If the input dataset contains multiple time series indicated by a column value",
+            "label": "Long format",
+            "description": "Use this option if your data is in the long format, with one column identifying multiple timeseries and a single column for all values.",
             "type": "BOOLEAN"
         },
         {
             "name": "groupby_column",
-            "label": "Partitioning column",
+            "label": "Identification column",
             "type": "COLUMN",
             "columnRole": "input_dataset",
             "mandatory": false,
