@@ -20,7 +20,7 @@
     "outputRoles": [
         {
             "name": "output_dataset",
-            "label": "Output dataset",
+            "label": "Output dataset.",
             "description": "",
             "arity": "UNARY",
             "required": true,
