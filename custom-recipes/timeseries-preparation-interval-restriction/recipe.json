@@ -1,7 +1,7 @@
 {
     "meta": {
         "label": "Timeseries interval restriction",
-        "description": "Restrict a timeseries to a value interval.",
+        "description": "Restrict a timeseries to an interval of accepted values.",
         "icon": "icon-reorder"
     },
     "kind": "PYTHON",
@@ -20,7 +20,7 @@
     "outputRoles": [
         {
             "name": "output_dataset",
-            "label": "Output timeseries",
+            "label": "Output timeseries.",
             "description": "",
             "arity": "UNARY",
             "required": true,
@@ -43,7 +43,7 @@
         },
         {
             "name": "value_column",
-            "label": "Value column",
+            "label": "Apply threshold to values of column",
             "type": "COLUMN",
             "columnRole": "input_dataset",
             "mandatory": true
@@ -58,7 +58,7 @@
             "name": "max_threshold",
             "label": "Maximum valid value",
             "type": "DOUBLE",
-            "defaultValue": 10
+            "defaultValue": 1000
         },
         {
             "name": "sep1",
@@ -76,22 +76,21 @@
                 { "value": "seconds", "label": "Seconds"},
                 { "value": "minutes", "label": "Minutes"},
                 { "value": "hours", "label": "Hours"},
-                { "value": "days", "label": "Days"},
-                { "value": "rows", "label": "Rows"}
+                { "value": "days", "label": "Days"}
             ],
-            "defaultValue": "rows"
+            "defaultValue": "seconds"
         },
         {
             "name": "min_valid_values_duration_value",
-            "label": "Minimal valid values duration",
-            "description": "Values must be within the valid interval for more than this duration",
+            "label": "Minimal segment duration",
+            "description": "Values must be within the valid interval at least for this duration.",
             "type": "DOUBLE",
             "defaultValue": 10
         },
         {
             "name": "min_deviation_duration_value",
-            "label": "Minimum deviation duration",
-            "description": "Exiting the valid interval for less than this duration is ignored.",
+            "label": "Acceptable deviation",
+            "description": "Allows values to exit the valid interval if it lasts less than this duration.",
             "type": "DOUBLE",
             "defaultValue": 2
         },
