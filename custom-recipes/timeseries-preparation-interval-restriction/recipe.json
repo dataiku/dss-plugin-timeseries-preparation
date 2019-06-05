@@ -43,7 +43,7 @@
         },
         {
             "name": "value_column",
-            "label": "Apply threshold to values of column",
+            "label": "Apply threshold to column",
             "type": "COLUMN",
             "columnRole": "input_dataset",
             "mandatory": true
