@@ -9,7 +9,7 @@ from dku_timeseries import IntervalRestrictorParams
 from dku_timeseries import ExtremaExtractorParams
 
 def get_input_output():
-    if len(get_input_names_for_role('input_dataset') == 0):
+    if len(get_input_names_for_role('input_dataset')) == 0:
         raise ValueError('No input dataset.')
     input_dataset_name = get_input_names_for_role('input_dataset')[0]
     input_dataset = dataiku.Dataset(input_dataset_name)
