@@ -78,9 +78,9 @@ class Resampler:
             grouped = df_copy.groupby(groupby_columns)
             resampled_groups = []
             for group_id, group in grouped:
-                logger.info("Computing for group: ", group_id)
-                group_resampled = self._resample(group, datetime_column, columns_to_resample, reference_time_index, df_id=group_id)
-                group_resampled[groupby_columns] = group_id
+                logger.info("Computing for group: {}".format(group_id))
+                group_resampled = self._resample(group.drop(groupby_columns, axis=1), datetime_column, columns_to_resample, reference_time_index, df_id=group_id)
+                group_resampled.loc[:, groupby_columns[0]] = group_id #TODO make this work with multiple group cols
                 resampled_groups.append(group_resampled)
             df_resampled = pd.concat(resampled_groups)
         else:
