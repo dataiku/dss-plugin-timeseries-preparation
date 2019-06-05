@@ -1,7 +1,7 @@
 {
     "meta": {
         "label": "Timeseries resampling",
-        "description": "Resample timeseries by performing interpolation or extrapolation.",
+        "description": "Resample timeseries by performing interpolations (or extrapolations).",
         "icon": "icon-time"
     },
     "kind": "PYTHON",
@@ -42,8 +42,14 @@
             "type": "SEPARATOR"
         },
         {
+            "name": "time_step",
+            "label": "Timestep",
+            "type": "DOUBLE",
+            "defaultValue": 1
+        },
+        {
             "name": "time_unit",
-            "label": "Time step unit",
+            "label": "Unit",
             "type": "SELECT",
             "selectChoices": [
                 { "value": "nanoseconds", "label": "Nanoseconds"},
@@ -60,22 +66,16 @@
             "defaultValue": "seconds"
         },
         {
-            "name": "time_step",
-            "label": "Time step length",
-            "type": "DOUBLE",
-            "defaultValue": 1
-        },
-        {
             "name": "clip_start",
             "label": "Clip start",
-            "description": "Number of time steps to skip at the beginning of the series",
+            "description": "Number of timesteps to skip at the beginning of the series.",
             "type": "DOUBLE",
             "defaultValue": 0
         },
         {
             "name": "clip_end",
             "label": "Clip end",
-            "description": "Number of time steps to skip at the end of the series",
+            "description": "Number of timesteps to skip at the end of the series.",
             "type": "DOUBLE",
             "defaultValue": 0
         },
@@ -90,15 +90,14 @@
             "description": "",
             "type": "SELECT",
             "selectChoices": [
-                { "value": "nearest", "label": "nearest"},
-                { "value": "previous", "label": "previous"},
-                { "value": "next", "label": "next"},
-                { "value": "zero", "label": "zero"},
-                { "value": "slinear", "label": "slinear"},
-                { "value": "linear", "label": "linear"},
-                { "value": "quadratic", "label": "quadratic"},
-                { "value": "cubic", "label": "cubic"},
-                { "value": "None", "label": "none"}
+                { "value": "nearest", "label": "Nearest"},
+                { "value": "previous", "label": "Previous"},
+                { "value": "next", "label": "Next"},
+                { "value": "zero", "label": "Mean"},
+                { "value": "linear", "label": "Linear"},
+                { "value": "quadratic", "label": "Quadratic"},
+                { "value": "cubic", "label": "Cubic"},
+                { "value": "None", "label": "Don't interpolate (no value)"}
             ],
             "defaultValue": "linear"
         },
@@ -108,9 +107,9 @@
             "description": "",
             "type": "SELECT",
             "selectChoices": [
-                { "value": "clip", "label": "clip"},
-                { "value": "interpolation", "label": "same as interpolation"},
-                { "value": "None", "label": "none"}
+                { "value": "clip", "label": "Constant (nearest)"},
+                { "value": "interpolation", "label": "Same as interpolation"},
+                { "value": "None", "label": "Don't extrapolate (no value)"}
             ],
             "defaultValue": "clip"
         },
