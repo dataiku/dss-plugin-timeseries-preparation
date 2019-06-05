@@ -50,7 +50,7 @@ class ExtremaExtractor:
             grouped = df_copy.groupby(groupby_columns)
             computed_groups = []
             for group_id, group in grouped:
-                logger.info("Computing for group: ", group_id)
+                logger.info("Computing for group: {}".format(group_id))
                 extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(group, datetime_column,
                                                                                       extrema_column, df_id=group_id)
                 if extrema_neighbor_df is None:
@@ -90,6 +90,9 @@ class ExtremaExtractor:
             df_neighbor = df.loc[start_time:end_time]
             extrema_neigbors.append(df_neighbor)
 
-        extrema_neighbor_df = pd.concat(extrema_neigbors).drop_duplicates()
-        extrema_neighbor_df = extrema_neighbor_df.rename_axis(datetime_column).reset_index()
-        return extrema_neighbor_df, extrema_value
+        if len(extrema_neigbors) > 0:
+            extrema_neighbor_df = pd.concat(extrema_neigbors).drop_duplicates()
+            extrema_neighbor_df = extrema_neighbor_df.rename_axis(datetime_column).reset_index()
+            return extrema_neighbor_df, extrema_value
+        else:
+            return None, None
