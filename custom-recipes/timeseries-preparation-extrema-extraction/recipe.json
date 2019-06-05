@@ -61,7 +61,7 @@
         },
         {
             "name": "window_type",
-            "label": "Type",
+            "label": "Shape",
             "type": "SELECT",
             "selectChoices": [
                 { "value": "triang", "label": "Triangle"},
@@ -73,6 +73,20 @@
                 { "value": "none", "label": "Flat"}
             ],
             "defaultValue": "none"
+        },
+        {
+            "name": "gaussian_std",
+            "label": "Standard deviation of the gaussian window",
+            "type": "DOUBLE",
+            "default_value": 1.0,
+            "visibilityCondition": "model.window_type == 'gaussian'"
+
+        },
+        {
+            "name": "window_width",
+            "label": "Width",
+            "type": "DOUBLE",
+            "defaultValue": 1
         },
         {
             "name": "window_unit",
@@ -88,38 +102,22 @@
                 { "value": "days", "label": "Days"},
                 { "value": "weeks", "label": "Weeks"},
                 { "value": "months", "label": "Months"},
-                { "value": "years", "label": "Years"},
-                { "value": "rows", "label": "Rows"}
+                { "value": "years", "label": "Years"}
             ],
-            "defaultValue": "rows"
-        },
-        {
-            "name": "window_width",
-            "label": "Width",
-            "type": "DOUBLE",
-            "defaultValue": 1
-        },
-        {
-            "name": "gaussian_std",
-            "label": "Gaussian standard deviation",
-            "type": "DOUBLE",
-            "default_value": 1.0,
-            "visibilityCondition": "model.window_type == 'gaussian'"
-
+            "defaultValue": "seconds"
         },
         {
             "name": "closed_option",
             "label": "Include window bounds",
-            "description": "",
+            "description": "Includes the sides of the window to compute aggregations.",
             "type": "SELECT",
             "selectChoices": [
-                { "value": "left", "label": "Left only"},
-                { "value": "right", "label": "Right only"},
-                { "value": "both", "label": "Both"},
+                { "value": "left", "label": "Yes, left only"},
+                { "value": "right", "label": "Yes, right only"},
+                { "value": "both", "label": "Yes, both"},
                 { "value": "neither", "label": "No"}
             ],
-            "defaultValue": "left",
-            "visibilityCondition": "model.window_unit != 'rows'"
+            "defaultValue": "left"
         },
         {
             "name": "sep3",

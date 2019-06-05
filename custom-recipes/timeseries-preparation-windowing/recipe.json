@@ -43,7 +43,7 @@
         },
         {
             "name": "window_type",
-            "label": "Type",
+            "label": "Shape",
             "type": "SELECT",
             "selectChoices": [
                 { "value": "boxcar", "label": "Boxcar"},
@@ -55,6 +55,20 @@
                 { "value": "gaussian", "label": "Gaussian"}
             ],
             "defaultValue": "boxcar"
+        },
+        {
+            "name": "gaussian_std",
+            "label": "Standard deviation of the gaussian window",
+            "type": "DOUBLE",
+            "default_value": 1.0,
+            "visibilityCondition": "model.window_type == 'gaussian'"
+
+        },
+        {
+            "name": "window_width",
+            "label": "Width",
+            "type": "DOUBLE",
+            "defaultValue": 1
         },
         {
             "name": "window_unit",
@@ -70,24 +84,9 @@
                 { "value": "days", "label": "Days"},
                 { "value": "weeks", "label": "Weeks"},
                 { "value": "months", "label": "Months"},
-                { "value": "years", "label": "Years"},
-                { "value": "rows", "label": "Rows"}
+                { "value": "years", "label": "Years"}
             ],
-            "defaultValue": "rows"
-        },
-        {
-            "name": "window_width",
-            "label": "Width",
-            "type": "DOUBLE",
-            "defaultValue": 1
-        },
-        {
-            "name": "gaussian_std",
-            "label": "Gaussian standard deviation",
-            "type": "DOUBLE",
-            "default_value": 1.0,
-            "visibilityCondition": "model.window_type == 'gaussian'"
-
+            "defaultValue": "seconds"
         },
         {
             "name": "closed_option",
@@ -100,8 +99,7 @@
                 { "value": "both", "label": "Yes, both"},
                 { "value": "neither", "label": "No"}
             ],
-            "defaultValue": "left",
-            "visibilityCondition": "model.window_unit != 'rows'"
+            "defaultValue": "left"
         },
         {
             "name": "sep3",
