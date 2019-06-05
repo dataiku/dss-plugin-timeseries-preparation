@@ -1,7 +1,7 @@
 {
     "meta": {
         "label": "Timeseries extrema extraction",
-        "description": "Find the extrema in a timeseries.",
+        "description": "Extract values around an extremum.",
         "icon": "icon-zoom-in"
     },
     "kind": "PYTHON",
