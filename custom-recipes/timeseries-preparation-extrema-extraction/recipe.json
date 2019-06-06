@@ -121,7 +121,7 @@
         },
         {
             "name": "sep3",
-            "label": "Data format",
+            "label": "Advanced data format",
             "type": "SEPARATOR"
         },
         {
@@ -132,7 +132,7 @@
         },
         {
             "name": "groupby_column",
-            "label": "Identification column",
+            "label": "Column with identifier",
             "type": "COLUMN",
             "columnRole": "input_dataset",
             "mandatory": false,
