@@ -89,16 +89,6 @@ def test_incremental_time_unit():
         assert output_df[DATA_COL][x] == y
 
 
-def test_incremental_row_unit_no_deviation():
-    length = 1000
-    data = [x for x in range(length)]
-    df = _make_df_with_one_col(data)
-    params = dku_timeseries.IntervalRestrictorParams(time_unit='rows', min_deviation_duration_value=3)
-    interval_restrictor = dku_timeseries.IntervalRestrictor(params)
-    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
-    for x, y in enumerate(range(MIN_THRESHOLD, MAX_THRESHOLD)):
-        assert output_df[DATA_COL][x] == y
-
 
 def test_incremental_time_unit_with_noise():
     length = 1000

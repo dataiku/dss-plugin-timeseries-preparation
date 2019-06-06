@@ -46,7 +46,8 @@ class ResamplerParams:
             raise ValueError('Time step can not be negative.')
         if self.time_unit not in TIME_UNITS:
             raise ValueError('"{0}" is not a valid unit. Possible time units are: {1}'.format(self.time_unit, TIME_UNITS))
-
+        if self.time_unit == 'rows':
+            raise NotImplementedError
 
 class Resampler:
 

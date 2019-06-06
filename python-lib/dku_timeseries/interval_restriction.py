@@ -29,15 +29,10 @@ class IntervalRestrictorParams:
         self.min_valid_values_duration_value = min_valid_values_duration_value
         self.min_deviation_duration_value = min_deviation_duration_value
         self.time_unit = time_unit
-
-        if self.time_unit == 'rows':
-            self.min_valid_values_duration = self.min_valid_values_duration_value
-            self.min_deviation_duration = self.min_deviation_duration_value
-        else:
-            self.min_valid_values_duration = pd.Timedelta(
-                str(self.min_valid_values_duration_value) + FREQUENCY_STRINGS.get(self.time_unit, ''))
-            self.min_deviation_duration = pd.Timedelta(
-                str(self.min_deviation_duration_value) + FREQUENCY_STRINGS.get(self.time_unit, ''))
+        self.min_valid_values_duration = pd.Timedelta(
+            str(self.min_valid_values_duration_value) + FREQUENCY_STRINGS.get(self.time_unit, ''))
+        self.min_deviation_duration = pd.Timedelta(
+            str(self.min_deviation_duration_value) + FREQUENCY_STRINGS.get(self.time_unit, ''))
 
     def check(self):
 
@@ -46,8 +41,7 @@ class IntervalRestrictorParams:
         if self.min_deviation_duration_value < 0:
             raise ValueError('Min deviation duration cannot be negative.')
         if self.time_unit not in FREQUENCY_STRINGS:
-            raise ValueError('{0} is not a valid time unit. Possible options are: {1}'.format(self.time_unit,
-                                                                                              FREQUENCY_STRINGS.keys()))
+            raise ValueError('{0} is not a valid time unit. Possible options are: {1}'.format(self.time_unit, FREQUENCY_STRINGS.keys()))
 
 
 class IntervalRestrictor:
@@ -66,7 +60,7 @@ class IntervalRestrictor:
         # drop all rows where the timestamp is null
         df_copy = df_copy.dropna(subset=[datetime_column])
         if nothing_to_do(df_copy, min_len=0):
-            logger.warning('The timeseries is empty, can not compute.')
+            logger.warning('The time series is empty, can not compute.')
             return pd.DataFrame(columns=df_copy.columns)
 
         if groupby_columns:
@@ -138,79 +132,25 @@ class IntervalRestrictor:
 
         return final_indexes
 
-    def _detect_row_segment(self, df, chosen_column, lower_threshold, upper_threshold):
-
-        new_df = df.copy()
-        filtered_numerical_index = np.nonzero((new_df[chosen_column] < lower_threshold) | (new_df[chosen_column] > upper_threshold))[0]
-        if len(filtered_numerical_index) == len(df):  # all data is artefact
-            return []
-
-        artefact_index_list = []
-        for k, g in groupby(enumerate(filtered_numerical_index), lambda (i, x): i - x):
-            artefact_index_list.append(map(itemgetter(1), g))
-
-        border_list = []
-        for artefact_indexes in artefact_index_list:
-            new_list = list(artefact_indexes)
-            new_list.insert(0, max(artefact_indexes[0] - 1, 0))
-            new_list.append(min(artefact_indexes[-1] + 1, len(df) - 1))
-            border_list.append([new_list[0], new_list[1], new_list[-2], new_list[-1]])
-
-        deviations_indices = []
-        for border_index in border_list:
-            start = border_index[1]
-            end = border_index[-2]
-            is_deviation = (end - start) >= self.params.min_deviation_duration
-            if is_deviation:
-                deviations_indices.extend([border_index[0], border_index[-1]])
-
-        if len(deviations_indices) > 0:
-            if (deviations_indices[0] == new_df.index[0]) and (deviations_indices[-1] == new_df.index[-1]):
-                proposed_indexes = deviations_indices
-            elif deviations_indices[0] == new_df.index[0]:
-                proposed_indexes = deviations_indices + [new_df.index[-1]]
-            elif deviations_indices[-1] == new_df.index[-1]:
-                proposed_indexes = [new_df.index[0]] + deviations_indices
-            else:
-                proposed_indexes = [new_df.index[0]] + deviations_indices + [new_df.index[-1]]
-        else:  # no artifact
-            proposed_indexes = [new_df.index[0], new_df.index[-1]]
-
-        list_of_groups = zip(*(iter(proposed_indexes),) * 2)  # [a,b,c,d] -> [(a,b), (c,d)]
-
-        final_indexes = []
-        for group in list_of_groups:
-            duration = group[1] - group[0]
-            print(group, duration)
-            if duration >= self.params.min_valid_values_duration:
-                final_indexes.append(group)
-
-        return final_indexes
 
     def _detect_segment(self, df, datetime_column, threshold_dict, df_id=''):
 
         if has_duplicates(df, datetime_column):
-            raise ValueError('The timeseries {} contain duplicate timestamps.'.format(df_id))
+            raise ValueError('The time series {} contain duplicate timestamps.'.format(df_id))
 
         if nothing_to_do(df, min_len=0):
-            logger.warning('The timeseries {} is empty, can not compute.'.format(df_id))
+            logger.warning('The time series {} is empty, can not compute.'.format(df_id))
             return pd.DataFrame(columns=df.columns)
 
         # TODO add support for multiple threshold column
-        if self.params.time_unit == 'rows':
-            df_copy = df.sort_values(datetime_column).reset_index(drop=True).copy()
-        else:
-            df_copy = df.copy()
-            df_copy.loc[:, datetime_column] = pd.to_datetime(df_copy[datetime_column])
-            df_copy = df_copy.set_index(datetime_column).sort_index()
+        df_copy = df.copy()
+        df_copy.loc[:, datetime_column] = pd.to_datetime(df_copy[datetime_column])
+        df_copy = df_copy.set_index(datetime_column).sort_index()
 
         segment_indexes = []
         for chosen_column, threshold_tuple in threshold_dict.items():
             lower_threshold, upper_threshold = threshold_tuple
-            if self.params.time_unit == 'rows':
-                segment_indexes = self._detect_row_segment(df_copy, chosen_column, lower_threshold, upper_threshold)
-            else:
-                segment_indexes = self._detect_time_segment(df_copy, chosen_column, lower_threshold, upper_threshold)
+            segment_indexes = self._detect_time_segment(df_copy, chosen_column, lower_threshold, upper_threshold)
 
         mask_list = []
         if len(segment_indexes) > 0:
@@ -221,7 +161,5 @@ class IntervalRestrictor:
         else:
             segment_df = pd.DataFrame(columns=df_copy.columns)
 
-        if self.params.time_unit != 'rows':
-            segment_df = segment_df.rename_axis(datetime_column).reset_index()
 
-        return segment_df
+        return segment_df.rename_axis(datetime_column).reset_index()

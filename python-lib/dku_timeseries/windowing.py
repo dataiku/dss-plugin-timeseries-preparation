@@ -58,12 +58,7 @@ class WindowAggregatorParams:  # TODO better naming ?
 
         self.window_width = window_width
         self.window_unit = window_unit
-
-        if window_unit == 'rows':
-            self.window_description = self.window_width
-        else:
-            self.window_description = str(self.window_width) + FREQUENCY_STRINGS.get(self.window_unit, '')
-        self.window_description_in_row = None
+        self.window_description = str(self.window_width) + FREQUENCY_STRINGS.get(self.window_unit, '')
         self.min_period = min_period
         self.closed_option = closed_option
         self.center = center
@@ -84,8 +79,7 @@ class WindowAggregatorParams:  # TODO better naming ?
         if self.min_period < 1:
             raise ValueError('Min period must be positive.')
         if self.closed_option not in CLOSED_OPTIONS:
-            raise ValueError('"{0}" is not a valid closed option. Possible values are: {1}'.format(self.closed_option,
-                                                                                                   CLOSED_OPTIONS))
+            raise ValueError('"{0}" is not a valid closed option. Possible values are: {1}'.format(self.closed_option, CLOSED_OPTIONS))
         if self.window_unit == 'rows':
             raise NotImplementedError
 
@@ -106,7 +100,7 @@ class WindowAggregator:
         # drop all rows where the timestamp is null
         df_copy = df.dropna(subset=[datetime_column]).copy()
         if nothing_to_do(df_copy, min_len=2):
-            logger.warning('The timeseries has less than 2 rows with values, can not resample.')
+            logger.warning('The time series has less than 2 rows with values, can not apply window.')
             return df_copy
 
         df_copy.loc[:, datetime_column] = pd.to_datetime(df_copy[datetime_column])
@@ -129,7 +123,7 @@ class WindowAggregator:
     def _check_valid_timeseries(self, frequency):
         if not frequency and self.params.window_type is not None:
             raise ValueError(
-                'The input dataset is not equispaced. Cannot apply window with time unit.')  # scipy limitation
+                'The input time series is not equispaced. Cannot apply window with time unit.')  # scipy limitation
 
     # def _is_non_equispace_with_window_type(self, frequency):
     #    if not frequency and self.params.window_type is not None:
@@ -140,10 +134,10 @@ class WindowAggregator:
     def _compute_rolling_stats(self, df, datetime_column, raw_columns, df_id=''):
 
         if nothing_to_do(df, min_len=2):
-            logger.info('The timeseries {} has less than 2 rows with values, can not resample.'.format(df_id))
+            logger.info('The time series {} has less than 2 rows with values, can not apply window.'.format(df_id))
             return df
         if has_duplicates(df, datetime_column):
-            raise ValueError('The timeseries {} contain duplicate timestamps.'.format(df_id))
+            raise ValueError('The time series {} contain duplicate timestamps.'.format(df_id))
 
         df_ref = df.set_index(datetime_column).sort_index().copy()
         new_df = pd.DataFrame(index=df_ref.index)
@@ -184,8 +178,7 @@ class WindowAggregator:
             is_inside_window_mask = (
                         time_lag_diff <= self.params.window_width * np.timedelta64(1, timedelta_unit)).astype(
                 'float').replace({0: np.nan})
-            new_df[col_names] = (data_lag_diff.div(time_lag_diff_normalized, axis=0)).multiply(is_inside_window_mask,
-                                                                                               axis=0)
+            new_df[col_names] = (data_lag_diff.div(time_lag_diff_normalized, axis=0)).multiply(is_inside_window_mask, axis=0)
 
         if 'second_order_derivative' in self.params.aggregation_types:
             col_names = ['{}_2nd_derivative'.format(col) for col in raw_columns]
@@ -198,11 +191,8 @@ class WindowAggregator:
             time_lag_diff = df_ref.index.to_series().diff()
             time_lag_diff_normalized = time_lag_diff / (np.timedelta64(1, derivative_time_unit))
             timedelta_unit = TIMEDELTA_STRINGS.get(self.params.window_unit)
-            is_inside_window_mask = (
-                        time_lag_diff <= self.params.window_width * np.timedelta64(1, timedelta_unit)).astype(
-                'float').replace({0: np.nan})
-            new_df[col_names] = (data_lag_two_diff.div(time_lag_diff_normalized, axis=0)).multiply(
-                is_inside_window_mask, axis=0)
+            is_inside_window_mask = (time_lag_diff <= self.params.window_width * np.timedelta64(1, timedelta_unit)).astype('float').replace({0: np.nan})
+            new_df[col_names] = (data_lag_two_diff.div(time_lag_diff_normalized, axis=0)).multiply(is_inside_window_mask, axis=0)
         if 'std' in self.params.aggregation_types:
             col_names = ['{}_std'.format(col) for col in raw_columns]
             new_df[col_names] = rolling_without_window_type[raw_columns].std()
@@ -221,11 +211,9 @@ class WindowAggregator:
                 if frequency:
                     window_description_in_row = convert_time_freq_to_row_freq(frequency, self.params.window_description)
                 else:
-                    raise ValueError(
-                        'The input dataset is not equispaced. Cannot apply window with time unit.')  # scipy limitation
+                    raise ValueError('The input time series is not equispaced. Cannot apply window with time unit.')  # scipy limitation
 
-                rolling_with_window = shifted_df.rolling(window=window_description_in_row,
-                                                         win_type=self.params.window_type)
+                rolling_with_window = shifted_df.rolling(window=window_description_in_row,  win_type=self.params.window_type)
 
                 if 'average' in self.params.aggregation_types:
                     col_names = ['{}_avg'.format(col) for col in raw_columns]
