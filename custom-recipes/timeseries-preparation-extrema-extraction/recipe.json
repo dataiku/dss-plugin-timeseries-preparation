@@ -64,13 +64,13 @@
             "label": "Shape",
             "type": "SELECT",
             "selectChoices": [
+                { "value": "none", "label": "Rectangular"},
                 { "value": "triang", "label": "Triangle"},
                 { "value": "blackman", "label": "Blackman"},
                 { "value": "hamming", "label": "Hamming"},
                 { "value": "bartlett", "label": "Bartlett"},
                 { "value": "parzen", "label": "Parzen"},
-                { "value": "gaussian", "label": "Gaussian"},
-                { "value": "none", "label": "Flat"}
+                { "value": "gaussian", "label": "Gaussian"}
             ],
             "defaultValue": "none"
         },

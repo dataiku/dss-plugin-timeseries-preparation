@@ -46,7 +46,7 @@
             "label": "Shape",
             "type": "SELECT",
             "selectChoices": [
-                { "value": "boxcar", "label": "Boxcar"},
+                { "value": "boxcar", "label": "Rectangular"},
                 { "value": "triang", "label": "Triangle"},
                 { "value": "blackman", "label": "Blackman"},
                 { "value": "hamming", "label": "Hamming"},
