@@ -1,7 +1,7 @@
 {
     "meta": {
-        "label": "Time series interval restriction",
-        "description": "Restrict a time series to an interval of accepted values.",
+        "label": "Time series interval extraction",
+        "description": "Extract intervals of accepted values, while allowing small deviations.",
         "icon": "icon-reorder"
     },
     "kind": "PYTHON",
