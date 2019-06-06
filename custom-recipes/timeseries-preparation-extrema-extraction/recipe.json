@@ -1,6 +1,6 @@
 {
     "meta": {
-        "label": "Timeseries extrema extraction",
+        "label": "Time series extrema extraction",
         "description": "Extract values around an extremum.",
         "icon": "icon-zoom-in"
     },
@@ -10,7 +10,7 @@
         {
             "name": "input_dataset",
             "label": "Input dataset",
-            "description": "Dataset containing your timeseries data.",
+            "description": "Dataset containing your time series data.",
             "description": "",
             "arity": "UNARY",
             "required": true,
@@ -127,7 +127,7 @@
         {
             "name": "advanced_activated",
             "label": "Long format",
-            "description": "Use this option if your data is in the long format, with one column identifying multiple timeseries and a single column for all values.",
+            "description": "Use this option if your data is in the long format, with one column identifying multiple time series and a single column for all values.",
             "type": "BOOLEAN"
         },
         {

@@ -1,7 +1,7 @@
 {
     "meta": {
-        "label": "Timeseries windowing",
-        "description": "Compute aggregations or filter a timeseries using rolling window.",
+        "label": "Time series windowing",
+        "description": "Compute aggregations or filter a time series using rolling window.",
         "icon": "icon-repeat"
     },
     "kind": "PYTHON",
@@ -9,8 +9,8 @@
     "inputRoles": [
         {
             "name": "input_dataset",
-            "label": "Input timeseries",
-            "description": "Dataset containing your timeseries data.",
+            "label": "Input time series",
+            "description": "Dataset containing your time series data.",
             "arity": "UNARY",
             "required": true,
             "acceptsDataset": true,
@@ -109,7 +109,7 @@
         {
             "name": "advanced_activated",
             "label": "Long format",
-            "description": "Use this option if your data is in the long format, with one column identifying multiple timeseries and a single column for all values.",
+            "description": "Use this option if your data is in the long format, with one column identifying multiple time series and a single column for all values.",
             "type": "BOOLEAN"
         },
         {
