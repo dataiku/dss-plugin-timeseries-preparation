@@ -1,7 +1,7 @@
 {
     "meta": {
         "label": "Time series resampling",
-        "description": "Resample time series by performing interpolations (or extrapolations).",
+        "description": "Resample time series by performing interpolations and/or extrapolations.",
         "icon": "icon-time"
     },
     "kind": "PYTHON",
@@ -21,7 +21,7 @@
         {
             "name": "output_dataset",
             "label": "Output time series",
-            "description": "Dataset with equispaced time series.",
+            "description": "Output dataset with equispaced time series.",
             "arity": "UNARY",
             "required": true,
             "acceptsDataset": true
@@ -93,7 +93,7 @@
             "description": "",
             "type": "SELECT",
             "selectChoices": [
-                { "value": "clip", "label": "Constant (nearest)"},
+                { "value": "clip", "label": "Constant"},
                 { "value": "interpolation", "label": "Same as interpolation"},
                 { "value": "None", "label": "Don't extrapolate (no value)"}
             ],
