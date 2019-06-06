@@ -37,16 +37,16 @@
             "mandatory": true
         },
         {
-            "name": "sep",
-            "label": "Threshold parameters",
-            "type": "SEPARATOR"
-        },
-        {
             "name": "value_column",
             "label": "Apply threshold to column",
             "type": "COLUMN",
             "columnRole": "input_dataset",
             "mandatory": true
+        },
+        {
+            "name": "sep",
+            "label": "Threshold parameters",
+            "type": "SEPARATOR"
         },
         {
             "name": "min_threshold",
