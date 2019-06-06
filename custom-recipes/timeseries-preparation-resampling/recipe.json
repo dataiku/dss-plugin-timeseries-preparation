@@ -66,20 +66,6 @@
             "defaultValue": "seconds"
         },
         {
-            "name": "clip_start",
-            "label": "Clip start",
-            "description": "Number of time steps to skip at the beginning of the series.",
-            "type": "DOUBLE",
-            "defaultValue": 0
-        },
-        {
-            "name": "clip_end",
-            "label": "Clip end",
-            "description": "Number of time steps to skip at the end of the series.",
-            "type": "DOUBLE",
-            "defaultValue": 0
-        },
-        {
             "name": "sep2",
             "label": "Methods",
             "type": "SEPARATOR"
@@ -112,6 +98,32 @@
                 { "value": "None", "label": "Don't extrapolate (no value)"}
             ],
             "defaultValue": "clip"
+        },
+        {
+            "name": "sepEdition",
+            "label": "Edit series",
+            "type": "SEPARATOR"
+        },
+        {
+            "name": "clip_start",
+            "label": "Clip start",
+            "description": "Number of time steps to skip at the beginning of the series.",
+            "type": "DOUBLE",
+            "defaultValue": 0
+        },
+        {
+            "name": "clip_end",
+            "label": "Clip end",
+            "description": "Number of time steps to skip at the end of the series.",
+            "type": "DOUBLE",
+            "defaultValue": 0
+        },
+        {
+            "name": "shift",
+            "label": "Shift value",
+            "description": "Shift all time stamps by this amount (can be negative).",
+            "type": "DOUBLE",
+            "defaultValue": 0
         },
         {
             "name": "sep3",
