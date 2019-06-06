@@ -1,6 +1,6 @@
 {
     "meta": {
-        "label": "Timeseries extrema extraction",
+        "label": "Time series extrema extraction",
         "description": "Extract values around an extremum.",
         "icon": "icon-zoom-in"
     },
@@ -10,7 +10,7 @@
         {
             "name": "input_dataset",
             "label": "Input dataset",
-            "description": "Dataset containing your timeseries data.",
+            "description": "Dataset containing your time series data.",
             "description": "",
             "arity": "UNARY",
             "required": true,
@@ -64,13 +64,13 @@
             "label": "Shape",
             "type": "SELECT",
             "selectChoices": [
+                { "value": "none", "label": "Rectangular"},
                 { "value": "triang", "label": "Triangle"},
                 { "value": "blackman", "label": "Blackman"},
                 { "value": "hamming", "label": "Hamming"},
                 { "value": "bartlett", "label": "Bartlett"},
                 { "value": "parzen", "label": "Parzen"},
-                { "value": "gaussian", "label": "Gaussian"},
-                { "value": "none", "label": "Flat"}
+                { "value": "gaussian", "label": "Gaussian"}
             ],
             "defaultValue": "none"
         },
@@ -121,18 +121,18 @@
         },
         {
             "name": "sep3",
-            "label": "Data format",
+            "label": "Advanced data format",
             "type": "SEPARATOR"
         },
         {
             "name": "advanced_activated",
             "label": "Long format",
-            "description": "Use this option if your data is in the long format, with one column identifying multiple timeseries and a single column for all values.",
+            "description": "Use this option if your data is in the long format, with one column identifying multiple time series and a single column for all values.",
             "type": "BOOLEAN"
         },
         {
             "name": "groupby_column",
-            "label": "Identification column",
+            "label": "Column with identifier",
             "type": "COLUMN",
             "columnRole": "input_dataset",
             "mandatory": false,
