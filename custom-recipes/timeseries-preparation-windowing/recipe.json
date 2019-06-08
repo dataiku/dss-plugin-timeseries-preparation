@@ -1,7 +1,7 @@
 {
     "meta": {
         "label": "Timeseries windowing",
-        "description": "Compute aggregations or filter a timeseries using rolling window.",
+        "description": "Compute aggregations or filter a timeseries using a sliding window.",
         "icon": "icon-repeat",
         "displayOrderRank": 2
     },

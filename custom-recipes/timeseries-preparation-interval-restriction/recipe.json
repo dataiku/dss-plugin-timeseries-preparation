@@ -1,7 +1,7 @@
 {
     "meta": {
-        "label": "Timeseries interval restriction",
-        "description": "Restrict a timeseries to a value interval.",
+        "label": "Timeseries smart interval restriction",
+        "description": "Restrict a timeseries to a value interval, allowing certain deviations",
         "icon": "icon-reorder",
         "displayOrderRank": 4
     },

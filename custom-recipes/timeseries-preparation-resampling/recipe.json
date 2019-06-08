@@ -1,7 +1,7 @@
 {
     "meta": {
         "label": "Timeseries resampling",
-        "description": "Resample timeseries by performing interpolation or extrapolation.",
+        "description": "Perform interpolation and extrapolation to align a time series on a fixed sampling rate",
         "icon": "icon-time",
         "displayOrderRank": 1
     },
