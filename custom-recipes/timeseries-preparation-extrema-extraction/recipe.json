@@ -2,7 +2,8 @@
     "meta": {
         "label": "Time series extrema extraction",
         "description": "Extract values around an extremum.",
-        "icon": "icon-zoom-in"
+        "icon": "icon-zoom-in",
+        "displayOrderRank": 3
     },
     "kind": "PYTHON",
     "selectableFromDataset": "input_dataset",

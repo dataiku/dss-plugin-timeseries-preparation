@@ -2,7 +2,8 @@
     "meta": {
         "label": "Time series interval extraction",
         "description": "Extract intervals of accepted values, while allowing small deviations.",
-        "icon": "icon-reorder"
+        "icon": "icon-reorder",
+        "displayOrderRank": 4
     },
     "kind": "PYTHON",
     "selectableFromDataset": "input_dataset",

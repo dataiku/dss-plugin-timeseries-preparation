@@ -1,8 +1,9 @@
 {
     "meta": {
         "label": "Time series resampling",
-        "description": "Resample time series by performing interpolations and/or extrapolations.",
-        "icon": "icon-time"
+        "description": "Perform interpolation and extrapolation to align a time series on a fixed sampling rate.",
+        "icon": "icon-time",
+        "displayOrderRank": 1
     },
     "kind": "PYTHON",
     "selectableFromDataset": "input_dataset",
