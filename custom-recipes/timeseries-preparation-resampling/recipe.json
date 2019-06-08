@@ -2,7 +2,8 @@
     "meta": {
         "label": "Timeseries resampling",
         "description": "Resample timeseries by performing interpolation or extrapolation.",
-        "icon": "icon-time"
+        "icon": "icon-time",
+        "displayOrderRank": 1
     },
     "kind": "PYTHON",
     "selectableFromDataset": "input_dataset",

@@ -2,7 +2,8 @@
     "meta": {
         "label": "Timeseries extrema extraction",
         "description": "Find the extrema in a timeseries.",
-        "icon": "icon-zoom-in"
+        "icon": "icon-zoom-in",
+        "displayOrderRank": 3
     },
     "kind": "PYTHON",
     "selectableFromDataset": "input_dataset",

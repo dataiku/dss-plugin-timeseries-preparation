@@ -2,7 +2,8 @@
     "meta": {
         "label": "Timeseries windowing",
         "description": "Compute aggregations or filter a timeseries using rolling window.",
-        "icon": "icon-repeat"
+        "icon": "icon-repeat",
+        "displayOrderRank": 2
     },
     "kind": "PYTHON",
     "selectableFromDataset": "input_dataset",

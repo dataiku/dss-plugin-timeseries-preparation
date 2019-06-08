@@ -2,7 +2,8 @@
     "meta": {
         "label": "Timeseries interval restriction",
         "description": "Restrict a timeseries to a value interval.",
-        "icon": "icon-reorder"
+        "icon": "icon-reorder",
+        "displayOrderRank": 4
     },
     "kind": "PYTHON",
     "selectableFromDataset": "input_dataset",
