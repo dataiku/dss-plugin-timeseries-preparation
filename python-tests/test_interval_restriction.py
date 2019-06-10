@@ -31,20 +31,18 @@ THRESHOLD_DICT = {DATA_COL: (MIN_THRESHOLD, MAX_THRESHOLD)}
 ### Helpers to create test data, should be fixtures at some point I guess
 def _make_df_with_one_col(column_data, period=pd.DateOffset(seconds=1), start_time=JUST_BEFORE_SPRING_DST):
     from datetime import datetime
-    top = datetime.now()
     time = pd.date_range(start_time, None, len(column_data), period)
-    top = datetime.now()
     df = pd.DataFrame({TIME_COL: time, DATA_COL: column_data})
     return df
 
 
-def _make_interval_restrictor_params(min_deviation_duration_value=1):
-    params = dku_timeseries.IntervalRestrictorParams(min_deviation_duration_value=min_deviation_duration_value)
+def _make_interval_restrictor_params(max_deviation_duration_value=0):
+    params = dku_timeseries.IntervalRestrictorParams(max_deviation_duration_value=max_deviation_duration_value)
     return params
 
 
-def _make_interval_restrictor(min_deviation_duration_value=1):
-    params = _make_interval_restrictor_params(min_deviation_duration_value)
+def _make_interval_restrictor(max_deviation_duration_value=0):
+    params = _make_interval_restrictor_params(max_deviation_duration_value)
     return dku_timeseries.IntervalRestrictor(params)
 
 
@@ -63,7 +61,7 @@ def test_nan_data():
     df = _make_df_with_one_col(data)
     interval_restrictor = _make_interval_restrictor()
     output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
-    assert output_df.shape == (1000, 2)
+    assert output_df.shape == (0, 2)
 
 def test_single_row_out_range():
     df = _make_df_with_one_col([50])
@@ -95,7 +93,7 @@ def test_incremental_time_unit_with_noise():
     data = [x for x in range(length)]
     df = _make_df_with_one_col(data)
     df.loc[5:6, DATA_COL] = [50, 51]
-    interval_restrictor = _make_interval_restrictor(min_deviation_duration_value=3)
+    interval_restrictor = _make_interval_restrictor(max_deviation_duration_value=3)
     output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
     for x, y in zip(range(len(output_df)), pd.date_range(JUST_BEFORE_SPRING_DST, None, 10, pd.DateOffset(seconds=1))):
         assert output_df[TIME_COL][x] == y
@@ -125,7 +123,7 @@ def test_group_incremental_time_unit_no_deviation():
 
     df = pd.concat(df_list, axis=0)
 
-    params = dku_timeseries.IntervalRestrictorParams(time_unit='seconds', min_deviation_duration_value=1)
+    params = dku_timeseries.IntervalRestrictorParams(time_unit='seconds', max_deviation_duration_value=1)
     interval_restrictor = dku_timeseries.IntervalRestrictor(params)
     output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT, groupby_columns=[GROUP_COL])
 
