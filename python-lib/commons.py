@@ -75,7 +75,7 @@ def get_interval_restriction_params(recipe_config):
     time_unit = _p('time_unit')
 
     params = IntervalRestrictorParams(min_valid_values_duration_value=min_valid_values_duration_value,
-                                    min_deviation_duration_value=min_deviation_duration_value,
+                                    max_deviation_duration_value=min_deviation_duration_value,
                                     time_unit=time_unit)
 
     params.check()
