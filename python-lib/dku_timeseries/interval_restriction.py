@@ -104,9 +104,6 @@ class IntervalRestrictor:
         # find index of invalid values
         invalid_values_numerical_index = new_df[~filter_function(new_df[filter_column])]['numerical_index'].values
 
-        print('---')
-        print(invalid_values_numerical_index)
-
         if len(invalid_values_numerical_index) == len(df):  # all data is artefact
             return []
 
@@ -114,7 +111,6 @@ class IntervalRestrictor:
         # [1,2,3,5,6] -> [[1,2,3], [5,6]
         for k, g in groupby(enumerate(invalid_values_numerical_index), lambda (i, x): i - x):
             artefact_index_list.append(map(itemgetter(1), g))
-        print('artefact_index_list: ', artefact_index_list)
         border_list = []
         for artefact_indexes in artefact_index_list:
             new_list = list(artefact_indexes)
@@ -122,7 +118,6 @@ class IntervalRestrictor:
             new_list.append(min(artefact_indexes[-1] + 1, len(new_df) - 1))
             border_list.append([new_list[0], new_list[1], new_list[-2], new_list[-1]])
 
-        print('border_list: ', border_list)
         border_timestamp_list = []
         for border in border_list:
             temp_timestamp = []
@@ -136,36 +131,25 @@ class IntervalRestrictor:
             end = border_timestamp[-2]
             is_deviation = (end - start) >= self.params.max_deviation_duration
             if is_deviation:
-                print
-                print(end - start)
-                print('deviation', border_timestamp[0], border_timestamp[-1])
+
                 deviations_indices.extend([border_timestamp[0], border_timestamp[-1]])
-        print
-        print('DEVIATION INDICES', deviations_indices)
+
         if len(deviations_indices) > 0:
             if (deviations_indices[0] == new_df.index[0]) and (deviations_indices[-1] == new_df.index[-1]):
-                print('option 1')
                 proposed_indexes = deviations_indices[1: -1]
             elif deviations_indices[0] == new_df.index[0]:
-                print
-                print('option 2')
-                print deviations_indices
                 proposed_indexes = deviations_indices[1:] + [new_df.index[-1]]
             elif deviations_indices[-1] == new_df.index[-1]:
-                print('option 3')
                 proposed_indexes = [new_df.index[0]] + deviations_indices[:-1]
             else:
-                print('option 4')
                 proposed_indexes = [new_df.index[0]] + deviations_indices + [new_df.index[-1]]
         else:  # no artifact
             proposed_indexes = [new_df.index[0], new_df.index[-1]]
 
         list_of_groups = zip(*(iter(proposed_indexes),) * 2)  # [a,b,c,d] -> [(a,b), (c,d)]
-        # print('list of group: ',list_of_groups)
         final_indexes = []
         for group in list_of_groups:
             duration = group[1] - group[0]
-            print('group ', group[1], group[0], duration)
             if duration >= self.params.min_valid_values_duration:
                 final_indexes.append(group)
 
@@ -189,8 +173,6 @@ class IntervalRestrictor:
         mask_dict = {}
         if len(segment_indexes) > 0:
             for segment_index, (start, end) in enumerate(segment_indexes):
-                print
-                print('SEGMENT', start, end)
                 mask = (df_copy.index >= start) & (df_copy.index <= end)
                 mask_dict[segment_index] = mask
 
