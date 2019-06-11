@@ -4,7 +4,7 @@ import numpy as np
 import logging
 from scipy import interpolate
 from dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from timeseries_helpers import FREQUENCY_STRINGS, ROUND_COMPATIBLE_TIME_UNIT, get_date_offset, generate_date_range
+from timeseries_helpers import FREQUENCY_STRINGS, ROUND_COMPATIBLE_TIME_UNIT, generate_date_range
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,8 @@ class ResamplerParams:
                  time_step=1,
                  time_unit='seconds',
                  clip_start=0,
-                 clip_end=0):
+                 clip_end=0,
+                 shift=0):
 
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
@@ -35,6 +36,7 @@ class ResamplerParams:
         self.resampling_step = str(self.time_step) + FREQUENCY_STRINGS.get(self.time_unit, '')
         self.clip_start = clip_start
         self.clip_end = clip_end
+        self.shift = shift
 
     def check(self):
 
@@ -99,10 +101,11 @@ class Resampler:
         end_time = df[datetime_column].max()
         clip_start = self.params.clip_start
         clip_end = self.params.clip_end
+        shift = self.params.shift
         frequency = self.params.resampling_step
         time_step = self.params.time_step
         time_unit = self.params.time_unit
-        return generate_date_range(start_time, end_time, clip_start, clip_end, frequency, time_step, time_unit)
+        return generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
 
     def _resample(self, df, datetime_column, columns_to_resample, reference_time_index, df_id=''):
         """
@@ -135,7 +138,8 @@ class Resampler:
 
         df_resample = df_resample.rename_axis(datetime_column).reset_index()
 
-        df_without_nan = df.dropna(subset=filtered_columns_to_resample) # different columns might start to have values at different rows
+        #TODO different columns might start to have values at different rows -> how to handle
+        df_without_nan = df.dropna(subset=filtered_columns_to_resample)
         interpolation_index_mask = (df_resample[datetime_column] >= df_without_nan[datetime_column].min()) & (df_resample[datetime_column] <= df_without_nan[datetime_column].max())
         interpolation_index = df_resample.index[interpolation_index_mask]
 

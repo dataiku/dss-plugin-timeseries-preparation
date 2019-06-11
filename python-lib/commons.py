@@ -27,13 +27,15 @@ def get_resampling_params(recipe_config):
     time_unit = _p('time_unit')
     clip_start = int(_p('clip_start'))  # TODO should be float too ?
     clip_end = int(_p('clip_end'))
+    shift = int(_p('shift'))
 
     params = ResamplerParams(interpolation_method=interpolation_method,
                              extrapolation_method=extrapolation_method,
                              time_step=time_step,
                              time_unit=time_unit,
                              clip_start=clip_start,
-                             clip_end=clip_end)
+                             clip_end=clip_end,
+                             shift=shift)
     params.check()
     return params
 
