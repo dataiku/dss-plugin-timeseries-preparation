@@ -87,7 +87,9 @@ class Resampler:
         else:
             df_resampled = self._resample(df_copy, datetime_column, columns_to_resample, reference_time_index)
 
-        return df_resampled.reset_index(drop=True)
+        df_resampled = df_resampled[df.columns].reset_index(drop=True)
+
+        return df_resampled
 
     def _compute_full_time_index(self, df, datetime_column):
         """
