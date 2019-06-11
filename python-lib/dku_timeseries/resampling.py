@@ -110,16 +110,16 @@ class Resampler:
         """
 
         if has_duplicates(df, datetime_column):
-            raise ValueError('The timeseries {} contain duplicate timestamps.'.format(df_id))
+            raise ValueError('The time series {} contain duplicate timestamps.'.format(df_id))
 
         if nothing_to_do(df, min_len=2):
-            logger.warning('The timeseries {} has less than 2 rows with values, can not resample.'.format(df_id))
+            logger.warning('The time series {} has less than 2 rows with values, can not resample.'.format(df_id))
             return df
 
         # `scipy.interpolate.interp1d` does not like empty columns, so we need to filter these out first
         filtered_columns_to_resample = filter_empty_columns(df, columns_to_resample)
         if len(filtered_columns_to_resample) == 0:
-            logger.warning('All numerical columns are empty for the timeseries {}.'.format(df_id))
+            logger.warning('All numerical columns are empty for the time series {}.'.format(df_id))
             return pd.DataFrame({datetime_column: reference_time_index}, columns=[datetime_column] + columns_to_resample)
 
         df_resample = df.set_index(datetime_column).sort_index().copy()
@@ -133,10 +133,11 @@ class Resampler:
 
         df_resample = df_resample.rename_axis(datetime_column).reset_index()
 
-        interpolation_index_mask = (df_resample[datetime_column] >= df[datetime_column].min()) & (df_resample[datetime_column] <= df[datetime_column].max())
+        df_without_nan = df.dropna(subset=filtered_columns_to_resample) # different columns might start to have values at different rows
+        interpolation_index_mask = (df_resample[datetime_column] >= df_without_nan[datetime_column].min()) & (df_resample[datetime_column] <= df_without_nan[datetime_column].max())
         interpolation_index = df_resample.index[interpolation_index_mask]
 
-        extrapolation_index_mask = (df_resample[datetime_column] < df[datetime_column].min()) | (df_resample[datetime_column] > df[datetime_column].max())
+        extrapolation_index_mask = (df_resample[datetime_column] < df_without_nan[datetime_column].min()) | (df_resample[datetime_column] > df_without_nan[datetime_column].max())
         extrapolation_index = df_resample.index[extrapolation_index_mask]
 
         index_with_data = df_resample.loc[interpolation_index, filtered_columns_to_resample].dropna(how='all').index
