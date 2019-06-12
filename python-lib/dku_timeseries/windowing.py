@@ -51,7 +51,6 @@ class WindowAggregatorParams:  # TODO better naming ?
                  window_unit='seconds',
                  min_period=1,
                  closed_option='left',
-                 center=False,
                  window_type=None,
                  gaussian_std=1.0,
                  aggregation_types=AGGREGATION_TYPES):
@@ -61,7 +60,6 @@ class WindowAggregatorParams:  # TODO better naming ?
         self.window_description = str(self.window_width) + FREQUENCY_STRINGS.get(self.window_unit, '')
         self.min_period = min_period
         self.closed_option = closed_option
-        self.center = center
         self.window_type = window_type
         self.gaussian_std = gaussian_std
         self.aggregation_types = aggregation_types
@@ -175,9 +173,7 @@ class WindowAggregator:
             time_lag_diff_normalized = time_lag_diff / (np.timedelta64(1, derivative_time_unit))
 
             timedelta_unit = TIMEDELTA_STRINGS.get(self.params.window_unit)
-            is_inside_window_mask = (
-                        time_lag_diff <= self.params.window_width * np.timedelta64(1, timedelta_unit)).astype(
-                'float').replace({0: np.nan})
+            is_inside_window_mask = (time_lag_diff <= self.params.window_width * np.timedelta64(1, timedelta_unit)).astype('float').replace({0: np.nan})
             new_df[col_names] = (data_lag_diff.div(time_lag_diff_normalized, axis=0)).multiply(is_inside_window_mask, axis=0)
 
         if 'second_order_derivative' in self.params.aggregation_types:
@@ -193,6 +189,7 @@ class WindowAggregator:
             timedelta_unit = TIMEDELTA_STRINGS.get(self.params.window_unit)
             is_inside_window_mask = (time_lag_diff <= self.params.window_width * np.timedelta64(1, timedelta_unit)).astype('float').replace({0: np.nan})
             new_df[col_names] = (data_lag_two_diff.div(time_lag_diff_normalized, axis=0)).multiply(is_inside_window_mask, axis=0)
+
         if 'std' in self.params.aggregation_types:
             col_names = ['{}_std'.format(col) for col in raw_columns]
             new_df[col_names] = rolling_without_window_type[raw_columns].std()

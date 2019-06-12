@@ -42,8 +42,7 @@ class IntervalRestrictorParams:
         if self.max_deviation_duration_value < 0:
             raise ValueError('Max deviation duration cannot be negative.')
         if self.time_unit not in FREQUENCY_STRINGS:
-            raise ValueError('{0} is not a valid time unit. Possible options are: {1}'.format(self.time_unit,
-                                                                                              FREQUENCY_STRINGS.keys()))
+            raise ValueError('{0} is not a valid time unit. Possible options are: {1}'.format(self.time_unit, FREQUENCY_STRINGS.keys()))
 
 
 class IntervalRestrictor:

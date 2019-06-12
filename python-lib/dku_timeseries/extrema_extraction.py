@@ -22,8 +22,7 @@ class ExtremaExtractorParams:
             raise ValueError('WindowAggregator object is not specified.')
         self.window_aggregator.params.check()
         if self.extrema_type not in EXTREMA_TYPES:
-            raise ValueError(
-                '{0} is not a valid options. Possible extrema types are: {1}'.format(self.extrema_type, EXTREMA_TYPES))
+            raise ValueError('{0} is not a valid options. Possible extrema types are: {1}'.format(self.extrema_type, EXTREMA_TYPES))
 
 
 class ExtremaExtractor:
@@ -57,8 +56,7 @@ class ExtremaExtractor:
                     extrema_df = pd.DataFrame({groupby_columns[0]: [group_id]})
                 else:
                     rolling_df = self.params.window_aggregator.compute(extrema_neighbor_df, datetime_column)
-                    extrema_df = rolling_df.loc[
-                        rolling_df[extrema_column] == extrema_value].copy()  # avoid .loc warning
+                    extrema_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value].copy() # avoid .loc warning
                     extrema_df.loc[:, groupby_columns[0]] = group_id
 
                 computed_groups.append(extrema_df)
