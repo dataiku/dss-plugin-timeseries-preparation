@@ -40,6 +40,7 @@
         {
             "name": "sep1",
             "label": "Window parameters",
+            "description": "The window will be applied to the values of all other timeseries, around the timestamp of the extremum that was found.",
             "type": "SEPARATOR"
         },
         {
@@ -47,21 +48,63 @@
             "label": "Shape",
             "type": "SELECT",
             "selectChoices": [
-                { "value": "boxcar", "label": "Rectangular"},
+                { "value": "none", "label": "Rectangular"},
                 { "value": "triang", "label": "Triangle"},
-                { "value": "blackman", "label": "Blackman"},
-                { "value": "hamming", "label": "Hamming"},
                 { "value": "bartlett", "label": "Bartlett"},
+                { "value": "gaussian", "label": "Gaussian"},
                 { "value": "parzen", "label": "Parzen"},
-                { "value": "gaussian", "label": "Gaussian"}
+                { "value": "hamming", "label": "Hamming"},
+                { "value": "blackman", "label": "Blackman"}
             ],
-            "defaultValue": "boxcar"
+            "defaultValue": "none"
+        },
+        {
+            "name": "desc_none",
+            "description": "A simple rectangular window with a flat profile",
+            "type": "SEPARATOR",
+            "visibilityCondition": "model.window_type == 'none'"
+        },
+        {
+            "name": "desc_triang",
+            "description": "A triangle window, linearly increasing then decreasing",
+            "type": "SEPARATOR",
+            "visibilityCondition": "model.window_type == 'triang'"
+        },
+        {
+            "name": "desc_bartlett",
+            "description": "Another triangle window, only its normalization differs",
+            "type": "SEPARATOR",
+            "visibilityCondition": "model.window_type == 'bartlett'"
+        },
+        {
+            "name": "desc_gaussian",
+            "description": "A nonlinear window of gaussian (exponential) shape",
+            "type": "SEPARATOR",
+            "visibilityCondition": "model.window_type == 'gaussian'"
+        },
+        {
+            "name": "desc_parzen",
+            "description": "A nonlinear window made of connected polynomials of the third degree",
+            "type": "SEPARATOR",
+            "visibilityCondition": "model.window_type == 'parzen'"
+        },
+        {
+            "name": "desc_hamming",
+            "description": "A nonlinear window obtained with a sum of cosines (trigonometric polynomial of order 1)",
+            "type": "SEPARATOR",
+            "visibilityCondition": "model.window_type == 'hamming'"
+        },
+        {
+            "name": "desc_blackman",
+            "description": "A nonlinear window obtained with a sum of cosines (trigonometric polynomial of order 2)",
+            "type": "SEPARATOR",
+            "visibilityCondition": "model.window_type == 'blackman'"
         },
         {
             "name": "gaussian_std",
             "label": "Standard deviation of the gaussian window",
             "type": "DOUBLE",
-            "default_value": 1.0,
+            "defaultValue": 1.0,
             "visibilityCondition": "model.window_type == 'gaussian'"
 
         },
