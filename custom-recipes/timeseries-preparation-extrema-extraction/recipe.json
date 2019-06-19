@@ -78,7 +78,7 @@
             "name": "gaussian_std",
             "label": "Standard deviation of the gaussian window",
             "type": "DOUBLE",
-            "default_value": 1.0,
+            "defaultValue": 1.0,
             "visibilityCondition": "model.window_type == 'gaussian'"
 
         },
