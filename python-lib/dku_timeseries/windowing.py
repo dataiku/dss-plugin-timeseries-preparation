@@ -24,7 +24,7 @@ TIMEDELTA_STRINGS = {
     'nanoseconds': 'ns'
 }
 
-WINDOW_TYPES = ['boxcar', 'triang', 'blackman', 'hamming', 'bartlett', 'parzen', 'gaussian']  # None for global extrema
+WINDOW_TYPES = ['triang', 'blackman', 'hamming', 'bartlett', 'parzen', 'gaussian', None]  # None for global extrema
 WINDOW_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 CLOSED_OPTIONS = ['right', 'left', 'both', 'neither']
 AGGREGATION_TYPES = [
@@ -47,6 +47,7 @@ AGGREGATION_TYPES = [
 class WindowAggregatorParams:  # TODO better naming ?
 
     def __init__(self,
+                 causal_window=True,
                  window_width=1,
                  window_unit='seconds',
                  min_period=1,
@@ -55,6 +56,7 @@ class WindowAggregatorParams:  # TODO better naming ?
                  gaussian_std=1.0,
                  aggregation_types=AGGREGATION_TYPES):
 
+        self.causal_window = causal_window
         self.window_width = window_width
         self.window_unit = window_unit
         self.window_description = str(self.window_width) + FREQUENCY_STRINGS.get(self.window_unit, '')
@@ -77,7 +79,8 @@ class WindowAggregatorParams:  # TODO better naming ?
         if self.min_period < 1:
             raise ValueError('Min period must be positive.')
         if self.closed_option not in CLOSED_OPTIONS:
-            raise ValueError('"{0}" is not a valid closed option. Possible values are: {1}'.format(self.closed_option, CLOSED_OPTIONS))
+            raise ValueError('"{0}" is not a valid closed option. Possible values are: {1}'.format(self.closed_option,
+                                                                                                   CLOSED_OPTIONS))
         if self.window_unit == 'rows':
             raise NotImplementedError
 
@@ -108,13 +111,31 @@ class WindowAggregator:
             grouped = df_copy.groupby(groupby_columns)
             computed_groups = []
             for group_id, group in grouped:
-                logger.info("Computing for group: ", group_id)
-                computed_df = self._compute_rolling_stats(group, datetime_column, raw_columns, df_id=group_id)
+                logger.info("Computing for group {}".format(group_id))
+
+                if self.params.causal_window:
+                    computed_df = self._compute_causal_stats(group, datetime_column, raw_columns, df_id=group_id)
+                else:
+                    computed_df = self._compute_bilateral_stats(group, datetime_column, raw_columns, df_id=group_id)
+
+                """ 
+                try:
+                    computed_df = self._compute_bilateral_stats(group, datetime_column, raw_columns, df_id=group_id)
+                except Exception as e:
+                    from future.utils import raise_
+                    if e.message == ('skiplist_init failed'):
+                        raise_(Exception, "Window width is too small", sys.exc_info()[2])
+                    else:
+                        raise_(Exception, "WindowAggregator._compute_rolling_stats() failed", sys.exc_info()[2])
+                """
                 computed_df[groupby_columns[0]] = group_id  # TODO generalize to multiple groupby cols
                 computed_groups.append(computed_df)
             final_df = pd.concat(computed_groups)
         else:
-            final_df = self._compute_rolling_stats(df_copy, datetime_column, raw_columns)
+            if self.params.causal_window:
+                final_df = self._compute_causal_stats(df_copy, datetime_column, raw_columns)
+            else:
+                final_df = self._compute_bilateral_stats(df_copy, datetime_column, raw_columns)
 
         return final_df.reset_index(drop=True)
 
@@ -129,7 +150,7 @@ class WindowAggregator:
     #    else:
     #        return False
 
-    def _compute_rolling_stats(self, df, datetime_column, raw_columns, df_id=''):
+    def _compute_causal_stats(self, df, datetime_column, raw_columns, df_id=''):
 
         if nothing_to_do(df, min_len=2):
             logger.info('The time series {} has less than 2 rows with values, can not apply window.'.format(df_id))
@@ -139,27 +160,53 @@ class WindowAggregator:
 
         df_ref = df.set_index(datetime_column).sort_index().copy()
         new_df = pd.DataFrame(index=df_ref.index)
+        compute_sum_and_mean = set(self.params.aggregation_types).intersection(set(['average', 'sum']))
 
         # compute all stats except mean and sum, the syntax does not change whether or not we have a window type
-        rolling_without_window_type = df_ref.rolling(window=self.params.window_description, closed=self.params.closed_option)
+        roller_without_window_type = df_ref.rolling(window=self.params.window_description,
+                                                    closed=self.params.closed_option)
+        new_df = self._compute_stats_without_win_type(roller_without_window_type, raw_columns, new_df, df_ref,
+                                                      compute_sum_and_mean)
+
+        # compute mean and sum, the only operations that might need a win_type
+        # when using win_type, window must be defined in terms of rows and not time unit (pandas limitation)
+        if compute_sum_and_mean:
+            if self.params.window_type:
+                # row-based rolling is always bound both side of the window, we thus shift 1 row down when closed is left
+                shifted_df = df_ref.shift(1)
+                frequency = infer_frequency(df_ref)
+                if frequency:
+                    window_description_in_row = convert_time_freq_to_row_freq(frequency, self.params.window_description)
+                else:
+                    raise ValueError(
+                        'The input time series is not equispaced. Cannot apply window with time unit.')  # pandas limitation
+
+                roller_with_window = shifted_df.rolling(window=window_description_in_row,
+                                                        win_type=self.params.window_type)
+
+                new_df = self._compute_stats_with_win_type(roller_with_window, raw_columns, new_df)
+
+        return new_df.rename_axis(datetime_column).reset_index()
+
+    def _compute_stats_without_win_type(self, roller, raw_columns, new_df, df_ref, compute_sum_and_mean=False):
 
         if 'retrieve' in self.params.aggregation_types:
             new_df[raw_columns] = df_ref[raw_columns]
         if 'min' in self.params.aggregation_types:
             col_names = ['{}_min'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window_type[raw_columns].apply(min, raw=True)
+            new_df[col_names] = roller[raw_columns].apply(min, raw=True)
         if 'max' in self.params.aggregation_types:
             col_names = ['{}_max'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window_type[raw_columns].apply(max, raw=True)
+            new_df[col_names] = roller[raw_columns].apply(max, raw=True)
         if 'q25' in self.params.aggregation_types:
             col_names = ['{}_q25'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window_type[raw_columns].quantile(0.25, raw=True)
+            new_df[col_names] = roller[raw_columns].quantile(0.25, raw=True)
         if 'median' in self.params.aggregation_types:
             col_names = ['{}_median'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window_type[raw_columns].quantile(0.5, raw=True)
+            new_df[col_names] = roller[raw_columns].quantile(0.5, raw=True)
         if 'q75' in self.params.aggregation_types:
             col_names = ['{}_q75'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window_type[raw_columns].quantile(0.75, raw=True)
+            new_df[col_names] = roller[raw_columns].quantile(0.75, raw=True)
         if 'first_order_derivative' in self.params.aggregation_types:
             col_names = ['{}_1st_derivative'.format(col) for col in raw_columns]
             if self.params.window_width < 1:
@@ -173,8 +220,11 @@ class WindowAggregator:
             time_lag_diff_normalized = time_lag_diff / (np.timedelta64(1, derivative_time_unit))
 
             timedelta_unit = TIMEDELTA_STRINGS.get(self.params.window_unit)
-            is_inside_window_mask = (time_lag_diff <= self.params.window_width * np.timedelta64(1, timedelta_unit)).astype('float').replace({0: np.nan})
-            new_df[col_names] = (data_lag_diff.div(time_lag_diff_normalized, axis=0)).multiply(is_inside_window_mask, axis=0)
+            is_inside_window_mask = (
+                        time_lag_diff <= self.params.window_width * np.timedelta64(1, timedelta_unit)).astype(
+                'float').replace({0: np.nan})
+            new_df[col_names] = (data_lag_diff.div(time_lag_diff_normalized, axis=0)).multiply(is_inside_window_mask,
+                                                                                               axis=0)
 
         if 'second_order_derivative' in self.params.aggregation_types:
             col_names = ['{}_2nd_derivative'.format(col) for col in raw_columns]
@@ -187,49 +237,73 @@ class WindowAggregator:
             time_lag_diff = df_ref.index.to_series().diff()
             time_lag_diff_normalized = time_lag_diff / (np.timedelta64(1, derivative_time_unit))
             timedelta_unit = TIMEDELTA_STRINGS.get(self.params.window_unit)
-            is_inside_window_mask = (time_lag_diff <= self.params.window_width * np.timedelta64(1, timedelta_unit)).astype('float').replace({0: np.nan})
-            new_df[col_names] = (data_lag_two_diff.div(time_lag_diff_normalized, axis=0)).multiply(is_inside_window_mask, axis=0)
+            is_inside_window_mask = (
+                        time_lag_diff <= self.params.window_width * np.timedelta64(1, timedelta_unit)).astype(
+                'float').replace({0: np.nan})
+            new_df[col_names] = (data_lag_two_diff.div(time_lag_diff_normalized, axis=0)).multiply(
+                is_inside_window_mask, axis=0)
 
         if 'std' in self.params.aggregation_types:
             col_names = ['{}_std'.format(col) for col in raw_columns]
-            new_df[col_names] = rolling_without_window_type[raw_columns].std()
+            new_df[col_names] = roller[raw_columns].std()
 
-        # compute mean and sum, the only operations that need a win_type
-        # when using win_type, window must be defined in terms of rows and not time unit
-        if set(self.params.aggregation_types).intersection(set(['average', 'sum'])):
-            if self.params.window_type:
-                # row-based rolling is always bound both side of the window, we thus shift 1 row down when closed is left
-                if self.params.closed_option == 'left':
-                    shifted_df = df_ref.shift(1)
-                else:
-                    shifted_df = df_ref
+        if compute_sum_and_mean and self.params.window_type is not None:
+            if 'average' in self.params.aggregation_types:
+                col_names = ['{}_avg'.format(col) for col in raw_columns]
+                new_df[col_names] = roller[raw_columns].mean()
 
-                frequency = infer_frequency(df_ref)
-                if frequency:
-                    window_description_in_row = convert_time_freq_to_row_freq(frequency, self.params.window_description)
-                else:
-                    raise ValueError('The input time series is not equispaced. Cannot apply window with time unit.')  # scipy limitation
+            if 'sum' in self.params.aggregation_types:
+                col_names = ['{}_sum'.format(col) for col in raw_columns]
+                new_df[col_names] = roller[raw_columns].sum()
 
-                rolling_with_window = shifted_df.rolling(window=window_description_in_row,  win_type=self.params.window_type)
+        return new_df
 
-                if 'average' in self.params.aggregation_types:
-                    col_names = ['{}_avg'.format(col) for col in raw_columns]
-                    if self.params.window_type == 'gaussian':
-                        new_df[col_names] = rolling_with_window[raw_columns].mean(std=self.params.gaussian_std)
-                    else:
-                        new_df[col_names] = rolling_with_window[raw_columns].mean()
-                if 'sum' in self.params.aggregation_types:
-                    col_names = ['{}_sum'.format(col) for col in raw_columns]
-                    if self.params.window_type == 'gaussian':
-                        new_df[col_names] = rolling_with_window[raw_columns].sum(std=self.params.gaussian_std)
-                    else:
-                        new_df[col_names] = rolling_with_window[raw_columns].sum()
+    def _compute_stats_with_win_type(self, roller, raw_columns, new_df):
+
+        if 'average' in self.params.aggregation_types:
+            col_names = ['{}_avg'.format(col) for col in raw_columns]
+            if self.params.window_type == 'gaussian':
+                new_df[col_names] = roller[raw_columns].mean(std=self.params.gaussian_std)
             else:
-                if 'average' in self.params.aggregation_types:
-                    col_names = ['{}_avg'.format(col) for col in raw_columns]
-                    new_df[col_names] = rolling_without_window_type[raw_columns].mean()
-                if 'sum' in self.params.aggregation_types:
-                    col_names = ['{}_sum'.format(col) for col in raw_columns]
-                    new_df[col_names] = rolling_without_window_type[raw_columns].sum()
+                new_df[col_names] = roller[raw_columns].mean()
+        if 'sum' in self.params.aggregation_types:
+            col_names = ['{}_sum'.format(col) for col in raw_columns]
+            if self.params.window_type == 'gaussian':
+                new_df[col_names] = roller[raw_columns].sum(std=self.params.gaussian_std)
+            else:
+                new_df[col_names] = roller[raw_columns].sum()
+
+        return new_df
+
+    def _compute_bilateral_stats(self, df, datetime_column, raw_columns, df_id=''):
+
+        if nothing_to_do(df, min_len=2):
+            logger.info('The time series {} has less than 2 rows with values, can not apply window.'.format(df_id))
+            return df
+        if has_duplicates(df, datetime_column):
+            raise ValueError('The time series {} contain duplicate timestamps.'.format(df_id))
+
+        df_ref = df.set_index(datetime_column).sort_index().copy()
+        new_df = pd.DataFrame(index=df_ref.index)
+
+        frequency = infer_frequency(df_ref)
+        print('FREQUENCY: ', frequency)
+        if frequency:
+            window_description_in_row = convert_time_freq_to_row_freq(frequency, self.params.window_description)
+            print('WINDOW: ', window_description_in_row)
+        else:
+            raise ValueError(
+                'The input time series is not equispaced. Cannot compute bilateral window.')  # pandas limitation
+
+        # compute all stats except mean and sum, these stats dont need a win_type
+        roller_without_win_type = df_ref.rolling(window=window_description_in_row, center=True)
+        compute_sum_and_mean = set(self.params.aggregation_types).intersection(set(['average', 'sum']))
+        new_df = self._compute_stats_without_win_type(roller_without_win_type, raw_columns, new_df, df_ref,
+                                                      compute_sum_and_mean)
+
+        # compute mean and sum, the only operations that win_type has an effect
+        roller_with_win_type = df_ref.rolling(window=window_description_in_row, win_type=self.params.window_type,
+                                              center=True)
+        new_df = self._compute_stats_with_win_type(roller_with_win_type, raw_columns, new_df)
 
         return new_df.rename_axis(datetime_column).reset_index()

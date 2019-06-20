@@ -123,7 +123,7 @@ def test_group_window_time_unit():
 
     df = pd.concat(df_list, axis=0)
 
-    params = dku_timeseries.WindowAggregatorParams(window_width=3, closed_option='left', window_type='boxcar')
+    params = dku_timeseries.WindowAggregatorParams(window_width=3, closed_option='left', window_type=None)
     window_aggregator = dku_timeseries.WindowAggregator(params)
     output_df = window_aggregator.compute(df, datetime_column=TIME_COL, groupby_columns=[GROUP_COL])
 
