@@ -44,6 +44,7 @@ def get_windowing_params(recipe_config):
     def _p(param_name, default=None):
         return recipe_config.get(param_name, default)
 
+    causal_window = _p('causal_window')
     window_unit = _p('window_unit')
     window_width = int(_p('window_width'))
     if _p('window_type') == 'none':
@@ -62,7 +63,8 @@ def get_windowing_params(recipe_config):
                                 window_width=window_width,
                                 window_type=window_type,
                                 gaussian_std=gaussian_std,
-                                closed_option=closed_option)
+                                closed_option=closed_option,
+                                causal_window=causal_window)
 
     params.check()
     return params
@@ -77,8 +79,8 @@ def get_interval_restriction_params(recipe_config):
     time_unit = _p('time_unit')
 
     params = IntervalRestrictorParams(min_valid_values_duration_value=min_valid_values_duration_value,
-                                    max_deviation_duration_value=min_deviation_duration_value,
-                                    time_unit=time_unit)
+                                      max_deviation_duration_value=min_deviation_duration_value,
+                                      time_unit=time_unit)
 
     params.check()
     return params
@@ -88,6 +90,7 @@ def get_extrema_extraction_params(recipe_config):
     def _p(param_name, default=None):
         return recipe_config.get(param_name, default)
 
+    causal_window = _p('causal_window')
     window_unit = _p('window_unit')
     window_width = int(_p('window_width'))
     if _p('window_type') == 'none':
@@ -105,7 +108,8 @@ def get_extrema_extraction_params(recipe_config):
                                        window_width=window_width,
                                        window_type=window_type,
                                        gaussian_std=gaussian_std,
-                                       closed_option=closed_option)
+                                       closed_option=closed_option,
+                                       causal_window=causal_window)
 
     window_aggregator = WindowAggregator(window_params)
     params = ExtremaExtractorParams(window_aggregator=window_aggregator, extrema_type=extrema_type)

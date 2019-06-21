@@ -77,16 +77,14 @@ class Resampler:
         # when having multiple partitions, their time range is not necessarily the same
         # we thus compute a unified time index for all partitions
         reference_time_index = self._compute_full_time_index(df_copy, datetime_column)
-        columns_to_resample = [col for col in df_copy.select_dtypes([int, float]).columns.tolist() if
-                               col != datetime_column]
+        columns_to_resample = [col for col in df_copy.select_dtypes([int, float]).columns.tolist() if col != datetime_column]
 
         if groupby_columns:
             grouped = df_copy.groupby(groupby_columns)
             resampled_groups = []
             for group_id, group in grouped:
                 logger.info("Computing for group: {}".format(group_id))
-                group_resampled = self._resample(group.drop(groupby_columns, axis=1), datetime_column,
-                                                 columns_to_resample, reference_time_index, df_id=group_id)
+                group_resampled = self._resample(group.drop(groupby_columns, axis=1), datetime_column, columns_to_resample, reference_time_index, df_id=group_id)
                 group_resampled.loc[:, groupby_columns[0]] = group_id  # TODO make this work with multiple group cols
                 resampled_groups.append(group_resampled)
             df_resampled = pd.concat(resampled_groups)
@@ -129,8 +127,7 @@ class Resampler:
         filtered_columns_to_resample = filter_empty_columns(df, columns_to_resample)
         if len(filtered_columns_to_resample) == 0:
             logger.warning('All numerical columns are empty for the time series {}.'.format(df_id))
-            return pd.DataFrame({datetime_column: reference_time_index},
-                                columns=[datetime_column] + columns_to_resample)
+            return pd.DataFrame({datetime_column: reference_time_index}, columns=[datetime_column] + columns_to_resample)
 
         df_resample = df.set_index(datetime_column).sort_index().copy()
         # merge the reference time index with the original ones that has data
@@ -145,24 +142,20 @@ class Resampler:
 
         # TODO different columns might start to have values at different rows -> how to handle
         df_without_nan = df.dropna(subset=filtered_columns_to_resample)
-        interpolation_index_mask = (df_resample[datetime_column] >= df_without_nan[datetime_column].min()) & (
-                    df_resample[datetime_column] <= df_without_nan[datetime_column].max())
+        interpolation_index_mask = (df_resample[datetime_column] >= df_without_nan[datetime_column].min()) & (df_resample[datetime_column] <= df_without_nan[datetime_column].max())
         interpolation_index = df_resample.index[interpolation_index_mask]
 
-        extrapolation_index_mask = (df_resample[datetime_column] < df_without_nan[datetime_column].min()) | (
-                    df_resample[datetime_column] > df_without_nan[datetime_column].max())
+        extrapolation_index_mask = (df_resample[datetime_column] < df_without_nan[datetime_column].min()) | (df_resample[datetime_column] > df_without_nan[datetime_column].max())
         extrapolation_index = df_resample.index[extrapolation_index_mask]
 
         index_with_data = df_resample.loc[interpolation_index, filtered_columns_to_resample].dropna(how='all').index
         interpolation_function = interpolate.interp1d(index_with_data,
-                                                      df_resample.loc[index_with_data,
-                                                                      filtered_columns_to_resample],
+                                                      df_resample.loc[index_with_data, filtered_columns_to_resample],
                                                       kind=self.params.interpolation_method,
                                                       axis=0,
                                                       fill_value='extrapolate')
 
-        df_resample.loc[interpolation_index, filtered_columns_to_resample] = interpolation_function(
-            df_resample.loc[interpolation_index].index)
+        df_resample.loc[interpolation_index, filtered_columns_to_resample] = interpolation_function(df_resample.loc[interpolation_index].index)
 
         if self.params.extrapolation_method == "interpolation":
             df_resample.loc[extrapolation_index, filtered_columns_to_resample] = interpolation_function(

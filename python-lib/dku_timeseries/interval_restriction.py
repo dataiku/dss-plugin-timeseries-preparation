@@ -74,7 +74,8 @@ class IntervalRestrictor:
         if groupby_columns:
             grouped = df.groupby(groupby_columns)
             filtered_groups = []
-            for _, group in grouped:
+            for group_id, group in grouped:
+                logger.info("Computing for group {}".format(group_id))
                 filtered_df = self._detect_segment(group, datetime_column, filter_column, filter_function)
                 filtered_groups.append(filtered_df)
             return pd.concat(filtered_groups).reset_index(drop=True)

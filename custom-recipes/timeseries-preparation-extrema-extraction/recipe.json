@@ -61,6 +61,12 @@
             "type": "SEPARATOR"
         },
         {
+            "name": "causal_window",
+            "label": "Causal window",
+            "description": "Set the on-going row at the right border of the window.",
+            "type": "BOOLEAN"
+        },
+        {
             "name": "window_type",
             "label": "Shape",
             "type": "SELECT",
@@ -160,7 +166,8 @@
                 { "value": "both", "label": "Yes, both"},
                 { "value": "neither", "label": "No"}
             ],
-            "defaultValue": "left"
+            "defaultValue": "left",
+            "visibilityCondition": "model.causal_window"
         },
         {
             "name": "sep3",

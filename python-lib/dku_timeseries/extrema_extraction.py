@@ -87,8 +87,8 @@ class ExtremaExtractor:
             extrema_neighbors.append(df_neighbor)
 
         if len(extrema_neighbors) > 0:
-            extrema_neighbor_df = pd.concat(extrema_neighbors).drop_duplicates()
-            extrema_neighbor_df = extrema_neighbor_df.rename_axis(datetime_column).reset_index()
+            extrema_neighbor_df = pd.concat(extrema_neighbors)
+            extrema_neighbor_df = extrema_neighbor_df.rename_axis(datetime_column).reset_index().drop_duplicates()
             return extrema_neighbor_df, extrema_value
         else:
             return None, None
