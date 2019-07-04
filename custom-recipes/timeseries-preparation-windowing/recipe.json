@@ -40,7 +40,7 @@
         {
             "name": "sep1",
             "label": "Window parameters",
-            "description": "The window will be applied to the values of all other timeseries, around the timestamp of the extremum that was found.",
+            "description": "The window will be applied to the values of all other time series, around the timestamp of the extremum that was found.",
             "type": "SEPARATOR"
         },
         {
