@@ -58,13 +58,15 @@ def get_windowing_params(recipe_config):
         gaussian_std = None
 
     closed_option = _p('closed_option')
+    aggregation_types = _p('aggregation_types')
 
     params = WindowAggregatorParams(window_unit=window_unit,
                                 window_width=window_width,
                                 window_type=window_type,
                                 gaussian_std=gaussian_std,
                                 closed_option=closed_option,
-                                causal_window=causal_window)
+                                causal_window=causal_window,
+                                aggregation_types=aggregation_types)
 
     params.check()
     return params
@@ -104,12 +106,16 @@ def get_extrema_extraction_params(recipe_config):
         gaussian_std = None
     closed_option = _p('closed_option')
     extrema_type = _p('extrema_type')
+    aggregation_types = _p('aggregation_types')
+
+    print('AGGREGATION TYPE: ', aggregation_types)
     window_params = WindowAggregatorParams(window_unit=window_unit,
                                        window_width=window_width,
                                        window_type=window_type,
                                        gaussian_std=gaussian_std,
                                        closed_option=closed_option,
-                                       causal_window=causal_window)
+                                       causal_window=causal_window,
+                                       aggregation_types=aggregation_types)
 
     window_aggregator = WindowAggregator(window_params)
     params = ExtremaExtractorParams(window_aggregator=window_aggregator, extrema_type=extrema_type)

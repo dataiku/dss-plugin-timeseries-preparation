@@ -39,8 +39,7 @@ AGGREGATION_TYPES = [
     'q75',
     'sum',
     'first_order_derivative',
-    'second_order_derivative',
-    'count'
+    'second_order_derivative'
     # No lag, UI concern (where to put offset value)
 ]
 
@@ -120,6 +119,7 @@ class WindowAggregator:
                         computed_df = self._compute_bilateral_stats(group, datetime_column, raw_columns, df_id=group_id)
                 except Exception as e:
                     from future.utils import raise_
+                    # issues with left border, cf https://github.com/pandas-dev/pandas/issues/26005
                     if e.message == ('skiplist_init failed'):
                         raise_(Exception, "Window width is too small", sys.exc_info()[2])
                     else:
@@ -145,9 +145,7 @@ class WindowAggregator:
 
     def _check_valid_timeseries(self, frequency):
         if not frequency and self.params.window_type is not None:
-            raise ValueError(
-                'The input time series is not equispaced. Cannot apply window with time unit.')  # pandas limitation
-
+            raise ValueError('The input time series is not equispaced. Cannot apply window with time unit.')  # pandas limitation
 
     def _compute_causal_stats(self, df, datetime_column, raw_columns, df_id=''):
 
@@ -181,7 +179,6 @@ class WindowAggregator:
                 raise ValueError('The input time series is not equispaced. Cannot apply window with time unit.')  # pandas limitation
 
             roller_with_window = shifted_df.rolling(window=window_description_in_row, win_type=self.params.window_type, closed=self.params.closed_option)
-
             new_df = self._compute_stats_with_win_type(roller_with_window, raw_columns, new_df)
 
         return new_df.rename_axis(datetime_column).reset_index()
@@ -290,5 +287,4 @@ class WindowAggregator:
                 new_df[col_names] = roller[raw_columns].sum(std=self.params.gaussian_std)
             else:
                 new_df[col_names] = roller[raw_columns].sum()
-
         return new_df

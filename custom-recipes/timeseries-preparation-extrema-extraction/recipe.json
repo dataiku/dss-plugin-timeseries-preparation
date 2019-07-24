@@ -170,6 +170,24 @@
             "visibilityCondition": "model.causal_window"
         },
         {
+            "name": "aggregation_types",
+            "label": "Aggregations",
+            "type": "MULTISELECT",
+            "selectChoices": [
+                { "value": "retrieve", "label": "Retrieve"},
+                { "value": "min", "label": "Min"},
+                { "value": "max", "label": "Max"},
+                { "value": "average", "label": "Average"},
+                { "value": "sum", "label": "Sum"},
+                { "value": "std", "label": "Standard deviation"},
+                { "value": "q25", "label": "25th percentile"},
+                { "value": "median", "label": "Median"},
+                { "value": "q75", "label": "75th percentile"},
+                { "value": "first_order_derivative", "label": "First order derivative"},
+                { "value": "second_order_derivative", "label": "Second order derivative"}
+            ]
+        }, 
+        {
             "name": "sep3",
             "label": "Advanced data format",
             "type": "SEPARATOR"

@@ -38,12 +38,10 @@ class ResamplerParams:
 
         if self.interpolation_method not in INTERPOLATION_METHODS:
             raise ValueError(
-                'Method "{0}" is not valid. Possible interpolation methods are: {1}.'.format(self.interpolation_method,
-                                                                                             INTERPOLATION_METHODS))
+                'Method "{0}" is not valid. Possible interpolation methods are: {1}.'.format(self.interpolation_method, INTERPOLATION_METHODS))
         if self.extrapolation_method not in EXTRAPOLATION_METHODS:
             raise ValueError(
-                'Method "{0}" is not valid. Possible extrapolation methods are: {1}.'.format(self.extrapolation_method,
-                                                                                             EXTRAPOLATION_METHODS))
+                'Method "{0}" is not valid. Possible extrapolation methods are: {1}.'.format(self.extrapolation_method, EXTRAPOLATION_METHODS))
         if self.time_step < 0:
             raise ValueError('Time step can not be negative.')
         if self.time_unit not in TIME_UNITS:
