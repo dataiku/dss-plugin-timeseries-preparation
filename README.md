@@ -1,2 +1,2 @@
-# dss-plugin-timeseries-preparation
-The timeseries preparation plugin is a set of python recipes to help you prepare timeseries data.
+# Time Series Preparation Plugin
+The time series preparation plugin is toolbox to help you prepare data indexed by time (one row per time stamp).
