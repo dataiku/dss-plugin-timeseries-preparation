@@ -5,8 +5,8 @@ import logging
 from operator import itemgetter
 from itertools import *
 
-from dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from timeseries_helpers import get_date_offset, generate_date_range
+from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
+from dku_timeseries.timeseries_helpers import get_date_offset, generate_date_range
 
 logger = logging.getLogger(__name__)
 
@@ -109,8 +109,8 @@ class IntervalRestrictor:
 
         artefact_index_list = []
         # [1,2,3,5,6] -> [[1,2,3], [5,6]
-        for k, g in groupby(enumerate(invalid_values_numerical_index), lambda (i, x): i - x):
-            artefact_index_list.append(map(itemgetter(1), g))
+        for k, g in groupby(enumerate(invalid_values_numerical_index), lambda x: x[0] - x[1]):
+            artefact_index_list.append(list(map(itemgetter(1), g)))
         border_list = []
         for artefact_indexes in artefact_index_list:
             new_list = list(artefact_indexes)
@@ -182,7 +182,7 @@ class IntervalRestrictor:
             for k, v in mask_dict.items():
                 df_labeled.loc[v, 'interval_id'] = str(int(k))
 
-            segment_df = df_labeled.loc[np.logical_or.reduce(mask_dict.values())].sort_index()
+            segment_df = df_labeled.loc[np.logical_or.reduce(list(mask_dict.values()))].sort_index()
         else:
             segment_df = pd.DataFrame(columns=df_copy.columns)
 
