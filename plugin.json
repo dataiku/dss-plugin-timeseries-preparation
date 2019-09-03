@@ -6,6 +6,7 @@
         "description": "",
         "author": "Dataiku (Du PHAN)",
         "icon": "icon-time",
+        "supported":true,
         "licenseInfo": "Apache Software License",
         "url": "https://www.dataiku.com/community/plugins/info/time-series-preparation.html",
         "tags": ["Time series"]
