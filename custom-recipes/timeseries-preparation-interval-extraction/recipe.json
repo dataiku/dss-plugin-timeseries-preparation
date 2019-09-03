@@ -2,7 +2,7 @@
     "meta": {
         "label": "Time series interval extraction",
         "description": "Extract intervals of accepted values, while allowing small deviations.",
-        "icon": "icon-reorder",
+        "icon": "DKU_timeries_segmenting",
         "displayOrderRank": 4
     },
     "kind": "PYTHON",

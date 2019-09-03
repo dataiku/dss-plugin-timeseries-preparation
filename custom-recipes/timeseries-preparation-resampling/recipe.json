@@ -2,7 +2,7 @@
     "meta": {
         "label": "Time series resampling",
         "description": "Performs interpolations and extrapolations to align time series on a fixed sampling rate.",
-        "icon": "icon-time",
+        "icon": "icon-DKU_timeseries_resample",
         "displayOrderRank": 1
     },
     "kind": "PYTHON",
