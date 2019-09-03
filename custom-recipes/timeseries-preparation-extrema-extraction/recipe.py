@@ -4,6 +4,7 @@ from dataiku.customrecipe import *
 from dku_timeseries import ExtremaExtractor
 from commons import *
 
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
 
