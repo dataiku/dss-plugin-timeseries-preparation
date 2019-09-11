@@ -12,8 +12,6 @@ from datetime import datetime
 ## Add stuff to the path to enable exec outside of DSS
 plugin_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(plugin_root, 'python-lib'))
-# sys.path.append(os.path.join(os.environ['DKUINSTALLDIR'], 'src/main/python/'))
-sys.path.append(os.path.join(os.environ['OLDPWD'], 'src/main/python/'))
 
 import dku_timeseries
 

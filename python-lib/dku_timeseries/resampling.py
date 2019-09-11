@@ -4,8 +4,8 @@ import numpy as np
 import logging
 from scipy import interpolate
 
-from dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from timeseries_helpers import FREQUENCY_STRINGS, ROUND_COMPATIBLE_TIME_UNIT, generate_date_range, reformat_time_value
+from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
+from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, ROUND_COMPATIBLE_TIME_UNIT, generate_date_range, reformat_time_value
 
 logger = logging.getLogger(__name__)
 

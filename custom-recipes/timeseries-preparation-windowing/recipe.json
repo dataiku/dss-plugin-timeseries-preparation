@@ -2,7 +2,7 @@
     "meta": {
         "label": "Time series windowing",
         "description": "Compute aggregations or filter a time series using a rolling window.",
-        "icon": "icon-repeat",
+        "icon": "icon-DKU_timeseries_window",
         "displayOrderRank": 2
     },
     "kind": "PYTHON",
@@ -40,7 +40,7 @@
         {
             "name": "sep1",
             "label": "Window parameters",
-            "description": "The window will be applied to the values of all other time series, around the timestamp of the extremum that was found.",
+            "description": "The window will be applied to the values of all other time series",
             "type": "SEPARATOR"
         },
         {

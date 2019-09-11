@@ -1,3 +1,4 @@
+state.json
 *.pyc
 .idea/
 .coverage

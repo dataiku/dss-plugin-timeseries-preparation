@@ -3,8 +3,8 @@ import pandas as pd
 import logging
 import re
 from pandas.tseries.frequencies import to_offset
-from dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from timeseries_helpers import get_date_offset, generate_date_range
+from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
+from dku_timeseries.timeseries_helpers import get_date_offset, generate_date_range
 
 logger = logging.getLogger(__name__)
 
