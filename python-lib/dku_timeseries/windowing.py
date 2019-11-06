@@ -7,8 +7,8 @@ import re
 from pandas.tseries.frequencies import to_offset
 import math
 
-from dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from timeseries_helpers import convert_time_freq_to_row_freq, get_smaller_unit, infer_frequency, FREQUENCY_STRINGS, UNIT_ORDER
+from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
+from dku_timeseries.timeseries_helpers import convert_time_freq_to_row_freq, get_smaller_unit, infer_frequency, FREQUENCY_STRINGS, UNIT_ORDER
 
 logger = logging.getLogger(__name__)
 

@@ -5,8 +5,7 @@ import logging
 from operator import itemgetter
 from itertools import *
 
-from dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from timeseries_helpers import get_date_offset, generate_date_range
+from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
 
 logger = logging.getLogger(__name__)
 
