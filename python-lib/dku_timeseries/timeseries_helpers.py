@@ -2,6 +2,10 @@
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
 import math
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 # Frequency strings as defined in https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
 FREQUENCY_STRINGS = {
@@ -64,6 +68,7 @@ def convert_time_freq_to_row_freq(frequency, window_description):
     demanded_frequency = pd.to_timedelta(to_offset(window_description))
     n = demanded_frequency / data_frequency
     if n < 1:
+        logger.error('The requested window width ({0}) is smaller than the timeseries frequency ({1}).'.format(data_frequency, demanded_frequency))
         raise ValueError('The requested window width ({0}) is smaller than the timeseries frequency ({1}).'.format(data_frequency, demanded_frequency))
     return int(math.ceil(n))  # always round up so that we dont miss any data
 

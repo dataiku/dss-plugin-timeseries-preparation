@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 import logging
 import sys
-import re
-from pandas.tseries.frequencies import to_offset
-import math
 
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
 from dku_timeseries.timeseries_helpers import convert_time_freq_to_row_freq, get_smaller_unit, infer_frequency, FREQUENCY_STRINGS, UNIT_ORDER
@@ -153,6 +150,7 @@ class WindowAggregator:
             logger.info('The time series {} has less than 2 rows with values, can not apply window.'.format(df_id))
             return df
         if has_duplicates(df, datetime_column):
+            logger.error('The time series {} contain duplicate timestamps.'.format(df_id))
             raise ValueError('The time series {} contain duplicate timestamps.'.format(df_id))
 
         reference_df = df.set_index(datetime_column).sort_index().copy()
@@ -189,6 +187,7 @@ class WindowAggregator:
             logger.info('The time series {} has less than 2 rows with values, can not apply window.'.format(df_id))
             return df
         if has_duplicates(df, datetime_column):
+            logger.error('The time series {} contain duplicate timestamps.'.format(df_id))
             raise ValueError('The time series {} contain duplicate timestamps.'.format(df_id))
 
         reference_df = df.set_index(datetime_column).sort_index().copy()
@@ -198,6 +197,7 @@ class WindowAggregator:
         if frequency:
             window_description_in_row = convert_time_freq_to_row_freq(frequency, self.params.window_description)
         else:
+            logger.error('The input time series is not equispaced. Cannot compute bilateral window.')  # pandas limitation
             raise ValueError('The input time series is not equispaced. Cannot compute bilateral window.')  # pandas limitation
 
         # compute all stats except mean and sum, these stats dont need a win_type
