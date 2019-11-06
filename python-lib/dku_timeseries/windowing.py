@@ -120,7 +120,7 @@ class WindowAggregator:
                 except Exception as e:
                     from future.utils import raise_
                     # issues with left border, cf https://github.com/pandas-dev/pandas/issues/26005
-                    if e.message == ('skiplist_init failed'):
+                    if str(e) == ('skiplist_init failed'):
                         raise_(Exception, "Window width is too small", sys.exc_info()[2])
                     else:
                         raise_(Exception, "Compute stats failed", sys.exc_info()[2])
@@ -136,7 +136,7 @@ class WindowAggregator:
                     final_df = self._compute_bilateral_stats(df_copy, datetime_column, raw_columns)
             except Exception as e:
                 from future.utils import raise_
-                if e.message == ('skiplist_init failed'):
+                if str(e) == ('skiplist_init failed'):
                     raise_(Exception, "Window width is too small", sys.exc_info()[2])
                 else:
                     raise_(Exception, "Compute stats failed", sys.exc_info()[2])
