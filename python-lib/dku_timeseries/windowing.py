@@ -123,7 +123,7 @@ class WindowAggregator:
                     if str(e) == ('skiplist_init failed'):
                         raise_(Exception, "Window width is too small", sys.exc_info()[2])
                     else:
-                        raise_(Exception, "Compute stats failed", sys.exc_info()[2])
+                        raise_(Exception, "Compute stats failed. Check the full error log for more info.", sys.exc_info()[2])
 
                 computed_df[groupby_columns[0]] = group_id  # TODO generalize to multiple groupby cols
                 computed_groups.append(computed_df)
@@ -139,7 +139,7 @@ class WindowAggregator:
                 if str(e) == ('skiplist_init failed'):
                     raise_(Exception, "Window width is too small", sys.exc_info()[2])
                 else:
-                    raise_(Exception, "Compute stats failed", sys.exc_info()[2])
+                    raise_(Exception, "Compute stats failed. Check the full error log for more info.", sys.exc_info()[2])
 
         return final_df.reset_index(drop=True)
 
