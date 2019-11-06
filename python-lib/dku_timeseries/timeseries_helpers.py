@@ -68,8 +68,8 @@ def convert_time_freq_to_row_freq(frequency, window_description):
     demanded_frequency = pd.to_timedelta(to_offset(window_description))
     n = demanded_frequency / data_frequency
     if n < 1:
-        logger.error('The requested window width ({0}) is smaller than the timeseries frequency ({1}).'.format(data_frequency, demanded_frequency))
-        raise ValueError('The requested window width ({0}) is smaller than the timeseries frequency ({1}).'.format(data_frequency, demanded_frequency))
+        logger.error('The requested window width ({1}) is smaller than the timeseries frequency ({0}).'.format(data_frequency, demanded_frequency))
+        raise ValueError('The requested window width ({1}) is smaller than the timeseries frequency ({0}).'.format(data_frequency, demanded_frequency))
     return int(math.ceil(n))  # always round up so that we dont miss any data
 
 
