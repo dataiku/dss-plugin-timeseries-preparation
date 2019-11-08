@@ -54,8 +54,7 @@ class WindowAggregatorParams:  # TODO better naming ?
                  aggregation_types=AGGREGATION_TYPES):
 
         self.causal_window = causal_window
-        self.window_width = window_width
-        self.window_unit = window_unit
+        self.window_width, self.window_unit = self._convert_to_rolling_compatible_time_unit(window_width, window_unit)
         self.window_description = str(self.window_width) + FREQUENCY_STRINGS.get(self.window_unit, '')
         self.min_period = min_period
         self.closed_option = closed_option
@@ -71,14 +70,23 @@ class WindowAggregatorParams:  # TODO better naming ?
         if self.window_width < 0:
             raise ValueError('Window width can not be negative.')
         if self.window_unit not in WINDOW_UNITS:
-            raise ValueError(
-                '"{0}" is not a valid unit. Possible window units are: {1}'.format(self.window_unit, WINDOW_UNITS))
+            raise ValueError('"{0}" is not a valid unit. Possible window units are: {1}'.format(self.window_unit, WINDOW_UNITS))
         if self.min_period < 1:
             raise ValueError('Min period must be positive.')
         if self.closed_option not in CLOSED_OPTIONS:
             raise ValueError('"{0}" is not a valid closed option. Possible values are: {1}'.format(self.closed_option, CLOSED_OPTIONS))
         if self.window_unit == 'rows':
             raise NotImplementedError
+
+    def _convert_to_rolling_compatible_time_unit(self, window_width, window_unit):
+        if window_unit == 'weeks':
+            return 7 * window_width, 'days'
+        elif window_unit == 'months':
+            return 30 * window_width, 'days'
+        elif window_unit == 'years':
+            return 365 * window_width, 'days'
+        else:
+            return window_width, window_unit
 
 
 class WindowAggregator:
@@ -120,7 +128,7 @@ class WindowAggregator:
                     if str(e) == ('skiplist_init failed'):
                         raise_(Exception, "Window width is too small", sys.exc_info()[2])
                     else:
-                        raise_(Exception, "Compute stats failed. Check the full error log for more info.", sys.exc_info()[2])
+                        raise_(Exception, "Compute stats failed. Check the full error log for more info: {}".format(str(e)), sys.exc_info()[2])
 
                 computed_df[groupby_columns[0]] = group_id  # TODO generalize to multiple groupby cols
                 computed_groups.append(computed_df)
@@ -136,7 +144,7 @@ class WindowAggregator:
                 if str(e) == ('skiplist_init failed'):
                     raise_(Exception, "Window width is too small", sys.exc_info()[2])
                 else:
-                    raise_(Exception, "Compute stats failed. Check the full error log for more info.", sys.exc_info()[2])
+                    raise_(Exception, "Compute stats failed. Check the full error log for more info: {}".format(str(e)), sys.exc_info()[2])
 
         return final_df.reset_index(drop=True)
 
