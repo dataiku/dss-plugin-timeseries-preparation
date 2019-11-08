@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 import logging
 import sys
-import re
-from pandas.tseries.frequencies import to_offset
-import math
 
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
 from dku_timeseries.timeseries_helpers import convert_time_freq_to_row_freq, get_smaller_unit, infer_frequency, FREQUENCY_STRINGS, UNIT_ORDER
@@ -57,8 +54,7 @@ class WindowAggregatorParams:  # TODO better naming ?
                  aggregation_types=AGGREGATION_TYPES):
 
         self.causal_window = causal_window
-        self.window_width = window_width
-        self.window_unit = window_unit
+        self.window_width, self.window_unit = self._convert_to_rolling_compatible_time_unit(window_width, window_unit)
         self.window_description = str(self.window_width) + FREQUENCY_STRINGS.get(self.window_unit, '')
         self.min_period = min_period
         self.closed_option = closed_option
@@ -74,14 +70,23 @@ class WindowAggregatorParams:  # TODO better naming ?
         if self.window_width < 0:
             raise ValueError('Window width can not be negative.')
         if self.window_unit not in WINDOW_UNITS:
-            raise ValueError(
-                '"{0}" is not a valid unit. Possible window units are: {1}'.format(self.window_unit, WINDOW_UNITS))
+            raise ValueError('"{0}" is not a valid unit. Possible window units are: {1}'.format(self.window_unit, WINDOW_UNITS))
         if self.min_period < 1:
             raise ValueError('Min period must be positive.')
         if self.closed_option not in CLOSED_OPTIONS:
             raise ValueError('"{0}" is not a valid closed option. Possible values are: {1}'.format(self.closed_option, CLOSED_OPTIONS))
         if self.window_unit == 'rows':
             raise NotImplementedError
+
+    def _convert_to_rolling_compatible_time_unit(self, window_width, window_unit):
+        if window_unit == 'weeks':
+            return 7 * window_width, 'days'
+        elif window_unit == 'months':
+            return 30 * window_width, 'days'
+        elif window_unit == 'years':
+            return 365 * window_width, 'days'
+        else:
+            return window_width, window_unit
 
 
 class WindowAggregator:
@@ -120,10 +125,10 @@ class WindowAggregator:
                 except Exception as e:
                     from future.utils import raise_
                     # issues with left border, cf https://github.com/pandas-dev/pandas/issues/26005
-                    if e.message == ('skiplist_init failed'):
+                    if str(e) == ('skiplist_init failed'):
                         raise_(Exception, "Window width is too small", sys.exc_info()[2])
                     else:
-                        raise_(Exception, "Compute stats failed", sys.exc_info()[2])
+                        raise_(Exception, "Compute stats failed. Check the full error log for more info: {}".format(str(e)), sys.exc_info()[2])
 
                 computed_df[groupby_columns[0]] = group_id  # TODO generalize to multiple groupby cols
                 computed_groups.append(computed_df)
@@ -136,10 +141,10 @@ class WindowAggregator:
                     final_df = self._compute_bilateral_stats(df_copy, datetime_column, raw_columns)
             except Exception as e:
                 from future.utils import raise_
-                if e.message == ('skiplist_init failed'):
+                if str(e) == ('skiplist_init failed'):
                     raise_(Exception, "Window width is too small", sys.exc_info()[2])
                 else:
-                    raise_(Exception, "Compute stats failed", sys.exc_info()[2])
+                    raise_(Exception, "Compute stats failed. Check the full error log for more info: {}".format(str(e)), sys.exc_info()[2])
 
         return final_df.reset_index(drop=True)
 
@@ -153,6 +158,7 @@ class WindowAggregator:
             logger.info('The time series {} has less than 2 rows with values, can not apply window.'.format(df_id))
             return df
         if has_duplicates(df, datetime_column):
+            logger.error('The time series {} contain duplicate timestamps.'.format(df_id))
             raise ValueError('The time series {} contain duplicate timestamps.'.format(df_id))
 
         reference_df = df.set_index(datetime_column).sort_index().copy()
@@ -189,6 +195,7 @@ class WindowAggregator:
             logger.info('The time series {} has less than 2 rows with values, can not apply window.'.format(df_id))
             return df
         if has_duplicates(df, datetime_column):
+            logger.error('The time series {} contain duplicate timestamps.'.format(df_id))
             raise ValueError('The time series {} contain duplicate timestamps.'.format(df_id))
 
         reference_df = df.set_index(datetime_column).sort_index().copy()
@@ -198,6 +205,7 @@ class WindowAggregator:
         if frequency:
             window_description_in_row = convert_time_freq_to_row_freq(frequency, self.params.window_description)
         else:
+            logger.error('The input time series is not equispaced. Cannot compute bilateral window.')  # pandas limitation
             raise ValueError('The input time series is not equispaced. Cannot compute bilateral window.')  # pandas limitation
 
         # compute all stats except mean and sum, these stats dont need a win_type
