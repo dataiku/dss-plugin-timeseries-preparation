@@ -82,18 +82,18 @@
             "defaultValue": "seconds"
         },
         {
+            "name": "min_deviation_duration_value",
+            "label": "Acceptable deviation",
+            "description": "Allows values outside the valid interval for no more than this duration.",
+            "type": "DOUBLE",
+            "defaultValue": 2
+        },
+        {
             "name": "min_valid_values_duration_value",
             "label": "Minimal segment duration",
             "description": "Values must be within the valid interval at least for this duration.",
             "type": "DOUBLE",
             "defaultValue": 10
-        },
-        {
-            "name": "min_deviation_duration_value",
-            "label": "Acceptable deviation",
-            "description": "Allows values to exit the valid interval if it lasts less than this duration.",
-            "type": "DOUBLE",
-            "defaultValue": 2
         },
         {
             "name": "sep3",

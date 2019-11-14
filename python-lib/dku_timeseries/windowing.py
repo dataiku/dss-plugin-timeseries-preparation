@@ -65,8 +65,7 @@ class WindowAggregatorParams:  # TODO better naming ?
     def check(self):
 
         if self.window_type is not None and self.window_type not in WINDOW_TYPES:
-            raise ValueError(
-                '{0} is not a valid window type. Possible options are: {1}'.format(self.window_type, WINDOW_TYPES))
+            raise ValueError('{0} is not a valid window type. Possible options are: {1}'.format(self.window_type, WINDOW_TYPES))
         if self.window_width < 0:
             raise ValueError('Window width can not be negative.')
         if self.window_unit not in WINDOW_UNITS:

@@ -39,11 +39,17 @@ class ExtremaExtractor:
         generic_check_compute_arguments(datetime_column, groupby_columns)
         df_copy = df.copy()
 
-        # drop all rows where the timestamp is null
+        # drop all rows prwhere the timestamp is null
         df_copy = df_copy.dropna(subset=[datetime_column])
         if nothing_to_do(df_copy, min_len=2):
             logger.warning('The time series has less than 2 rows with values, can not find extrema.')
             return df_copy
+
+        numerical_columns = df_copy.select_dtypes(include=['float', 'int']).columns.tolist()
+        if extrema_column not in numerical_columns:
+            raise ValueError("The chosen extrema column, {}, is not of type float or int.".format(extrema_column))
+
+
 
         df_copy.loc[:, datetime_column] = pd.to_datetime(df[datetime_column])
         if groupby_columns:
@@ -64,7 +70,7 @@ class ExtremaExtractor:
             final_df = pd.concat(computed_groups)
             final_df = final_df.reset_index(drop=True)
         else:
-            extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(df_copy, datetime_column,extrema_column)
+            extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(df_copy, datetime_column, extrema_column)
             rolling_df = self.params.window_aggregator.compute(extrema_neighbor_df, datetime_column)
             final_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value].reset_index(drop=True)
         return final_df
