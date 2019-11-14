@@ -1,6 +1,6 @@
 {
     "id": "timeseries-preparation",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "meta": {
         "supportLevel": "SUPPORTED",
         "label": "Time Series Preparation",
