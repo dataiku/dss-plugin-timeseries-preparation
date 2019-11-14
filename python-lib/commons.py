@@ -106,9 +106,8 @@ def get_extrema_extraction_params(recipe_config):
         gaussian_std = None
     closed_option = _p('closed_option')
     extrema_type = _p('extrema_type')
-    aggregation_types = _p('aggregation_types')
+    aggregation_types = _p('aggregation_types') + ['retrieve']
 
-    print('AGGREGATION TYPE: ', aggregation_types)
     window_params = WindowAggregatorParams(window_unit=window_unit,
                                        window_width=window_width,
                                        window_type=window_type,
