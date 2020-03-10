@@ -9,7 +9,7 @@ from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, ROUND_COMPATIBL
 
 logger = logging.getLogger(__name__)
 
-INTERPOLATION_METHODS = ['None', 'linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic', 'previous', 'next']
+INTERPOLATION_METHODS = ['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic', 'previous', 'next']
 EXTRAPOLATION_METHODS = ['None', 'clip', 'interpolation']
 TIME_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 
@@ -147,6 +147,7 @@ class Resampler:
         extrapolation_index = df_resample.index[extrapolation_index_mask]
 
         index_with_data = df_resample.loc[interpolation_index, filtered_columns_to_resample].dropna(how='all').index
+
         interpolation_function = interpolate.interp1d(index_with_data,
                                                       df_resample.loc[index_with_data, filtered_columns_to_resample],
                                                       kind=self.params.interpolation_method,
@@ -156,8 +157,7 @@ class Resampler:
         df_resample.loc[interpolation_index, filtered_columns_to_resample] = interpolation_function(df_resample.loc[interpolation_index].index)
 
         if self.params.extrapolation_method == "interpolation":
-            df_resample.loc[extrapolation_index, filtered_columns_to_resample] = interpolation_function(
-                df_resample.loc[extrapolation_index].index)
+            df_resample.loc[extrapolation_index, filtered_columns_to_resample] = interpolation_function(df_resample.loc[extrapolation_index].index)
 
         if self.params.extrapolation_method == "clip":
             df_resample = df_resample.ffill().bfill()
