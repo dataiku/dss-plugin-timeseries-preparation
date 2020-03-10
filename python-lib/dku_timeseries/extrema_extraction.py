@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import logging
-import re
-from pandas.tseries.frequencies import to_offset
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
 from dku_timeseries.timeseries_helpers import get_date_offset, generate_date_range
 
@@ -48,8 +46,6 @@ class ExtremaExtractor:
         numerical_columns = df_copy.select_dtypes(include=['float', 'int']).columns.tolist()
         if extrema_column not in numerical_columns:
             raise ValueError("The chosen extrema column, {}, is not of type float or int.".format(extrema_column))
-
-
 
         df_copy.loc[:, datetime_column] = pd.to_datetime(df[datetime_column])
         if groupby_columns:
