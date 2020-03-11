@@ -83,8 +83,7 @@
                 { "value": "zero", "label": "Mean"},
                 { "value": "linear", "label": "Linear"},
                 { "value": "quadratic", "label": "Quadratic"},
-                { "value": "cubic", "label": "Cubic"},
-                { "value": "None", "label": "Don't interpolate (no value)"}
+                { "value": "cubic", "label": "Cubic"}
             ],
             "defaultValue": "linear"
         },
