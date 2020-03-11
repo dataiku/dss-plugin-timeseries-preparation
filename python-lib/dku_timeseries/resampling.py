@@ -138,26 +138,27 @@ class Resampler:
 
         df_resample = df_resample.rename_axis(datetime_column).reset_index()
 
-        # TODO different columns might start to have values at different rows -> how to handle
-        df_without_nan = df.dropna(subset=filtered_columns_to_resample, how='all')
-        interpolation_index_mask = (df_resample[datetime_column] >= df_without_nan[datetime_column].min()) & (df_resample[datetime_column] <= df_without_nan[datetime_column].max())
-        interpolation_index = df_resample.index[interpolation_index_mask]
+        for filtered_column in filtered_columns_to_resample:
 
-        extrapolation_index_mask = (df_resample[datetime_column] < df_without_nan[datetime_column].min()) | (df_resample[datetime_column] > df_without_nan[datetime_column].max())
-        extrapolation_index = df_resample.index[extrapolation_index_mask]
+            df_without_nan = df.dropna(subset=[filtered_column], how='all')
+            interpolation_index_mask = (df_resample[datetime_column] >= df_without_nan[datetime_column].min()) & (df_resample[datetime_column] <= df_without_nan[datetime_column].max())
+            interpolation_index = df_resample.index[interpolation_index_mask]
 
-        index_with_data = df_resample.loc[interpolation_index, filtered_columns_to_resample].dropna(how='all').index
+            extrapolation_index_mask = (df_resample[datetime_column] < df_without_nan[datetime_column].min()) | (df_resample[datetime_column] > df_without_nan[datetime_column].max())
+            extrapolation_index = df_resample.index[extrapolation_index_mask]
 
-        interpolation_function = interpolate.interp1d(index_with_data,
-                                                      df_resample.loc[index_with_data, filtered_columns_to_resample],
-                                                      kind=self.params.interpolation_method,
-                                                      axis=0,
-                                                      fill_value='extrapolate')
+            index_with_data = df_resample.loc[interpolation_index, filtered_column].dropna(how='all').index
 
-        df_resample.loc[interpolation_index, filtered_columns_to_resample] = interpolation_function(df_resample.loc[interpolation_index].index)
+            interpolation_function = interpolate.interp1d(index_with_data,
+                                                          df_resample.loc[index_with_data, filtered_column],
+                                                          kind=self.params.interpolation_method,
+                                                          axis=0,
+                                                          fill_value='extrapolate')
 
-        if self.params.extrapolation_method == "interpolation":
-            df_resample.loc[extrapolation_index, filtered_columns_to_resample] = interpolation_function(df_resample.loc[extrapolation_index].index)
+            df_resample.loc[interpolation_index, filtered_column] = interpolation_function(df_resample.loc[interpolation_index].index)
+
+            if self.params.extrapolation_method == "interpolation":
+                df_resample.loc[extrapolation_index, filtered_column] = interpolation_function(df_resample.loc[extrapolation_index].index)
 
         if self.params.extrapolation_method == "clip":
             df_resample = df_resample.ffill().bfill()

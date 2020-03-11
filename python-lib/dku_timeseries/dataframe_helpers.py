@@ -19,7 +19,7 @@ def nothing_to_do(df, min_len=2):
 def filter_empty_columns(df, columns):
     filtered_columns = []
     for col in columns:
-        if np.sum(df[col].notnull()) > 0:
+        if np.sum(df[col].notnull()) > 1: # in fact we filter out columns with less than 2 values
             filtered_columns.append(col)
     return filtered_columns
 
