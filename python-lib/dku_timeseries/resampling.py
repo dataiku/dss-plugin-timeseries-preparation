@@ -139,7 +139,7 @@ class Resampler:
         df_resample = df_resample.rename_axis(datetime_column).reset_index()
 
         # TODO different columns might start to have values at different rows -> how to handle
-        df_without_nan = df.dropna(subset=filtered_columns_to_resample)
+        df_without_nan = df.dropna(subset=filtered_columns_to_resample, how='all')
         interpolation_index_mask = (df_resample[datetime_column] >= df_without_nan[datetime_column].min()) & (df_resample[datetime_column] <= df_without_nan[datetime_column].max())
         interpolation_index = df_resample.index[interpolation_index_mask]
 
