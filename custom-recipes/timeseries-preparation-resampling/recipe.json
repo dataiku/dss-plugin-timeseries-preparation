@@ -84,7 +84,8 @@
                 { "value": "linear", "label": "Linear"},
                 { "value": "quadratic", "label": "Quadratic"},
                 { "value": "cubic", "label": "Cubic"},
-                { "value":  "constant", "label":  "Constant"}
+                { "value": "constant", "label":  "Constant"},
+                { "value": "none", "label": "Don't interpolate (no value)" }
             ],
             "defaultValue": "linear"
         },

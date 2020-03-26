@@ -9,7 +9,7 @@ from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, ROUND_COMPATIBL
 
 logger = logging.getLogger(__name__)
 
-INTERPOLATION_METHODS = ['linear', 'nearest', 'slinear', 'quadratic', 'cubic', 'previous', 'next', 'constant']
+INTERPOLATION_METHODS = ['linear', 'nearest', 'slinear', 'quadratic', 'cubic', 'previous', 'next', 'constant', 'none']
 EXTRAPOLATION_METHODS = ['None', 'clip', 'interpolation']
 TIME_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 
@@ -151,7 +151,7 @@ class Resampler:
 
             index_with_data = df_resample.loc[interpolation_index, filtered_column].dropna(how='all').index
 
-            if self.params.interpolation_method != 'constant':
+            if self.params.interpolation_method not in ['constant', 'none']:
                 interpolation_function = interpolate.interp1d(index_with_data,
                                                               df_resample.loc[index_with_data, filtered_column],
                                                               kind=self.params.interpolation_method,
@@ -161,11 +161,13 @@ class Resampler:
                 df_resample.loc[interpolation_index, filtered_column] = interpolation_function(df_resample.loc[interpolation_index].index)
                 if self.params.extrapolation_method == "interpolation":
                     df_resample.loc[extrapolation_index, filtered_column] = interpolation_function(df_resample.loc[extrapolation_index].index)
-            else:
+            elif self.params.interpolation_method == 'constant':
                 if self.params.extrapolation_method == 'interpolation':
                     df_resample.loc[:, filtered_column] = df_resample.loc[:, filtered_column].fillna(self.params.constant_value)
                 else:
                     df_resample.loc[interpolation_index, filtered_column] = df_resample.loc[interpolation_index, filtered_column].fillna(self.params.constant_value)
+            else: # none interpolation - nothing to do
+                continue
 
         if self.params.extrapolation_method == "clip":
             df_resample = df_resample.ffill().bfill()
