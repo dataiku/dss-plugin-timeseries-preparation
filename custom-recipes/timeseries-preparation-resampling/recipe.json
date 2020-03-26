@@ -104,7 +104,7 @@
             "selectChoices": [
                 { "value": "clip", "label": "Fill with previous/next value"},
                 { "value": "interpolation", "label": "Same as interpolation"},
-                { "value": "None", "label": "Don't extrapolate (no value)"}
+                { "value": "none", "label": "Don't extrapolate (no value)"}
             ],
             "defaultValue": "clip"
         },

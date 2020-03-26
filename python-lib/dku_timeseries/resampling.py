@@ -10,7 +10,7 @@ from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, ROUND_COMPATIBL
 logger = logging.getLogger(__name__)
 
 INTERPOLATION_METHODS = ['linear', 'nearest', 'slinear', 'quadratic', 'cubic', 'previous', 'next', 'constant', 'none']
-EXTRAPOLATION_METHODS = ['None', 'clip', 'interpolation']
+EXTRAPOLATION_METHODS = ['none', 'clip', 'interpolation']
 TIME_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 
 
@@ -167,9 +167,11 @@ class Resampler:
                 else:
                     df_resample.loc[interpolation_index, filtered_column] = df_resample.loc[interpolation_index, filtered_column].fillna(self.params.constant_value)
             else: # none interpolation - nothing to do
-                continue
+                if self.params.extrapolation_method == "clip":
+                    temp_df = df_resample.copy().ffill().bfill()
+                    df_resample.loc[extrapolation_index, filtered_column] = temp_df.loc[extrapolation_index, filtered_column]
 
-        if self.params.extrapolation_method == "clip":
+        if self.params.extrapolation_method == "clip" and self.params.interpolation_method != 'none':
             df_resample = df_resample.ffill().bfill()
 
         return df_resample.loc[reference_index].drop('numerical_index', axis=1)
