@@ -9,7 +9,7 @@ from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, ROUND_COMPATIBL
 
 logger = logging.getLogger(__name__)
 
-INTERPOLATION_METHODS = ['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic', 'previous', 'next']
+INTERPOLATION_METHODS = ['linear', 'nearest', 'slinear', 'quadratic', 'cubic', 'previous', 'next', 'constant']
 EXTRAPOLATION_METHODS = ['None', 'clip', 'interpolation']
 TIME_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 
@@ -19,6 +19,7 @@ class ResamplerParams:
     def __init__(self,
                  interpolation_method='linear',
                  extrapolation_method='clip',
+                 constant_value=0,
                  time_step=1,
                  time_unit='seconds',
                  clip_start=0,
@@ -27,6 +28,7 @@ class ResamplerParams:
 
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
+        self.constant_value = constant_value
         self.time_step = reformat_time_value(float(time_step), time_unit)
         self.time_unit = time_unit
         self.resampling_step = str(self.time_step) + FREQUENCY_STRINGS.get(self.time_unit, '')
@@ -72,7 +74,7 @@ class Resampler:
             return df_copy
 
         df_copy.loc[:, datetime_column] = pd.to_datetime(df_copy[datetime_column])
-        # when having multiple partitions, their time range is not necessarily the same
+        # when having multiple timeseries, their time range is not necessarily the same
         # we thus compute a unified time index for all partitions
         reference_time_index = self._compute_full_time_index(df_copy, datetime_column)
         columns_to_resample = [col for col in df_copy.select_dtypes([int, float]).columns.tolist() if col != datetime_column]
@@ -149,16 +151,21 @@ class Resampler:
 
             index_with_data = df_resample.loc[interpolation_index, filtered_column].dropna(how='all').index
 
-            interpolation_function = interpolate.interp1d(index_with_data,
-                                                          df_resample.loc[index_with_data, filtered_column],
-                                                          kind=self.params.interpolation_method,
-                                                          axis=0,
-                                                          fill_value='extrapolate')
+            if self.params.interpolation_method != 'constant':
+                interpolation_function = interpolate.interp1d(index_with_data,
+                                                              df_resample.loc[index_with_data, filtered_column],
+                                                              kind=self.params.interpolation_method,
+                                                              axis=0,
+                                                              fill_value='extrapolate')
 
-            df_resample.loc[interpolation_index, filtered_column] = interpolation_function(df_resample.loc[interpolation_index].index)
-
-            if self.params.extrapolation_method == "interpolation":
-                df_resample.loc[extrapolation_index, filtered_column] = interpolation_function(df_resample.loc[extrapolation_index].index)
+                df_resample.loc[interpolation_index, filtered_column] = interpolation_function(df_resample.loc[interpolation_index].index)
+                if self.params.extrapolation_method == "interpolation":
+                    df_resample.loc[extrapolation_index, filtered_column] = interpolation_function(df_resample.loc[extrapolation_index].index)
+            else:
+                if self.params.extrapolation_method == 'interpolation':
+                    df_resample.loc[:, filtered_column] = df_resample.loc[:, filtered_column].fillna(self.params.constant_value)
+                else:
+                    df_resample.loc[interpolation_index, filtered_column] = df_resample.loc[interpolation_index, filtered_column].fillna(self.params.constant_value)
 
         if self.params.extrapolation_method == "clip":
             df_resample = df_resample.ffill().bfill()

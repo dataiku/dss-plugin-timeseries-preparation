@@ -83,9 +83,17 @@
                 { "value": "zero", "label": "Mean"},
                 { "value": "linear", "label": "Linear"},
                 { "value": "quadratic", "label": "Quadratic"},
-                { "value": "cubic", "label": "Cubic"}
+                { "value": "cubic", "label": "Cubic"},
+                { "value":  "constant", "label":  "Constant"}
             ],
             "defaultValue": "linear"
+        },
+        {
+            "name": "constant_value",
+            "label": "Constant value",
+            "type": "DOUBLE",
+            "defaultValue": 0,
+            "visibilityCondition": "model.interpolation_method == 'constant'"
         },
         {
             "name": "extrapolation_method",
@@ -93,7 +101,7 @@
             "description": "Used to compute values for timestamps before or after the last known data point",
             "type": "SELECT",
             "selectChoices": [
-                { "value": "clip", "label": "Constant"},
+                { "value": "clip", "label": "Fill with previous/next value"},
                 { "value": "interpolation", "label": "Same as interpolation"},
                 { "value": "None", "label": "Don't extrapolate (no value)"}
             ],
