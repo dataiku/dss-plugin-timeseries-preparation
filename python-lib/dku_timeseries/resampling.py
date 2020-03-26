@@ -9,7 +9,7 @@ from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, ROUND_COMPATIBL
 
 logger = logging.getLogger(__name__)
 
-INTERPOLATION_METHODS = ['linear', 'nearest', 'slinear', 'quadratic', 'cubic', 'previous', 'next', 'constant', 'none']
+INTERPOLATION_METHODS = ['linear', 'nearest', 'slinear', 'zero', 'quadratic', 'cubic', 'previous', 'next', 'constant', 'none']
 EXTRAPOLATION_METHODS = ['none', 'clip', 'interpolation']
 TIME_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 
