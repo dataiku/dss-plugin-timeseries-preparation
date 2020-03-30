@@ -23,6 +23,7 @@ def get_resampling_params(recipe_config):
 
     interpolation_method = _p('interpolation_method')
     extrapolation_method = _p('extrapolation_method')
+    constant_value = _p('constant_value')
     time_step = _p('time_step')
     time_unit = _p('time_unit')
     clip_start = _p('clip_start')
@@ -31,6 +32,7 @@ def get_resampling_params(recipe_config):
 
     params = ResamplerParams(interpolation_method=interpolation_method,
                              extrapolation_method=extrapolation_method,
+                             constant_value=constant_value,
                              time_step=time_step,
                              time_unit=time_unit,
                              clip_start=clip_start,
