@@ -2,7 +2,7 @@
     "meta": {
         "label": "Time series extrema extraction",
         "description": "Extract values around an extremum.",
-        "icon": "icon-DKU_timeseries_extremum-extraction",
+        "icon": "icon-dku-timeseries-extremum-extraction icon-DKU_timeseries_extremum-extraction",
         "displayOrderRank": 3
     },
     "kind": "PYTHON",
