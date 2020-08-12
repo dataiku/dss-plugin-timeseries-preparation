@@ -4,6 +4,7 @@
     "meta": {
         "supportLevel": "SUPPORTED",
         "label": "Time Series Preparation",
+        "category": "Time Series",
         "description": "Perform resampling, windowing operations, interval extraction, and extrema extraction on time series data (one row per time stamp).",
         "author": "Dataiku (Du PHAN)",
         "icon": "icon-time",
