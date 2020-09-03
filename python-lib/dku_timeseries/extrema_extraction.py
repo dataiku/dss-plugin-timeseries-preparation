@@ -48,31 +48,48 @@ class ExtremaExtractor:
             raise ValueError("The chosen extrema column, {}, is not of type float or int.".format(extrema_column))
 
         df_copy.loc[:, datetime_column] = pd.to_datetime(df[datetime_column])
+        extrema_df_list = []
         if groupby_columns:
             grouped = df_copy.groupby(groupby_columns)
-            computed_groups = []
             for group_id, group in grouped:
                 logger.info("Computing for group: {}".format(group_id))
-                extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(group, datetime_column, extrema_column, df_id=group_id)
-                if extrema_neighbor_df is None:
+                extrema_neighbor_df_list, extrema_value = self._find_extrema_neighbor_zone(group, datetime_column, extrema_column, df_id=group_id)
+                if len(extrema_neighbor_df_list) == 0:
                     extrema_df = pd.DataFrame({groupby_columns[0]: [group_id]})
+                    extrema_df_list.append(extrema_df)
                 else:
-                    rolling_df = self.params.window_aggregator.compute(extrema_neighbor_df, datetime_column)
-                    extrema_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value].copy() # avoid .loc warning
-                    extrema_df.loc[:, groupby_columns[0]] = group_id
+                    for extrema_neighbor_df in extrema_neighbor_df_list:
+                        rolling_df = self.params.window_aggregator.compute(extrema_neighbor_df, datetime_column)
+                        extrema_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value].copy() # avoid .loc warning
+                        extrema_df.loc[:, groupby_columns[0]] = group_id
+                        extrema_df_list.append(extrema_df)
 
-                computed_groups.append(extrema_df)
-
-            final_df = pd.concat(computed_groups)
+            final_df = pd.concat(extrema_df_list)
             final_df = final_df.reset_index(drop=True)
         else:
-            extrema_neighbor_df, extrema_value = self._find_extrema_neighbor_zone(df_copy, datetime_column, extrema_column)
-            rolling_df = self.params.window_aggregator.compute(extrema_neighbor_df, datetime_column)
-            final_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value].reset_index(drop=True)
+            extrema_neighbor_df_list, extrema_value = self._find_extrema_neighbor_zone(df_copy, datetime_column, extrema_column)
+            for extrema_neighbor_df in extrema_neighbor_df_list:
+                rolling_df = self.params.window_aggregator.compute(extrema_neighbor_df, datetime_column)
+                extrema_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value].reset_index(drop=True)
+                extrema_df_list.append(extrema_df)
+
+            if len(extrema_df_list) > 0:
+                final_df = pd.concat(extrema_df_list)
+                final_df = final_df.reset_index(drop=True)
+            else:
+                final_df = pd.DataFrame(None)
+
         return final_df
 
     def _find_extrema_neighbor_zone(self, df, datetime_column, extrema_column, df_id=''):
+        """
 
+        :param df:
+        :param datetime_column:
+        :param extrema_column:
+        :param df_id:
+        :return: list of df
+        """
         if has_duplicates(df, datetime_column):
             raise ValueError('The time series {} contain duplicate timestamps.'.format(df_id))
 
@@ -86,11 +103,8 @@ class ExtremaExtractor:
             start_time = extremum - date_offset
             end_time = extremum + date_offset
             df_neighbor = df.loc[start_time:end_time]
+            df_neighbor = df_neighbor.rename_axis(datetime_column).reset_index().drop_duplicates()
             extrema_neighbors.append(df_neighbor)
 
-        if len(extrema_neighbors) > 0:
-            extrema_neighbor_df = pd.concat(extrema_neighbors)
-            extrema_neighbor_df = extrema_neighbor_df.rename_axis(datetime_column).reset_index().drop_duplicates()
-            return extrema_neighbor_df, extrema_value
-        else:
-            return None, None
+        return extrema_neighbors, extrema_value
+
