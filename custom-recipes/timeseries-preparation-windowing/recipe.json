@@ -170,7 +170,7 @@
                 { "value": "first_order_derivative", "label": "First order derivative"},
                 { "value": "second_order_derivative", "label": "Second order derivative"}
             ],
-            "defaultValue": ["average"]
+            "defaultValue": ["retrieve","average"]
         },
         {
             "name": "sep3",
