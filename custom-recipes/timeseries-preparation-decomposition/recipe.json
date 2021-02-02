@@ -1,0 +1,390 @@
+{
+  "meta": {
+    "label": "Timeseries decomposition",
+    "description": "Decompose your timeseries into trend, seasonality and residuals.",
+    "icon": "icon-wrench",
+    "displayOrderRank": 5
+  },
+  "kind": "PYTHON",
+  "selectableFromDataset": "input_dataset",
+  "inputRoles": [
+    {
+      "name": "input_dataset",
+      "label": "Historical dataset",
+      "description": "A dataset which contains time series data",
+      "arity": "UNARY",
+      "required": true,
+      "acceptsDataset": true,
+      "acceptsManagedFolder": false
+    }
+  ],
+  "outputRoles": [
+    {
+      "name": "transformation_dataset",
+      "label": "Transformation results",
+      "description": "Dataset resulting from the time series transformation",
+      "arity": "UNARY",
+      "required": true,
+      "acceptsDataset": true,
+      "acceptsManagedFolder": false
+    }
+  ],
+  "params": [
+    {
+      "type": "SEPARATOR",
+      "name": "separator_transformation_type",
+      "label": "Transformation type"
+    },
+    {
+      "name": "transformation_type",
+      "label": "Select a transformation",
+      "type": "SELECT",
+      "selectChoices": [
+        {
+          "value": "seasonal_decomposition",
+          "label": "Seasonal decomposition"
+        }
+      ],
+      "defaultValue": "seasonal_decomposition",
+      "mandatory": true
+    },
+    {
+      "name": "time_decomposition_method",
+      "label": "Select a decomposition method",
+      "type": "SELECT",
+      "visibilityCondition": "model.transformation_type == 'seasonal_decomposition'",
+      "selectChoices": [
+        {
+          "value": "STL",
+          "label": "STL, Seasonal-Trend decomposition using LOESS"
+        },
+        {
+          "value": "classical",
+          "label": "Classical decomposition using moving averages"
+        }
+      ],
+      "defaultValue": "STL"
+    },
+    {
+      "type": "SEPARATOR",
+      "name": "separator_input",
+      "label": "Input parameters"
+    },
+    {
+      "name": "time_column",
+      "label": "Time column",
+      "allowedColumnTypes": [
+        "date"
+      ],
+      "type": "COLUMN",
+      "description": "Must be a parsed date",
+      "columnRole": "input_dataset",
+      "mandatory": true
+    },
+    {
+      "name": "frequency_unit",
+      "label": "Frequency",
+      "type": "SELECT",
+      "description": "Frequency of your historical data",
+      "mandatory": true,
+      "selectChoices": [
+        {
+          "value": "min",
+          "label": "Minute"
+        },
+        {
+          "value": "H",
+          "label": "Hour"
+        },
+        {
+          "value": "D",
+          "label": "Day"
+        },
+        {
+          "value": "W",
+          "label": "Week"
+        },
+        {
+          "value": "M",
+          "label": "Month"
+        },
+        {
+          "value": "3M",
+          "label": "Quarter"
+        },
+        {
+          "value": "6M",
+          "label": "Semester"
+        },
+        {
+          "value": "12M",
+          "label": "Year"
+        }
+      ],
+      "defaultValue": "D"
+    },
+    {
+      "name": "frequency_end_of_week",
+      "label": "End of week day",
+      "type": "SELECT",
+      "mandatory": false,
+      "defaultValue": "SUN",
+      "visibilityCondition": "model.frequency_unit == 'W'",
+      "selectChoices": [
+        {
+          "value": "SUN",
+          "label": "Sunday"
+        },
+        {
+          "value": "MON",
+          "label": "Monday"
+        },
+        {
+          "value": "TUE",
+          "label": "Tuesday"
+        },
+        {
+          "value": "WED",
+          "label": "Wednesday"
+        },
+        {
+          "value": "THU",
+          "label": "Thursday"
+        },
+        {
+          "value": "FRI",
+          "label": "Friday"
+        },
+        {
+          "value": "SAT",
+          "label": "Saturday"
+        }
+      ]
+    },
+    {
+      "name": "frequency_step_hours",
+      "label": "Number of hours",
+      "type": "INT",
+      "defaultValue": 1,
+      "mandatory": false,
+      "minI": 1,
+      "visibilityCondition": "model.frequency_unit == 'H'"
+    },
+    {
+      "name": "frequency_step_minutes",
+      "label": "Number of minutes",
+      "type": "INT",
+      "defaultValue": 1,
+      "mandatory": false,
+      "minI": 1,
+      "visibilityCondition": "model.frequency_unit == 'min'"
+    },
+    {
+      "name": "target_columns",
+      "label": "Target column(s)",
+      "type": "COLUMNS",
+      "allowedColumnTypes": [
+        "tinyint",
+        "smallint",
+        "int",
+        "bigint",
+        "float",
+        "double"
+      ],
+      "columnRole": "input_dataset",
+      "mandatory": true
+    },
+    {
+      "name": "long_format",
+      "label": "Long format",
+      "description": "If multiple time series are stored in the same column",
+      "type": "BOOLEAN",
+      "defaultValue": false,
+      "mandatory": true
+    },
+    {
+      "name": "timeseries_identifiers",
+      "label": "Time series identifiers",
+      "description": "Columns that identify the multiple time series - mandatory for long format",
+      "type": "COLUMNS",
+      "allowedColumnTypes": [
+        "tinyint",
+        "smallint",
+        "int",
+        "bigint",
+        "string",
+        "boolean"
+      ],
+      "columnRole": "input_dataset",
+      "mandatory": false,
+      "visibilityCondition": "model.long_format"
+    },
+    {
+      "type": "SEPARATOR",
+      "name": "stl_parameters",
+      "label": "STL parameters",
+      "description": "Seasonal-Trend decomposition using Loess",
+      "visibilityCondition": "model.time_decomposition_method == 'STL'"
+    },
+    {
+      "type": "SELECT",
+      "name": "model_stl",
+      "label": "Model type",
+      "selectChoices": [
+        {
+          "value": "additive",
+          "label": "Additive"
+        },
+        {
+          "value": "multiplicative",
+          "label": "Multiplicative"
+        }
+      ],
+      "defaultValue": "additive",
+      "description": " If the magnitude of the seasonality varies over time, then the series is multiplicative. Otherwise, the series is additive.",
+      "visibilityCondition": "model.time_decomposition_method == 'STL'"
+    },
+    {
+      "name": "seasonal_stl",
+      "label": "Seasonal smoother",
+      "type": "INT",
+      "description": "Odd integer. Number of consecutive timesteps (years, weeks..) to be used in estimating each value in the seasonal component. It controls how rapidly the seasonal component can change.",
+      "defaultValue": 13,
+      "minI": 7,
+      "visibilityCondition": "model.time_decomposition_method == 'STL'"
+    },
+    {
+      "name": "expert_stl",
+      "label": "Expert mode",
+      "type": "BOOLEAN",
+      "defaultValue": false,
+      "visibilityCondition": "model.time_decomposition_method == 'STL'"
+    },
+    {
+      "name": "robust_stl",
+      "label": "Robust to outliers",
+      "type": "BOOLEAN",
+      "defaultValue": false,
+      "mandatory": false,
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl",
+      "description": "If selected, the estimation will re-weight data, allowing the model to tolerate larger errors."
+    },
+    {
+      "type": "SEPARATOR",
+      "name": "separator_degrees",
+      "label": " ",
+      "description": "Fitting method in Loess",
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl"
+    },
+    {
+      "type": "SEPARATOR",
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl"
+    },
+    {
+      "name": "stl_degree_kwargs",
+      "type": "MAP",
+      "label": "Degree of Loess",
+      "description": "Optional keyword arguments from https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html",
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl",
+      "mandatory": false,
+      "defaultValue": {
+        "seasonal_deg": "1",
+        "trend_deg": "1",
+        "low_pass_deg": "1"
+      }
+    },
+    {
+      "type": "SEPARATOR",
+      "name": "separator_speedup",
+      "label": " ",
+      "description": "Performance",
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl"
+    },
+    {
+      "type": "SEPARATOR",
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl"
+    },
+    {
+      "name": "stl_speed_jump_kwargs",
+      "type": "MAP",
+      "label": "Speed jump",
+      "description": "Optional keyword arguments from https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html",
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl",
+      "mandatory": false,
+      "defaultValue": {
+        "seasonal_jump": "1",
+        "trend_jump": "1",
+        "low_pass_jump": "1"
+      }
+    },
+    {
+      "type": "SEPARATOR",
+      "name": "separator_smoothers",
+      "label": " ",
+      "description": "Additional smoothers",
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl"
+    },
+    {
+      "type": "SEPARATOR",
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl"
+    },
+    {
+      "name": "stl_smoothers_kwargs",
+      "type": "MAP",
+      "label": "Length of the smoothers",
+      "description": "Optional keyword arguments from https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html",
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl",
+      "mandatory": false,
+      "defaultValue": {
+        "trend": "",
+        "low_pass": ""
+      }
+    },
+    {
+      "type": "SEPARATOR",
+      "name": "classical_parameters",
+      "label": "Classical decomposition parameters",
+      "description": "Seasonal-Trend decomposition using moving averages",
+      "visibilityCondition": "model.time_decomposition_method == 'classical'"
+    },
+    {
+      "type": "SELECT",
+      "name": "classical_model",
+      "label": "Model type",
+      "selectChoices": [
+        {
+          "value": "additive",
+          "label": "Additive"
+        },
+        {
+          "value": "multiplicative",
+          "label": "Multiplicative"
+        }
+      ],
+      "defaultValue": "additive",
+      "description": " If the magnitude of the seasonality varies over time, then the series is multiplicative. Otherwise, the series is additive.",
+      "visibilityCondition": "model.time_decomposition_method == 'classical'"
+    },
+    {
+      "name": "expert_classical",
+      "label": "Expert mode",
+      "type": "BOOLEAN",
+      "defaultValue": false,
+      "visibilityCondition": "model.time_decomposition_method == 'classical'"
+    },
+    {
+      "name": "advanced_params_classical",
+      "type": "MAP",
+      "label": "Advanced parameters",
+      "description": "Optional keyword arguments from https://www.statsmodels.org/stable/generated/statsmodels.tsa.seasonal.seasonal_decompose.html",
+      "visibilityCondition": "model.time_decomposition_method == 'classical' && model.expert_classical",
+      "mandatory": false,
+      "defaultValue": {
+        "filt": "",
+        "two_sided": "True",
+        "extrapolate_trend": "0"
+      }
+    }
+  ],
+  "resourceKeys": []
+}
