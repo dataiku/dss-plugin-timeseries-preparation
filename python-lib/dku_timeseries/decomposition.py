@@ -16,7 +16,7 @@ class TimeseriesDecomposition(ABC):
             decomposed_df = self._decompose_df(df)
         return decomposed_df
 
-    def _decompose_df(self,df):
+    def _decompose_df(self, df):
         time_index = df[self.dku_config.time_column].values
         for target_column in self.dku_config.target_columns:
             target_values = df[target_column].values
@@ -25,7 +25,7 @@ class TimeseriesDecomposition(ABC):
             decomposed_df = self._write_decomposition(decomposition, df, target_column)
         return decomposed_df
 
-    def _prepare_ts(self,target_values,time_index):
+    def _prepare_ts(self, target_values, time_index):
         return pd.Series(target_values, index=time_index)
 
     @abstractmethod
@@ -34,9 +34,9 @@ class TimeseriesDecomposition(ABC):
 
     def _write_decomposition(self, decomposition, df, target_column):
         component_names = get_component_names(target_column, df.columns)
-        df[component_names["trend"]] = decomposition.trend.values
-        df[component_names["seasonal"]] = decomposition.seasonal.values
-        df[component_names["residuals"]] = decomposition.resid.values
+        df.loc[:, component_names["trend"]] = decomposition.trend.values
+        df.loc[:, component_names["seasonal"]] = decomposition.seasonal.values
+        df.loc[:, component_names["residuals"]] = decomposition.resid.values
         return df
 
 
@@ -47,20 +47,13 @@ def get_component_names(target_column, columns):
         if new_column_name not in columns:
             new_columns_names[component_type] = new_column_name
         else:
-            new_columns_names[component_type] = prevent_collision(new_column_name,columns, 0)
+            new_columns_names[component_type] = prevent_collision(new_column_name, columns, 0)
     return new_columns_names
 
 
-def prevent_collision(new_column_name,columns, suffix):
+def prevent_collision(new_column_name, columns, suffix):
     if f"{new_column_name}_{suffix}" not in columns:
         return f"{new_column_name}_{suffix}"
     else:
         suffix += 1
         return prevent_collision(new_column_name, columns, suffix)
-
-
-
-
-
-
-
