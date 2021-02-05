@@ -5,68 +5,97 @@ from dku_config.dss_parameter import DSSParameterError
 from dku_config.stl_config import STLConfig
 
 
+@pytest.fixture
+def basic_config():
+    config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
+              "frequency_unit": "M", "time_column": "date", "target_columns": ["target"],
+              "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 7, "expert": False}
+    return config
+
+
+@pytest.fixture
+def advanced_config():
+    config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
+              "frequency_unit": "D",
+              "decomposition_model": "additive", "seasonal_stl": 7, "expert": True, "robust_stl": True,
+              "seasonal_degree_stl": "1",
+              "trend_degree_stl": "0", "lowpass_degree_stl": "0", "time_column": "date",
+              "long_format": False, "target_columns": ["target"],
+              "stl_degree_kwargs": {"seasonal_deg": "1", "trend_deg": "", "low_pass_deg": "1"},
+              "stl_speed_jump_kwargs": {"seasonal_jump": '', "trend_jump": "12", "low_pass_jump": ''},
+              "stl_smoothers_kwargs": {"trend": "13", "low_pass": ''}}
+    return config
+
+@pytest.fixture
+def input_df():
+    co2 = [315.58, 316.39, 316.79]
+    df = pd.DataFrame.from_dict(
+        {"target": co2, "date": pd.date_range("1-1-1959", periods=len(co2), freq="M")})
+    return df
+
+
+
 class TestSTLConfig:
-
-    def test_load_settings(self):
+    def test_add_parameters(self, basic_config, input_df):
         dku_config = STLConfig()
-        co2 = [315.58, 316.39, 316.79]
-        input_df = pd.DataFrame.from_dict(
-            {"target": co2, "date": pd.date_range("1-1-1959", periods=len(co2), freq="M")})
+        assert dku_config.add_parameters(basic_config, input_df) is None
 
-        config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
-                  "frequency_unit": "M", "seasonal": 13, "time_column": "date", "target_columns": ["target"],
-                  "long_format": False, "model_stl": "multiplicative", "seasonal_stl": 7, "expert_stl": False}
-        input_dataset_columns = ["date", "target", "value2"]
-        dku_config._load_input_parameters(config, input_dataset_columns)
-        assert dku_config._load_settings(config, input_df) is None
-
-        negative_co2 = [315.58, 316.39, -316.79]
-        negative_input_df = pd.DataFrame.from_dict(
-            {"target": negative_co2, "date": pd.date_range("1-1-1959", periods=len(negative_co2), freq="M")})
-        with pytest.raises(DSSParameterError):
-            _ = dku_config._load_settings(config, negative_input_df)
-
-        config["seasonal_stl"] = 2
-        with pytest.raises(DSSParameterError):
-            _ = dku_config._load_settings(config, input_df)
-
-        config["seasonal_stl"] = 2.5
-        with pytest.raises(DSSParameterError):
-            _ = dku_config._load_settings(config, input_df)
-
-        config.pop("seasonal_stl")
-        with pytest.raises(DSSParameterError):
-            _ = dku_config._load_settings(config, input_df)
-
-    def test_load_advanced_parameters(self):
+    def test_invalid_seasonal(self, basic_config, input_df):
         dku_config = STLConfig()
-        config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
-                  "frequency_unit": "D",
-                  "model_stl": "additive", "seasonal_stl": "7", "expert_stl": True, "robust_stl": True,
-                  "seasonal_degree_stl": "1",
-                  "trend_degree_stl": "0", "lowpass_degree_stl": "0", "time_column": "date",
-                  "long_format": False, "target_columns": ["target"],
-                  "stl_degree_kwargs": {"seasonal_deg": "1", "trend_deg": "", "low_pass_deg": "1"},
-                  "stl_speed_jump_kwargs": {"seasonal_jump": '', "trend_jump": "12", "low_pass_jump": ''},
-                  "stl_smoothers_kwargs": {"trend": "13", "low_pass": ''}}
+        basic_config["seasonal_stl"] = 8
+        with pytest.raises(DSSParameterError) as odd_err:
+            _ = dku_config.add_parameters(basic_config, input_df)
+        assert "odd" in str(odd_err.value)
 
-        assert dku_config._load_advanced_parameters(config) is None
+        basic_config["seasonal_stl"] = 9.5
+        with pytest.raises(DSSParameterError) as double_err:
+            _ = dku_config.add_parameters(basic_config, input_df)
+        assert "type" in str(double_err.value)
+        assert "int" in str(double_err.value)
 
-        config["stl_smoothers_kwargs"]["trend"] = "2"
-        with pytest.raises(DSSParameterError):
-            _ = dku_config._load_advanced_parameters(config)
+        basic_config["seasonal_stl"] = "string"
+        with pytest.raises(DSSParameterError) as str_err:
+            _ = dku_config.add_parameters(basic_config, input_df)
+        assert "type" in str(str_err.value)
+        assert "int" in str(str_err.value)
 
-        config["stl_smoothers_kwargs"]["trend"] = "3"
-        config["stl_degree_kwargs"]["seasonal_deg"] = "2"
-        with pytest.raises(DSSParameterError):
-            _ = dku_config._load_advanced_parameters(config)
-        config["stl_degree_kwargs"]["seasonal_deg"] = "1"
+        basic_config.pop("seasonal_stl")
+        with pytest.raises(DSSParameterError) as required_err:
+            _ = dku_config.add_parameters(basic_config, input_df)
+        assert "required" in str(required_err.value)
 
-        config["stl_smoothers_kwargs"]["wrong_field"] = "3"
-        with pytest.raises(DSSParameterError):
-            _ = dku_config._load_advanced_parameters(config)
+    def test_advanced_parameters(self, advanced_config, input_df):
+        dku_config = STLConfig()
+        assert dku_config.add_parameters(advanced_config, input_df) is None
 
-        config["stl_smoothers_kwargs"].pop("wrong_field")
-        config["stl_smoothers_kwargs"]["trend"] = "12"
-        with pytest.raises(DSSParameterError):
-            _ = dku_config._load_advanced_parameters(config)
+    def test_invalid_advanced_parameters(self, advanced_config, input_df):
+        dku_config = STLConfig()
+        advanced_config["stl_smoothers_kwargs"]["trend"] = "200"
+        with pytest.raises(DSSParameterError) as odd_err:
+            _ = dku_config.add_parameters(advanced_config,input_df)
+        assert "odd" in str(odd_err.value)
+
+        advanced_config["stl_smoothers_kwargs"]["trend"] = "1"
+        with pytest.raises(DSSParameterError) as min_err:
+            _ = dku_config.add_parameters(advanced_config,input_df)
+        assert "greater" in str(min_err.value)
+
+        advanced_config["stl_smoothers_kwargs"]["trend"] = "3"
+        advanced_config["stl_degree_kwargs"]["seasonal_deg"] = "2"
+        with pytest.raises(DSSParameterError) as non_binary_err:
+            _ = dku_config.add_parameters(advanced_config,input_df)
+        assert "0" in str(non_binary_err.value)
+        assert "1" in str(non_binary_err.value)
+
+        advanced_config["stl_degree_kwargs"]["seasonal_deg"] = "1"
+        advanced_config["stl_smoothers_kwargs"]["wrong_field"] = "3"
+        with pytest.raises(DSSParameterError) as invalid_field_err:
+            _ = dku_config.add_parameters(advanced_config,input_df)
+        assert "This field is invalid" in str(invalid_field_err.value)
+
+    def test_parsing(self, advanced_config, input_df):
+        dku_config = STLConfig()
+        dku_config.add_parameters(advanced_config, input_df)
+        assert dku_config.loess_degrees.get("seasonal_deg") == 1
+        assert dku_config.speed_jumps.get("trend_jump") == 12
+        assert dku_config.additional_smoothers.get("trend") == 13

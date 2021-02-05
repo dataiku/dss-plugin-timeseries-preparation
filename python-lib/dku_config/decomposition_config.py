@@ -1,53 +1,18 @@
 import numpy as np
 
-import dataiku
-from dataiku.customrecipe import get_input_names_for_role, get_output_names_for_role
-
 from dku_config.dku_config import DkuConfig
-from dku_config.utils import MultiplicativeCheck
 
 
 class DecompositionConfig(DkuConfig):
     def __init__(self):
         super().__init__()
 
-    def add_parameters(self, config):
-        input_dataset_columns = [p["name"] for p in self.input_dataset.read_schema()]
+    def add_parameters(self, config, input_df):
+        input_dataset_columns = list(input_df.columns)
         self._load_input_parameters(config, input_dataset_columns)
-        input_df = self.input_dataset.get_dataframe()
         self._load_settings(config, input_df)
         if self.advanced:
             self._load_advanced_parameters(config)
-
-    def load_input_output_datasets(self, input_dataset_name, output_dataset_name):
-        self.add_param(
-            name="input_dataset_name",
-            value=input_dataset_name,
-            checks=[{
-                "type": "is_type",
-                "op": str
-            }],
-            required=True
-        )
-        self.add_param(
-            name="input_dataset",
-            value=dataiku.Dataset(self.input_dataset_name),
-            required=True
-        )
-        self.add_param(
-            name="output_dataset_name",
-            value=output_dataset_name,
-            checks=[{
-                "type": "is_type",
-                "op": str
-            }],
-            required=True
-        )
-        self.add_param(
-            name="output_dataset",
-            value=dataiku.Dataset(self.output_dataset_name),
-            required=True
-        )
 
     def _load_input_parameters(self, config, input_dataset_columns):
         self.add_param(
@@ -75,16 +40,14 @@ class DecompositionConfig(DkuConfig):
             required=True
         )
 
-        if config.get("frequency_unit") not in ["W", "H", "min"]:
-            frequency_value = config.get("frequency_unit")
-        elif config.get("frequency_unit") == "W":
+        if config.get("frequency_unit") == "W":
             frequency_value = f"W-{config.get('frequency_end_of_week', 1)}"
         elif config.get("frequency_unit") == "H":
             frequency_value = f"{config.get('frequency_step_hours', 1)}H"
         elif config.get("frequency_unit") == "min":
             frequency_value = f"{config.get('frequency_step_minutes', 1)}min"
         else:
-            frequency_value = None
+            frequency_value = config.get("frequency_unit")
 
         self.add_param(
             name="frequency",
@@ -94,14 +57,16 @@ class DecompositionConfig(DkuConfig):
 
         long_format = config.get("long_format", False)
         timeseries_identifiers = config.get("timeseries_identifiers")
-        is_long_format_valid = True
-        if long_format and (not timeseries_identifiers or len(timeseries_identifiers)) == 0:
-            is_long_format_valid = False
+        is_long_format_valid = (not long_format) or (
+                    long_format and timeseries_identifiers and len(timeseries_identifiers) != 0)
 
         self.add_param(
             name="long_format",
             value=long_format,
-            checks=[{"type": "custom",
+            checks=[{"type": "is_type",
+                     "op": bool
+                     },
+                    {"type": "custom",
                      "cond": is_long_format_valid,
                      "err_msg": "Long format is selected but no time series identifiers were provided"
                      }])
@@ -126,17 +91,52 @@ class DecompositionConfig(DkuConfig):
             )
 
     def _load_settings(self, config, input_df):
-        pass
+        self.add_param(
+            name="time_decomposition_method",
+            value=config.get("time_decomposition_method"),
+            required=True
+        )
+
+        model = config.get("decomposition_model", "additive")
+        columns_with_invalid_values = self._get_columns_with_invalid_values(model, input_df)
+
+        self.add_param(
+            name="model",
+            value=model,
+            checks=[
+                {
+                    "type": "in",
+                    "op": ["additive", "multiplicative"]
+                },
+                {
+                    "type": "custom",
+                    "cond": len(columns_with_invalid_values) == 0,
+                    "err_msg": f"{', '.join(columns_with_invalid_values)}, a targeted column contains negative values. Yet, a multiplicative STL model only works with positive time series. You may choose an additive model instead. "
+                }
+            ],
+            required=True
+        )
+
+        self.add_param(
+            name="advanced",
+            value=config.get("expert", False),
+            checks=[
+                {
+                    "type": "is_type",
+                    "op": bool
+                }
+            ],
+            required=True
+        )
 
     def _load_advanced_parameters(self, config):
         pass
 
-    def _check_multiplicative_model(self, model, input_df):
+    def _get_columns_with_invalid_values(self, model, input_df):
+        columns_with_invalid_values = []
         if model == "multiplicative":
             for target_column in self.target_columns:
                 target_values = input_df[target_column].values
                 if np.any(target_values <= 0):
-                    return MultiplicativeCheck(False, target_column)
-            return MultiplicativeCheck(True)
-        else:
-            return MultiplicativeCheck(True)
+                    columns_with_invalid_values.append(target_column)
+        return columns_with_invalid_values

@@ -20,7 +20,7 @@
   ],
   "outputRoles": [
     {
-      "name": "transformation_dataset",
+      "name": "output_dataset",
       "label": "Transformation results",
       "description": "Dataset resulting from the time series transformation",
       "arity": "UNARY",
@@ -30,41 +30,6 @@
     }
   ],
   "params": [
-    {
-      "type": "SEPARATOR",
-      "name": "separator_transformation_type",
-      "label": "Transformation type"
-    },
-    {
-      "name": "transformation_type",
-      "label": "Select a transformation",
-      "type": "SELECT",
-      "selectChoices": [
-        {
-          "value": "seasonal_decomposition",
-          "label": "Seasonal decomposition"
-        }
-      ],
-      "defaultValue": "seasonal_decomposition",
-      "mandatory": true
-    },
-    {
-      "name": "time_decomposition_method",
-      "label": "Select a decomposition method",
-      "type": "SELECT",
-      "visibilityCondition": "model.transformation_type == 'seasonal_decomposition'",
-      "selectChoices": [
-        {
-          "value": "STL",
-          "label": "STL, Seasonal-Trend decomposition using LOESS"
-        },
-        {
-          "value": "classical",
-          "label": "Classical decomposition using moving averages"
-        }
-      ],
-      "defaultValue": "STL"
-    },
     {
       "type": "SEPARATOR",
       "name": "separator_input",
@@ -221,14 +186,42 @@
     },
     {
       "type": "SEPARATOR",
+      "name": "separator_decomposition",
+      "label": "Decomposition parameters"
+    },
+    {
+      "name": "time_decomposition_method",
+      "label": "Select a decomposition method",
+      "type": "SELECT",
+      "selectChoices": [
+        {
+          "value": "STL",
+          "label": "STL"
+        },
+        {
+          "value": "classical",
+          "label": "Classical decomposition"
+        }
+      ],
+      "defaultValue": "STL"
+    },
+    {
+      "type": "SEPARATOR",
       "name": "stl_parameters",
-      "label": "STL parameters",
+      "label": "",
       "description": "Seasonal-Trend decomposition using Loess",
       "visibilityCondition": "model.time_decomposition_method == 'STL'"
     },
     {
+      "type": "SEPARATOR",
+      "name": "classical_parameters",
+      "label": "",
+      "description": "Seasonal-Trend decomposition using moving averages",
+      "visibilityCondition": "model.time_decomposition_method == 'classical'"
+    },
+    {
       "type": "SELECT",
-      "name": "model_stl",
+      "name": "decomposition_model",
       "label": "Model type",
       "selectChoices": [
         {
@@ -241,8 +234,7 @@
         }
       ],
       "defaultValue": "additive",
-      "description": " If the magnitude of the seasonality varies over time, then the series is multiplicative. Otherwise, the series is additive.",
-      "visibilityCondition": "model.time_decomposition_method == 'STL'"
+      "description": " If the magnitude of the seasonality varies over time, then the series is multiplicative. Otherwise, the series is additive."
     },
     {
       "name": "seasonal_stl",
@@ -254,11 +246,10 @@
       "visibilityCondition": "model.time_decomposition_method == 'STL'"
     },
     {
-      "name": "expert_stl",
+      "name": "expert",
       "label": "Expert mode",
       "type": "BOOLEAN",
-      "defaultValue": false,
-      "visibilityCondition": "model.time_decomposition_method == 'STL'"
+      "defaultValue": false
     },
     {
       "name": "robust_stl",
@@ -266,7 +257,7 @@
       "type": "BOOLEAN",
       "defaultValue": false,
       "mandatory": false,
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl",
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
       "description": "If selected, the estimation will re-weight data, allowing the model to tolerate larger errors."
     },
     {
@@ -274,18 +265,14 @@
       "name": "separator_degrees",
       "label": " ",
       "description": "Fitting method in Loess",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl"
-    },
-    {
-      "type": "SEPARATOR",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl"
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
     },
     {
       "name": "stl_degree_kwargs",
       "type": "MAP",
       "label": "Degree of Loess",
       "description": "Optional keyword arguments from https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html. Keys = parameters names. Values = parameters values.",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl",
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
       "mandatory": false,
       "defaultValue": {
         "seasonal_deg": "1",
@@ -298,18 +285,18 @@
       "name": "separator_speedup",
       "label": " ",
       "description": "Performance",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl"
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
     },
     {
       "type": "SEPARATOR",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl"
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
     },
     {
       "name": "stl_speed_jump_kwargs",
       "type": "MAP",
       "label": "Speed jump",
       "description": "Optional keyword arguments from https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html. Keys = parameters names. Values = parameters values.",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl",
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
       "mandatory": false,
       "defaultValue": {
         "seasonal_jump": "1",
@@ -322,18 +309,18 @@
       "name": "separator_smoothers",
       "label": " ",
       "description": "Additional smoothers",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl"
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
     },
     {
       "type": "SEPARATOR",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl"
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
     },
     {
       "name": "stl_smoothers_kwargs",
       "type": "MAP",
       "label": "Length of the smoothers",
       "description": "Optional keyword arguments from https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html. Keys = parameters names. Values = parameters values.",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl",
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
       "mandatory": false,
       "defaultValue": {
         "trend": "",
@@ -341,43 +328,11 @@
       }
     },
     {
-      "type": "SEPARATOR",
-      "name": "classical_parameters",
-      "label": "Classical decomposition parameters",
-      "description": "Seasonal-Trend decomposition using moving averages",
-      "visibilityCondition": "model.time_decomposition_method == 'classical'"
-    },
-    {
-      "type": "SELECT",
-      "name": "classical_model",
-      "label": "Model type",
-      "selectChoices": [
-        {
-          "value": "additive",
-          "label": "Additive"
-        },
-        {
-          "value": "multiplicative",
-          "label": "Multiplicative"
-        }
-      ],
-      "defaultValue": "additive",
-      "description": " If the magnitude of the seasonality varies over time, then the series is multiplicative. Otherwise, the series is additive.",
-      "visibilityCondition": "model.time_decomposition_method == 'classical'"
-    },
-    {
-      "name": "expert_classical",
-      "label": "Expert mode",
-      "type": "BOOLEAN",
-      "defaultValue": false,
-      "visibilityCondition": "model.time_decomposition_method == 'classical'"
-    },
-    {
       "name": "advanced_params_classical",
       "type": "MAP",
       "label": "Advanced parameters",
       "description": "Optional keyword arguments from https://www.statsmodels.org/stable/generated/statsmodels.tsa.seasonal.seasonal_decompose.html. Keys = parameters names. Values = parameters values.",
-      "visibilityCondition": "model.time_decomposition_method == 'classical' && model.expert_classical",
+      "visibilityCondition": "model.time_decomposition_method == 'classical' && model.expert",
       "mandatory": false,
       "defaultValue": {
         "filt": "",
