@@ -1,5 +1,3 @@
-from statsmodels.tsa.tsatools import freq_to_period
-
 from dku_config.decomposition_config import DecompositionConfig
 from dku_config.utils import are_keys_in, is_positive_int
 
@@ -7,9 +5,10 @@ from dku_config.utils import are_keys_in, is_positive_int
 class STLConfig(DecompositionConfig):
     def __init__(self):
         super().__init__()
+        self.unmanaged_frequencies = ["12M"]
 
-    def _load_settings(self, config, input_df):
-        super()._load_settings(config, input_df)
+    def _load_settings(self, config):
+        super()._load_settings(config)
         seasonal = config.get("seasonal_stl")
         self.add_param(
             name="seasonal",
@@ -111,8 +110,7 @@ class STLConfig(DecompositionConfig):
 
         if additional_smoothers:
             are_smoothers_keys_valid = are_keys_in(["trend", "low_pass"], additional_smoothers)
-            period = freq_to_period(self.frequency)
-            minimum = max(period, 3)
+            minimum = max(self.period, 3)
             are_smoothers_values_valid = all((x == "") or
                                              ((is_odd(x) and float(x) > minimum)) for x in additional_smoothers.values())
 
@@ -137,7 +135,7 @@ class STLConfig(DecompositionConfig):
                     {
                         "type": "custom",
                         "cond": are_smoothers_values_valid,
-                        "err_msg": f"This field is invalid. The values should be odd positive integers and greater than 3 and the period (= {period})"
+                        "err_msg": f"This field is invalid. The values should be odd positive integers and greater than 3 and the period (= {self.period})"
                     }
                 ],
                 required=False

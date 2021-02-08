@@ -47,14 +47,14 @@ def long_df():
         {"value1": co2, "value2": co2, "country": country, "date": time_index})
     return df
 
-
 @pytest.fixture
-def basic_dku_config(input_df):
+def basic_dku_config():
+    input_dataset_columns = ["value1", "value2", "country", "date"]
     dku_config = DecompositionConfig()
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
               "frequency_unit": "M", "time_column": "date", "target_columns": ["value1", "value2"],
-              "long_format": False, "decomposition_model": "multiplicative", "expert": False}
-    dku_config.add_parameters(config, input_df)
+              "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": False}
+    dku_config.add_parameters(config, input_dataset_columns)
     return dku_config
 
 
@@ -109,10 +109,23 @@ class TestDecomposition:
         df_long_prepared = timeseries_preparator.prepare_timeseries_dataframe(long_df)
         decomposition = MockDecomposition(basic_dku_config)
         df_results = decomposition.fit(df_long_prepared)
-        assert np.array_equal(df_results["value1_trend"], np.array([1,1,3,3]))
+        assert np.array_equal(df_results["value1_trend"], np.array([1, 1, 3, 3]))
         assert np.array_equal(df_results["value2_trend"], np.array([2, 2, 4, 4]))
         assert np.array_equal(df_results["value1_seasonal"], np.array([2, 2, 6, 6]))
-        assert np.array_equal(df_results["value2_residuals"], np.array([6,6, 12, 12]))
+        assert np.array_equal(df_results["value2_residuals"], np.array([6, 6, 12, 12]))
 
+    def test_collision(self, basic_dku_config, input_df):
+        basic_dku_config.target_columns = ["value1"]
+        input_df = input_df.rename(columns={"value2": "value1_trend"})
+        timeseries_preparator = TimeseriesPreparator(
+            time_column_name=basic_dku_config.time_column,
+            frequency=basic_dku_config.frequency,
+            target_columns_names=basic_dku_config.target_columns,
+            timeseries_identifiers_names=basic_dku_config.timeseries_identifiers
+        )
+        df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
+        decomposition = MockDecomposition(basic_dku_config)
+        df_results = decomposition.fit(df_prepared)
+        assert df_results.columns[3] == "value1_trend_0"
+        assert df_results.columns[4] == "value1_seasonal"
 
-    # test collisions

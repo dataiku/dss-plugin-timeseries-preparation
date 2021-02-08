@@ -1,4 +1,4 @@
-import numpy as np
+from statsmodels.tsa.tsatools import freq_to_period
 
 from dku_config.dku_config import DkuConfig
 
@@ -6,11 +6,11 @@ from dku_config.dku_config import DkuConfig
 class DecompositionConfig(DkuConfig):
     def __init__(self):
         super().__init__()
+        self.unmanaged_frequencies = []
 
-    def add_parameters(self, config, input_df):
-        input_dataset_columns = list(input_df.columns)
+    def add_parameters(self, config, input_dataset_columns):
         self._load_input_parameters(config, input_dataset_columns)
-        self._load_settings(config, input_df)
+        self._load_settings(config)
         if self.advanced:
             self._load_advanced_parameters(config)
 
@@ -42,23 +42,43 @@ class DecompositionConfig(DkuConfig):
 
         if config.get("frequency_unit") == "W":
             frequency_value = f"W-{config.get('frequency_end_of_week', 1)}"
+            period_value = 52
         elif config.get("frequency_unit") == "H":
             frequency_value = f"{config.get('frequency_step_hours', 1)}H"
-        elif config.get("frequency_unit") == "min":
-            frequency_value = f"{config.get('frequency_step_minutes', 1)}min"
+            period_value = 24 / int(config.get("frequency_step_hours"))
         else:
             frequency_value = config.get("frequency_unit")
+            if frequency_value == "12M":
+                period_value = 1
+            elif frequency_value == "3M":
+                period_value = 4
+            elif frequency_value == "6M":
+                period_value = 2
+            else:
+                period_value = freq_to_period(frequency_value)
 
         self.add_param(
             name="frequency",
             value=frequency_value,
+            checks= [
+                {"type": "custom",
+                 "cond": frequency_value not in self.unmanaged_frequencies,
+                 "err_msg": f"The frequency {frequency_value} is not supported by {config.get('time_decomposition_method')}"
+                 }
+            ],
+            required=True
+        )
+
+        self.add_param(
+            name="period",
+            value=period_value,
             required=True
         )
 
         long_format = config.get("long_format", False)
         timeseries_identifiers = config.get("timeseries_identifiers")
         is_long_format_valid = (not long_format) or (
-                    long_format and timeseries_identifiers and len(timeseries_identifiers) != 0)
+                long_format and timeseries_identifiers and len(timeseries_identifiers) != 0)
 
         self.add_param(
             name="long_format",
@@ -90,7 +110,7 @@ class DecompositionConfig(DkuConfig):
                 value=[]
             )
 
-    def _load_settings(self, config, input_df):
+    def _load_settings(self, config):
         self.add_param(
             name="time_decomposition_method",
             value=config.get("time_decomposition_method"),
@@ -98,7 +118,6 @@ class DecompositionConfig(DkuConfig):
         )
 
         model = config.get("decomposition_model", "additive")
-        columns_with_invalid_values = self._get_columns_with_invalid_values(model, input_df)
 
         self.add_param(
             name="model",
@@ -107,11 +126,6 @@ class DecompositionConfig(DkuConfig):
                 {
                     "type": "in",
                     "op": ["additive", "multiplicative"]
-                },
-                {
-                    "type": "custom",
-                    "cond": len(columns_with_invalid_values) == 0,
-                    "err_msg": f"{', '.join(columns_with_invalid_values)}, a targeted column contains negative values. Yet, a multiplicative STL model only works with positive time series. You may choose an additive model instead. "
                 }
             ],
             required=True
@@ -131,12 +145,3 @@ class DecompositionConfig(DkuConfig):
 
     def _load_advanced_parameters(self, config):
         pass
-
-    def _get_columns_with_invalid_values(self, model, input_df):
-        columns_with_invalid_values = []
-        if model == "multiplicative":
-            for target_column in self.target_columns:
-                target_values = input_df[target_column].values
-                if np.any(target_values <= 0):
-                    columns_with_invalid_values.append(target_column)
-        return columns_with_invalid_values

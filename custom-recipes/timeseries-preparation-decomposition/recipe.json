@@ -54,16 +54,16 @@
       "mandatory": true,
       "selectChoices": [
         {
-          "value": "min",
-          "label": "Minute"
-        },
-        {
           "value": "H",
           "label": "Hour"
         },
         {
           "value": "D",
           "label": "Day"
+        },
+        {
+          "value": "B",
+          "label": "Business Day (Mon-Fri)"
         },
         {
           "value": "W",
@@ -76,10 +76,6 @@
         {
           "value": "3M",
           "label": "Quarter"
-        },
-        {
-          "value": "6M",
-          "label": "Semester"
         },
         {
           "value": "12M",
