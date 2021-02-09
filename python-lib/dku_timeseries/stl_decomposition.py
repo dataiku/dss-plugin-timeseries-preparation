@@ -25,7 +25,7 @@ class STLDecomposition(TimeseriesDecomposition):
 
 
 def format_parameters(dku_config):
-    parameters = {"seasonal": dku_config.seasonal}
+    parameters = {"seasonal": dku_config.seasonal, "period": dku_config.period}
     if dku_config.advanced:
         parameters["robust"] = dku_config.robust_stl
         if dku_config.loess_degrees:

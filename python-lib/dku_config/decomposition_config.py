@@ -40,27 +40,20 @@ class DecompositionConfig(DkuConfig):
             required=True
         )
 
-        if config.get("frequency_unit") == "W":
-            frequency_value = f"W-{config.get('frequency_end_of_week', 1)}"
-            period_value = 52
-        elif config.get("frequency_unit") == "H":
-            frequency_value = f"{config.get('frequency_step_hours', 1)}H"
-            period_value = 24 / int(config.get("frequency_step_hours"))
+        frequency_value = config.get("frequency_unit")
+        if frequency_value == "12M":
+            period_value = 1
+        elif frequency_value == "3M":
+            period_value = 4
+        elif frequency_value == "6M":
+            period_value = 2
         else:
-            frequency_value = config.get("frequency_unit")
-            if frequency_value == "12M":
-                period_value = 1
-            elif frequency_value == "3M":
-                period_value = 4
-            elif frequency_value == "6M":
-                period_value = 2
-            else:
-                period_value = freq_to_period(frequency_value)
+            period_value = freq_to_period(frequency_value)
 
         self.add_param(
             name="frequency",
             value=frequency_value,
-            checks= [
+            checks=[
                 {"type": "custom",
                  "cond": frequency_value not in self.unmanaged_frequencies,
                  "err_msg": f"The frequency {frequency_value} is not supported by {config.get('time_decomposition_method')}"

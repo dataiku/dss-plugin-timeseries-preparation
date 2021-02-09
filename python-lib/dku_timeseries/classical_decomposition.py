@@ -15,7 +15,7 @@ class ClassicalDecomposition(TimeseriesDecomposition):
 
 
 def format_parameters(dku_config):
-    parameters = {"model": dku_config.model}
+    parameters = {"model": dku_config.model, "period": dku_config.period}
     if dku_config.advanced:
         if dku_config.advanced_params.get("extrapolate_trend"):
             parameters["extrapolate_trend"] = dku_config.extrapolate_trend
