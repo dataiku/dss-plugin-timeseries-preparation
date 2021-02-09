@@ -3,7 +3,6 @@ import numpy as np
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 from pandas.tseries.offsets import Tick, BusinessDay, Week, MonthEnd
 from pandas.tseries.frequencies import to_offset
-from timeseries_preparation.h2g2 import H2G2
 from safe_logger import SafeLogger
 
 logger = SafeLogger("Timeseries preparation plugin")
@@ -129,8 +128,6 @@ class TimeseriesPreparator:
         Returns:
             Filtered dataframe
         """
-        if self.max_timeseries_length == 42:
-            print(H2G2)
         if len(self.timeseries_identifiers_names) == 0:
             return df.tail(self.max_timeseries_length)
         else:

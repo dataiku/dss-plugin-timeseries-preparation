@@ -66,6 +66,9 @@ class TestDecompositionConfig:
         assert "Invalid time series identifiers" in str(in_err.value)
 
     def test_different_frequencies(self):
+        annual_config = config_from_freq("12M")
+        assert annual_config.period == 1
+
         quarterly_config = config_from_freq("3M")
         assert quarterly_config.period == 4
 

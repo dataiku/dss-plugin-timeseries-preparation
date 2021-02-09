@@ -20,10 +20,12 @@ if decomposition_method == Method.STL:
     dku_config = STLConfig()
     dku_config.add_parameters(config, input_dataset_columns)
     input_validator = DecompositionInputValidator(dku_config)
+    decomposition = STLDecomposition(dku_config)
 elif decomposition_method == Method.CLASSICAL:
     dku_config = ClassicalConfig()
     dku_config.add_parameters(config, input_dataset_columns)
     input_validator = ClassicalInputValidator(dku_config)
+    decomposition = ClassicalDecomposition(dku_config)
 
 timeseries_preparator = TimeseriesPreparator(
     time_column_name=dku_config.time_column,
@@ -35,11 +37,6 @@ timeseries_preparator = TimeseriesPreparator(
 input_df = input_dataset.get_dataframe()
 df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
 input_validator.check(df_prepared)
-
-if decomposition_method == Method.STL:
-    decomposition = STLDecomposition(dku_config)
-elif decomposition_method == Method.CLASSICAL:
-    decomposition = ClassicalDecomposition(dku_config)
 transformed_df = decomposition.fit(df_prepared)
 
 transformation_df = output_dataset.write_with_schema(transformed_df)
