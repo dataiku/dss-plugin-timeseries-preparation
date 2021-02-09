@@ -1,5 +1,6 @@
 from dataiku.customrecipe import get_recipe_config
 
+from Constants import Method
 from commons import get_input_output
 from dku_config.stl_config import STLConfig
 from dku_config.classical_config import ClassicalConfig
@@ -13,11 +14,13 @@ from timeseries_preparation.preparation import TimeseriesPreparator
 
 config = get_recipe_config()
 input_dataset_columns = [column["name"] for column in input_dataset.read_schema()]
-if config.get("time_decomposition_method") == "STL":
+decomposition_method = Method(config.get("time_decomposition_method"))
+
+if decomposition_method == Method.STL:
     dku_config = STLConfig()
     dku_config.add_parameters(config, input_dataset_columns)
     input_validator = DecompositionInputValidator(dku_config)
-elif config.get("time_decomposition_method") == "classical":
+elif decomposition_method == Method.CLASSICAL:
     dku_config = ClassicalConfig()
     dku_config.add_parameters(config, input_dataset_columns)
     input_validator = ClassicalInputValidator(dku_config)
@@ -33,9 +36,9 @@ input_df = input_dataset.get_dataframe()
 df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
 input_validator.check(df_prepared)
 
-if dku_config.time_decomposition_method == "STL":
+if decomposition_method == Method.STL:
     decomposition = STLDecomposition(dku_config)
-elif dku_config.time_decomposition_method == "classical":
+elif decomposition_method == Method.CLASSICAL:
     decomposition = ClassicalDecomposition(dku_config)
 transformed_df = decomposition.fit(df_prepared)
 
