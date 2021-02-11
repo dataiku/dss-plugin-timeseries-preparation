@@ -8,7 +8,8 @@ from dku_config.decomposition_config import DecompositionConfig
 @pytest.fixture
 def basic_config():
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
-              "frequency_unit": "M", "time_column": "date", "target_columns": ["value1", "value2"],
+              "frequency_unit": "M", "season_length_M": 12, "time_column": "date",
+              "target_columns": ["value1", "value2"],
               "long_format": False, "decomposition_model": "multiplicative", "expert": False}
     return config
 
@@ -90,6 +91,8 @@ class TestDecompositionConfig:
         daily_config = config_from_freq("D")
         assert daily_config.period == 7
 
+        min_config = config_from_freq("min")
+        assert min_config.period == 1
 
 
 def config_from_freq(freq):

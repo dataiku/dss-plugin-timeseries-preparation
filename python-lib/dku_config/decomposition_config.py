@@ -6,7 +6,7 @@ from dku_config.dku_config import DkuConfig
 class DecompositionConfig(DkuConfig):
     def __init__(self):
         super().__init__()
-        self.unmanaged_frequencies = []
+        self.minimum_period = 1
 
     def add_parameters(self, config, input_dataset_columns):
         self._load_input_parameters(config, input_dataset_columns)
@@ -41,22 +41,22 @@ class DecompositionConfig(DkuConfig):
         )
 
         frequency_value = config.get("frequency_unit")
-        if frequency_value == "12M":
-            period_value = 1
-        elif frequency_value == "3M":
-            period_value = 4
-        elif frequency_value == "6M":
-            period_value = 2
-        else:
-            period_value = freq_to_period(frequency_value)
+        if frequency_value:
+            if frequency_value == "min" or frequency_value == "12M":
+                period_value = config.get(f"season_length_{frequency_value}", 1)
+            elif frequency_value == "6M":
+                period_value = config.get(f"season_length_{frequency_value}", 2)
+            elif frequency_value == "3M":
+                period_value = config.get(f"season_length_{frequency_value}", 4)
+            else:
+                period_value = config.get(f"season_length_{frequency_value}", freq_to_period(frequency_value))
 
         self.add_param(
             name="frequency",
             value=frequency_value,
             checks=[
-                {"type": "custom",
-                 "cond": frequency_value not in self.unmanaged_frequencies,
-                 "err_msg": f"The frequency {frequency_value} is not supported by {config.get('time_decomposition_method')}"
+                {"type": "in",
+                 "op": ["D", "min", "12M", "3M", "6M", "M", "W", "B", "H"]
                  }
             ],
             required=True
@@ -65,6 +65,15 @@ class DecompositionConfig(DkuConfig):
         self.add_param(
             name="period",
             value=period_value,
+            checks=[
+                {"type": "is_type",
+                 "op": int
+                 },
+                {
+                    "type": "sup_eq",
+                    "op": self.minimum_period
+                }
+            ],
             required=True
         )
 

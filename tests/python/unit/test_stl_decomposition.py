@@ -22,7 +22,7 @@ def input_df(data):
 @pytest.fixture
 def dku_config():
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
-              "frequency_unit": "M", "time_column": "date", "target_columns": ["value1"],
+              "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["value1"],
               "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": False}
     input_dataset_columns = ["value1", "value2", "country", "date"]
     dku_config = STLConfig()

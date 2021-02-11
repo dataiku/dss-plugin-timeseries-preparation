@@ -12,7 +12,7 @@ def basic_dku_config():
     input_dataset_columns = ["value1","value2","date"]
     dku_config = DecompositionConfig()
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
-              "frequency_unit": "M", "time_column": "date", "target_columns": ["value1", "value2"],
+              "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["value1", "value2"],
               "long_format": False, "decomposition_model": "multiplicative", "expert": False}
     dku_config.add_parameters(config, input_dataset_columns)
     return dku_config
@@ -22,7 +22,7 @@ def classical_dku_config():
     input_dataset_columns = ["value1","value2","date"]
     dku_config = DecompositionConfig()
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "classical",
-              "frequency_unit": "M", "time_column": "date", "target_columns": ["value1", "value2"],
+              "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["value1", "value2"],
               "long_format": False, "decomposition_model": "multiplicative", "expert": False}
     dku_config.add_parameters(config, input_dataset_columns)
     return dku_config

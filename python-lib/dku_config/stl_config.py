@@ -5,7 +5,7 @@ from dku_config.utils import are_keys_in, is_positive_int
 class STLConfig(DecompositionConfig):
     def __init__(self):
         super().__init__()
-        self.unmanaged_frequencies = ["12M"]
+        self.minimum_period = 2
 
     def _load_settings(self, config):
         super()._load_settings(config)

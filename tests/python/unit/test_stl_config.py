@@ -8,7 +8,7 @@ from dku_config.stl_config import STLConfig
 @pytest.fixture
 def basic_config():
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
-              "frequency_unit": "M", "time_column": "date", "target_columns": ["target"],
+              "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["target"],
               "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 7, "expert": False}
     return config
 
@@ -16,7 +16,7 @@ def basic_config():
 @pytest.fixture
 def advanced_config():
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
-              "frequency_unit": "D",
+              "frequency_unit": "D", "season_length_D": 7,
               "decomposition_model": "additive", "seasonal_stl": 7, "expert": True, "robust_stl": True,
               "seasonal_degree_stl": "1",
               "trend_degree_stl": "0", "lowpass_degree_stl": "0", "time_column": "date",

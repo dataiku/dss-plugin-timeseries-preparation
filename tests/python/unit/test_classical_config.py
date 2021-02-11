@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import pytest
 
 from dku_config.dss_parameter import DSSParameterError
@@ -9,7 +8,7 @@ from dku_config.classical_config import ClassicalConfig
 @pytest.fixture
 def basic_config():
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "classical",
-              "frequency_unit": "M", "time_column": "date", "target_columns": ["target"],
+              "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["target"],
               "long_format": False, "decomposition_model": "multiplicative", "expert": False}
     return config
 
@@ -17,7 +16,7 @@ def basic_config():
 @pytest.fixture
 def advanced_config():
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "classical",
-              "frequency_unit": "M", "time_column": "date", "target_columns": ["target"],
+              "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["target"],
               "long_format": False, "decomposition_model": "multiplicative", "expert": True,
               "advanced_params_classical": {"filt": "[1,2,3]", "two_sided": "False", "extrapolate_trend": ""}
               }
