@@ -215,7 +215,7 @@
       "name": "stl_degree_kwargs",
       "type": "MAP",
       "label": "Degree of Loess",
-      "description": "Optional keyword arguments from https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html. Keys = parameters names. Values = parameters values.",
+      "description": "Keyword argument ⟶ value cf. https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html",
       "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
       "mandatory": false,
       "defaultValue": {
@@ -239,7 +239,7 @@
       "name": "stl_speed_jump_kwargs",
       "type": "MAP",
       "label": "Speed jump",
-      "description": "Optional keyword arguments from https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html. Keys = parameters names. Values = parameters values.",
+      "description": "Keyword argument ⟶ value cf. https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html",
       "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
       "mandatory": false,
       "defaultValue": {
@@ -263,7 +263,7 @@
       "name": "stl_smoothers_kwargs",
       "type": "MAP",
       "label": "Length of the smoothers",
-      "description": "Optional keyword arguments from https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html. Keys = parameters names. Values = parameters values.",
+      "description": "Keyword argument ⟶ value cf. https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html",
       "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
       "mandatory": false,
       "defaultValue": {
@@ -275,7 +275,7 @@
       "name": "advanced_params_classical",
       "type": "MAP",
       "label": "Advanced parameters",
-      "description": "Optional keyword arguments from https://www.statsmodels.org/stable/generated/statsmodels.tsa.seasonal.seasonal_decompose.html. Keys = parameters names. Values = parameters values.",
+      "description": "Keyword argument ⟶ value https://www.statsmodels.org/stable/generated/statsmodels.tsa.seasonal.seasonal_decompose.html",
       "visibilityCondition": "model.time_decomposition_method == 'classical' && model.expert",
       "mandatory": false,
       "defaultValue": {
