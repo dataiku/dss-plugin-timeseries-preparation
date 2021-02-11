@@ -96,7 +96,7 @@ class ClassicalConfig(DecompositionConfig):
                         {
                             "type": "custom",
                             "cond": is_extrapolate_valid,
-                            "err_msg": "Extrapolate trend must be a positive integer or equal to 'freq'"
+                            "err_msg": "Extrapolate trend must be a positive integer or the string 'freq'"
 
                         }
                     ],

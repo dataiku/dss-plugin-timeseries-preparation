@@ -26,7 +26,7 @@ class STLConfig(DecompositionConfig):
                 {
                     "type": "custom",
                     "cond": (seasonal and isinstance(seasonal, int) and (seasonal % 2 == 1)),
-                    "err_msg": "The seasonal smoother should be an odd integer."
+                    "err_msg": "The seasonal smoother must be an odd integer."
                 }],
             required=True
         )
@@ -69,7 +69,7 @@ class STLConfig(DecompositionConfig):
                     {
                         "type": "custom",
                         "cond": are_degree_values_valid,
-                        "err_msg": "This field is invalid. The degrees used for Loess estimation should be equal to 0 and 1"
+                        "err_msg": "This field is invalid. The degrees used for Loess estimation must be equal to 0 or 1"
                     }
                 ],
                 required=False
@@ -135,7 +135,7 @@ class STLConfig(DecompositionConfig):
                     {
                         "type": "custom",
                         "cond": are_smoothers_values_valid,
-                        "err_msg": f"This field is invalid. The values should be odd positive integers and greater than 3 and the period (= {self.period})"
+                        "err_msg": f"This field is invalid. The values should be odd positive integers greater than 3 and the period (= {self.period})"
                     }
                 ],
                 required=False

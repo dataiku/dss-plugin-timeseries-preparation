@@ -6,15 +6,15 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_ERROR_MESSAGES = {
     'exists': 'This field is required.',
-    'in': 'Should be in the following iterable: {op}.',
+    'in': 'Expected keys are: {op}.',
     'not_in': 'Should not be in the following iterable: {op}.',
     'eq': 'Should be equal to {op} (Currently {value}).',
-    'sup': 'Should be superior to {op} (Currently {value}).',
-    'sup_eq': 'Should be superior or equal to {op} (Currently {value}).',
-    'inf': 'Should be inferior to {op} (Currently {value}).',
-    'inf_eq': 'Should be inferior or equal to {op} (Currently {value}).',
-    'between': 'Should be between {op[0]} and {op[1]} (Currently {value}).',
-    'between_strict': 'Should be strictly between {op[0]} and {op[1]} (Currently {value}).',
+    'sup': 'Should be greater than {op} (Currently {value}).',
+    'sup_eq': 'Should be greater than or equal to {op} (Currently {value}).',
+    'inf': 'Should be less than {op} (Currently {value}).',
+    'inf_eq': 'Should be less than or equal to {op} (Currently {value}).',
+    'between': 'Should be between {op[0]} and {op[1]} inclusive (Currently {value}).',
+    'between_strict': 'Should be strictly between {op[0]} and {op[1]} exclusive (Currently {value}).',
     'is_type': 'Should be of type {op}.',
     'custom': "There has been an unknown error."
 }
