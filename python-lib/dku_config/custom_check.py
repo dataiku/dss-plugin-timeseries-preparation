@@ -14,7 +14,7 @@ DEFAULT_ERROR_MESSAGES = {
     'inf': 'Should be less than {op} (Currently {value}).',
     'inf_eq': 'Should be less than or equal to {op} (Currently {value}).',
     'between': 'Should be between {op[0]} and {op[1]} inclusive (Currently {value}).',
-    'between_strict': 'Should be strictly between {op[0]} and {op[1]} exclusive (Currently {value}).',
+    'between_strict': 'Should be between {op[0]} and {op[1]} exclusive (Currently {value}).',
     'is_type': 'Should be of type {op}.',
     'custom': "There has been an unknown error."
 }
