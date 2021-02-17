@@ -1,6 +1,6 @@
 from dataiku.customrecipe import get_recipe_config
 
-from Constants import Method
+from dku_constants import Method
 from commons import get_input_output
 from dku_config.stl_config import STLConfig
 from dku_config.classical_config import ClassicalConfig
