@@ -19,14 +19,18 @@ class DecompositionInputValidator(object):
 
     def _check_size(self, df):
         if self.dku_config.long_format:
-            for identifiers, identifiers_df in df.groupby(self.dku_config.timeseries_identifiers):
-                size = identifiers_df.shape[0]
-                if size < self.minimum_observations:
-                    raise ValueError(
-                        f"The time series with the identifiers {identifiers} needs at least {self.minimum_observations} observations. It has only {size} "
-                        f"observations")
+            identifiers_sizes = df.groupby(self.dku_config.timeseries_identifiers).size()
+            too_short_timeseries_identifiers = identifiers_sizes[identifiers_sizes < self.minimum_observations].index.tolist()
+            if len(too_short_timeseries_identifiers) > 0:
+                if len(too_short_timeseries_identifiers) == 1:
+                    invalid_identifiers = identifiers_sizes.index.name
+                else:
+                    invalid_identifiers = identifiers_sizes.index.names
+                raise ValueError(
+                    f"The time series with the identifiers {invalid_identifiers} need at least {self.minimum_observations} observations. The "
+                    f"current sizes of the long format time series are {identifiers_sizes.values}")
         else:
-            size = df.shape[0]
+            size = len(df.index)
             if size < self.minimum_observations:
                 raise ValueError(
                     f"This model must have at least {self.minimum_observations} observations. The input time series contains only {size} observations")

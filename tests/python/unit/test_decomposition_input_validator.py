@@ -38,9 +38,10 @@ def input_df():
 def long_df():
     co2 = [315.58, 316.39, 316.79, 316.2]
     country = [0, 0, 1, 1]
+    item = [1,2,1,2]
     time_index = pd.date_range("1-1-1959", periods=2, freq="M").append(pd.date_range("1-1-1959", periods=2, freq="M"))
     df = pd.DataFrame.from_dict(
-        {"value1": co2, "value2": co2, "country": country, "date": time_index})
+        {"value1": co2, "value2": co2, "country": country, "item": item, "date": time_index})
     return df
 
 
@@ -62,7 +63,7 @@ class TestInputValidator:
         assert "multiplicative" in str(err.value)
         assert "negative" in str(err.value)
 
-    def test_not_enough_samples(self, basic_dku_config, long_df):
+    def test_insufficient_samples_one_ts_identifier(self, basic_dku_config, long_df):
         basic_dku_config.long_format = True
         basic_dku_config.timeseries_identifiers = ["country"]
         timeseries_preparator = TimeseriesPreparator(
@@ -76,7 +77,28 @@ class TestInputValidator:
 
         with pytest.raises(ValueError) as err:
             _ = input_validator.check(df_too_short)
-        assert "needs at least" in str(err.value)
+        assert "need at least" in str(err.value)
+        assert "country" in str(err.value)
+        assert "[2 2]" in str(err.value)
+
+    def test_insufficient_samples_2_ts_identifiers(self, basic_dku_config, long_df):
+        basic_dku_config.long_format = True
+        basic_dku_config.timeseries_identifiers = ["country","item"]
+        timeseries_preparator = TimeseriesPreparator(
+            time_column_name=basic_dku_config.time_column,
+            frequency=basic_dku_config.frequency,
+            target_columns_names=basic_dku_config.target_columns,
+            timeseries_identifiers_names=basic_dku_config.timeseries_identifiers
+        )
+        df_too_short = timeseries_preparator.prepare_timeseries_dataframe(long_df)
+        input_validator = DecompositionInputValidator(basic_dku_config)
+        with pytest.raises(ValueError) as err:
+            _ = input_validator.check(df_too_short)
+        assert "need at least" in str(err.value)
+        assert "country" in str(err.value)
+        assert "item" in str(err.value)
+        assert "[1 1 1 1]" in str(err.value)
+
 
     def test_classical_validator(self, classical_dku_config, input_df):
         timeseries_preparator = TimeseriesPreparator(
