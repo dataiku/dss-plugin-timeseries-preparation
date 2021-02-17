@@ -8,4 +8,4 @@ def is_positive_int(x):
         numeric_value = float(x)
     else:
         numeric_value = None
-    return (x == "") or (numeric_value and numeric_value.is_integer() and numeric_value >= 0)
+    return numeric_value and numeric_value.is_integer() and numeric_value >= 0

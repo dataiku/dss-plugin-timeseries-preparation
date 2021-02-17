@@ -78,7 +78,7 @@ class STLConfig(DecompositionConfig):
         speed_up_kwargs = config.get("stl_speed_jump_kwargs")
         if speed_up_kwargs:
             are_speed_up_keys_valid = are_keys_in(["seasonal_jump", "trend_jump", "low_pass_jump"], speed_up_kwargs)
-            are_speed_up_values_valid = all((is_positive_int(x)) for x in speed_up_kwargs.values())
+            are_speed_up_values_valid = all((x == "") or (is_positive_int(x)) for x in speed_up_kwargs.values())
 
             speed_up_parsed = speed_up_kwargs
             if are_speed_up_keys_valid and are_speed_up_values_valid:
@@ -112,7 +112,8 @@ class STLConfig(DecompositionConfig):
             are_smoothers_keys_valid = are_keys_in(["trend", "low_pass"], additional_smoothers)
             minimum = max(self.period, 3)
             are_smoothers_values_valid = all((x == "") or
-                                             ((is_odd(x) and float(x) > minimum)) for x in additional_smoothers.values())
+                                             ((is_odd(x) and float(x) > minimum)) for x in
+                                             additional_smoothers.values())
 
             if are_smoothers_keys_valid and are_smoothers_values_valid:
                 smoothers_parsed = parse_values_to_int(additional_smoothers)
@@ -151,8 +152,8 @@ def parse_values_to_int(map_parameter):
 
 
 def is_odd(x):
-    if x.isnumeric():
-        numeric_value = float(x)
+    if is_positive_int(x):
+        numeric_value = int(x)
     else:
         numeric_value = None
-    return (x == "") or (numeric_value and numeric_value.is_integer() and numeric_value >= 0 and numeric_value % 2 == 1)
+    return numeric_value and numeric_value % 2 == 1
