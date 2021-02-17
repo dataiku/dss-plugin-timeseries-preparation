@@ -62,6 +62,7 @@ class TestInputValidator:
             _ = input_validator.check(df_prepared)
         assert "multiplicative" in str(err.value)
         assert "negative" in str(err.value)
+        assert "value1" in str(err.value)
 
     def test_insufficient_samples_one_ts_identifier(self, basic_dku_config, long_df):
         basic_dku_config.long_format = True

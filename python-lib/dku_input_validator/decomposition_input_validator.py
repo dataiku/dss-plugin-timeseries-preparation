@@ -1,6 +1,3 @@
-import numpy as np
-
-
 class DecompositionInputValidator(object):
     def __init__(self, dku_config):
         self.dku_config = dku_config
@@ -39,7 +36,6 @@ class DecompositionInputValidator(object):
         columns_with_invalid_values = []
         if self.dku_config.model == "multiplicative":
             for target_column in self.dku_config.target_columns:
-                target_values = input_df[target_column].values
-                if np.any(target_values <= 0):
+                if (input_df[target_column] <= 0).any():
                     columns_with_invalid_values.append(target_column)
         return columns_with_invalid_values
