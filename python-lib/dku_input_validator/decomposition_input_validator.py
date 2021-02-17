@@ -14,7 +14,8 @@ class DecompositionInputValidator(object):
         columns_with_invalid_values = self._get_columns_with_invalid_values(df)
         if len(columns_with_invalid_values) > 0:
             raise ValueError(
-                f" The column(s) {', '.join(columns_with_invalid_values)} contain(s) negative values. Yet, a multiplicative model only works with positive time series. You may choose an additive model instead. ")
+                f" The column(s) {', '.join(columns_with_invalid_values)} contain(s) negative values. Yet, a multiplicative model only works with positive "
+                f"time series. You may choose an additive model instead. ")
 
     def _check_size(self, df):
         if self.dku_config.long_format:
@@ -22,13 +23,13 @@ class DecompositionInputValidator(object):
                 size = identifiers_df.shape[0]
                 if size < self.minimum_observations:
                     raise ValueError(
-                        f"The time series with the identifiers {identifiers} needs at least {self.minimum_observations} observations. It has only {size} observations")
+                        f"The time series with the identifiers {identifiers} needs at least {self.minimum_observations} observations. It has only {size} "
+                        f"observations")
         else:
             size = df.shape[0]
             if size < self.minimum_observations:
                 raise ValueError(
                     f"This model must have at least {self.minimum_observations} observations. The input time series contains only {size} observations")
-
 
     def _get_columns_with_invalid_values(self, input_df):
         columns_with_invalid_values = []
