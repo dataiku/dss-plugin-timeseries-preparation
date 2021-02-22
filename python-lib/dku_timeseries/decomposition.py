@@ -34,10 +34,21 @@ class TimeseriesDecomposition(ABC):
 
     def _write_decomposition(self, decomposition, df, target_column):
         component_names = get_component_names(target_column, df.columns)
-        df.loc[:, component_names["trend"]] = decomposition.trend.values
-        df.loc[:, component_names["seasonal"]] = decomposition.seasonal.values
-        df.loc[:, component_names["residuals"]] = decomposition.resid.values
+        df.loc[:, component_names["trend"]] = decomposition.trend
+        df.loc[:, component_names["seasonal"]] = decomposition.seasonal
+        df.loc[:, component_names["residuals"]] = decomposition.residuals
         return df
+
+    class _DecompositionResults:
+        def __init__(self, trend=None, seasonal=None, residuals=None):
+            self.trend = trend
+            self.seasonal = seasonal
+            self.residuals = residuals
+
+        def load(self, statsmodel_results):
+            self.trend = statsmodel_results.trend.values
+            self.seasonal = statsmodel_results.seasonal.values
+            self.residuals = statsmodel_results.resid.values
 
 
 def get_component_names(target_column, columns):

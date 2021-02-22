@@ -7,7 +7,7 @@ from dku_timeseries.decomposition import TimeseriesDecomposition
 from timeseries_preparation.preparation import TimeseriesPreparator
 
 
-class MockResults(object):
+class MockStatsmodelResults(object):
     def __init__(self, size, counter=1):
         time_index = pd.date_range("1-1-1959", periods=size, freq="M")
         self.trend = pd.Series(np.ones(size) * counter, index=time_index)
@@ -23,11 +23,16 @@ class MockDecomposition(TimeseriesDecomposition):
     def _decompose(self, ts):
         size = ts.shape[0]
         if self.dku_config.long_format:
-            results = MockResults(size, self.counter)
+            statsmodel_results = MockStatsmodelResults(size, self.counter)
+            decomposition = self._DecompositionResults()
+            decomposition.load(statsmodel_results)
             self.counter += 1
-            return results
+            return decomposition
         else:
-            return MockResults(size)
+            statsmodel_results = MockStatsmodelResults(size)
+            decomposition = self._DecompositionResults()
+            decomposition.load(statsmodel_results)
+            return decomposition
 
 
 @pytest.fixture
@@ -47,12 +52,13 @@ def long_df():
         {"value1": co2, "value2": co2, "country": country, "date": time_index})
     return df
 
+
 @pytest.fixture
 def basic_dku_config():
     input_dataset_columns = ["value1", "value2", "country", "date"]
     dku_config = DecompositionConfig()
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
-              "frequency_unit": "M","season_length_M": 12, "time_column": "date", "target_columns": ["value1", "value2"],
+              "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["value1", "value2"],
               "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": False}
     dku_config.add_parameters(config, input_dataset_columns)
     return dku_config
@@ -128,4 +134,3 @@ class TestDecomposition:
         df_results = decomposition.fit(df_prepared)
         assert df_results.columns[3] == "value1_trend_0"
         assert df_results.columns[4] == "value1_seasonal"
-

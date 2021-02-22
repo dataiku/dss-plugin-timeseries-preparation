@@ -10,8 +10,10 @@ class ClassicalDecomposition(TimeseriesDecomposition):
 
     def _decompose(self, ts):
         self.parameters["x"] = ts
-        results = seasonal_decompose(**self.parameters)
-        return results
+        statsmodel_results = seasonal_decompose(**self.parameters)
+        decomposition = self._DecompositionResults()
+        decomposition.load(statsmodel_results)
+        return decomposition
 
 
 def format_parameters(dku_config):

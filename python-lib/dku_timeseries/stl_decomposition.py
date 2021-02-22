@@ -13,15 +13,18 @@ class STLDecomposition(TimeseriesDecomposition):
         if self.dku_config.model == "multiplicative":
             self.parameters["endog"] = np.log(ts)
             stl = STL(**self.parameters)
-            results = stl.fit()
-            results._trend = np.exp(results.trend)
-            results._seasonal = np.exp(results.seasonal)
-            results._resid = np.exp(results.resid)
+            statsmodel_results = stl.fit()
+            trend = np.exp(statsmodel_results.trend.values)
+            seasonal = np.exp(statsmodel_results.seasonal.values)
+            residuals = np.exp(statsmodel_results.resid.values)
+            decomposition = self._DecompositionResults(trend=trend, seasonal=seasonal, residuals=residuals)
         elif self.dku_config.model == "additive":
             self.parameters["endog"] = ts
             stl = STL(**self.parameters)
-            results = stl.fit()
-        return results
+            statsmodel_results = stl.fit()
+            decomposition = self._DecompositionResults()
+            decomposition.load(statsmodel_results)
+        return decomposition
 
 
 def format_parameters(dku_config):
