@@ -54,12 +54,4 @@ class TestClassicalDecomposition:
                                    np.nan, np.nan, np.nan, np.nan,
                                    np.nan, np.nan])
         rounded_results = np.round(results["value1_trend"].values, 8)
-        assert nan_equal(rounded_results, expected_array)
-
-
-def nan_equal(a, b):
-    try:
-        np.testing.assert_equal(a, b)
-    except AssertionError:
-        return False
-    return True
+        np.testing.assert_equal(expected_array, rounded_results)

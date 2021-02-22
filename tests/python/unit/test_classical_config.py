@@ -68,5 +68,5 @@ class TestClassicalConfig:
         advanced_config["advanced_params_classical"]["filt"] = "[2,3]"
         dku_config.add_parameters(advanced_config, input_dataset_columns)
         assert dku_config.extrapolate_trend == 2
-        assert np.array_equal(dku_config.filt, np.array([2, 3]))
+        np.testing.assert_equal(dku_config.filt, np.array([2, 3]))
         assert dku_config.two_sided is False

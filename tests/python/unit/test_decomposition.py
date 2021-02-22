@@ -78,9 +78,9 @@ class TestDecomposition:
         df_results = decomposition.fit(df_prepared)
         size = df_prepared.shape[0]
 
-        assert np.array_equal(df_results["value1_trend"], np.ones(size))
-        assert np.array_equal(df_results["value1_seasonal"], 2 * np.ones(size))
-        assert np.array_equal(df_results["value1_residuals"], 3 * np.ones(size))
+        np.testing.assert_equal(df_results["value1_trend"], np.ones(size))
+        np.testing.assert_equal(df_results["value1_seasonal"], 2 * np.ones(size))
+        np.testing.assert_equal(df_results["value1_residuals"], 3 * np.ones(size))
 
     def test_multiple_targets(self, basic_dku_config, input_df):
         timeseries_preparator = TimeseriesPreparator(
@@ -94,14 +94,14 @@ class TestDecomposition:
         df_results = decomposition.fit(basic_df_prepared)
         size = basic_df_prepared.shape[0]
 
-        assert np.array_equal(df_results["value1_trend"], np.ones(size))
-        assert np.array_equal(df_results["value2_trend"], np.ones(size))
+        np.testing.assert_equal(df_results["value1_trend"], np.ones(size))
+        np.testing.assert_equal(df_results["value2_trend"], np.ones(size))
 
-        assert np.array_equal(df_results["value1_seasonal"], 2 * np.ones(size))
-        assert np.array_equal(df_results["value2_seasonal"], 2 * np.ones(size))
+        np.testing.assert_equal(df_results["value1_seasonal"], 2 * np.ones(size))
+        np.testing.assert_equal(df_results["value2_seasonal"], 2 * np.ones(size))
 
-        assert np.array_equal(df_results["value1_residuals"], 3 * np.ones(size))
-        assert np.array_equal(df_results["value2_residuals"], 3 * np.ones(size))
+        np.testing.assert_equal(df_results["value1_residuals"], 3 * np.ones(size))
+        np.testing.assert_equal(df_results["value2_residuals"], 3 * np.ones(size))
 
     def test_long_format(self, basic_dku_config, long_df):
         basic_dku_config.long_format = True
@@ -115,10 +115,10 @@ class TestDecomposition:
         df_long_prepared = timeseries_preparator.prepare_timeseries_dataframe(long_df)
         decomposition = MockDecomposition(basic_dku_config)
         df_results = decomposition.fit(df_long_prepared)
-        assert np.array_equal(df_results["value1_trend"], np.array([1, 1, 3, 3]))
-        assert np.array_equal(df_results["value2_trend"], np.array([2, 2, 4, 4]))
-        assert np.array_equal(df_results["value1_seasonal"], np.array([2, 2, 6, 6]))
-        assert np.array_equal(df_results["value2_residuals"], np.array([6, 6, 12, 12]))
+        np.testing.assert_equal(df_results["value1_trend"], np.array([1, 1, 3, 3]))
+        np.testing.assert_equal(df_results["value2_trend"], np.array([2, 2, 4, 4]))
+        np.testing.assert_equal(df_results["value1_seasonal"], np.array([2, 2, 6, 6]))
+        np.testing.assert_equal(df_results["value2_residuals"], np.array([6, 6, 12, 12]))
 
     def test_collision(self, basic_dku_config, input_df):
         basic_dku_config.target_columns = ["value1"]

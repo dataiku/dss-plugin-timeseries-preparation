@@ -52,7 +52,7 @@ class TestSTLDecomposition:
                           0.47054681, 0.94481716, 1.30967762, 1.88240591, 2.51946737,
                           2.28270725]
         rounded_results = np.round(results["value1_seasonal"].values, 8)
-        assert np.array_equal(rounded_results, expected_array)
+        np.testing.assert_equal(rounded_results, expected_array)
 
     def test_STL_additive(self, dku_config, input_df):
         dku_config.model = "additive"
@@ -73,7 +73,7 @@ class TestSTLDecomposition:
                                    495684.78235812, 504325.60788619, 513126.17464565, 522081.85641882,
                                    531195.14275262, 540473.28351069])
         rounded_results = np.round(results["value1_trend"].values, 8)
-        assert np.array_equal(rounded_results, expected_array)
+        np.testing.assert_equal(rounded_results, expected_array)
 
     def test_several_frequencies(self):
         quarterly_config = config_from_freq("3M")
