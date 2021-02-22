@@ -275,6 +275,11 @@
       "visibilityCondition": "model.time_decomposition_method == 'STL'"
     },
     {
+      "type": "SEPARATOR",
+      "name": "advanced_parameters",
+      "label": "Advanced parameters"
+    },
+    {
       "name": "expert",
       "label": "Expert mode",
       "type": "BOOLEAN",
@@ -359,7 +364,7 @@
     {
       "name": "advanced_params_classical",
       "type": "MAP",
-      "label": "Advanced parameters",
+      "label": " ",
       "description": "Keyword argument ⟶ value https://www.statsmodels.org/stable/generated/statsmodels.tsa.seasonal.seasonal_decompose.html",
       "visibilityCondition": "model.time_decomposition_method == 'classical' && model.expert",
       "mandatory": false,
