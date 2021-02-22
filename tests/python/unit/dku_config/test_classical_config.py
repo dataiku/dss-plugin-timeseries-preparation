@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from dku_config.dss_parameter import DSSParameterError
 from dku_config.classical_config import ClassicalConfig
+from dku_config.dss_parameter import DSSParameterError
 
 
 @pytest.fixture

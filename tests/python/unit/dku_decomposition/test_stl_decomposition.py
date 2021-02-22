@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from dku_config.stl_config import STLConfig
-from dku_timeseries.stl_decomposition import STLDecomposition
+from dku_timeseries.dku_decomposition.stl_decomposition import STLDecomposition
 from timeseries_preparation.preparation import TimeseriesPreparator
 
 

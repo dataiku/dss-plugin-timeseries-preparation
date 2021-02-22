@@ -1,4 +1,3 @@
-import pandas as pd
 import pytest
 
 from dku_config.dss_parameter import DSSParameterError

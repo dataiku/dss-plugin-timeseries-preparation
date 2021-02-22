@@ -1,7 +1,7 @@
 import numpy as np
 from statsmodels.tsa.seasonal import STL
 
-from dku_timeseries.decomposition import TimeseriesDecomposition
+from dku_timeseries.dku_decomposition.decomposition import TimeseriesDecomposition
 
 
 class STLDecomposition(TimeseriesDecomposition):

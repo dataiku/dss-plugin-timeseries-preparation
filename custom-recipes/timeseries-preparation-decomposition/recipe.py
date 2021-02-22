@@ -6,8 +6,8 @@ from dku_config.stl_config import STLConfig
 from dku_config.classical_config import ClassicalConfig
 from dku_input_validator.classical_input_validator import ClassicalInputValidator
 from dku_input_validator.decomposition_input_validator import DecompositionInputValidator
-from dku_timeseries.stl_decomposition import STLDecomposition
-from dku_timeseries.classical_decomposition import ClassicalDecomposition
+from dku_timeseries.dku_decomposition.stl_decomposition import STLDecomposition
+from dku_timeseries.dku_decomposition.classical_decomposition import ClassicalDecomposition
 from timeseries_preparation.preparation import TimeseriesPreparator
 
 (input_dataset, output_dataset) = get_input_output()

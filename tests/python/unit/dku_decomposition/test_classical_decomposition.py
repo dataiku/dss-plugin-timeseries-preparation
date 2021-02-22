@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from dku_config.classical_config import ClassicalConfig
-from dku_timeseries.classical_decomposition import ClassicalDecomposition
+from dku_timeseries.dku_decomposition.classical_decomposition import ClassicalDecomposition
 from timeseries_preparation.preparation import TimeseriesPreparator
 
 

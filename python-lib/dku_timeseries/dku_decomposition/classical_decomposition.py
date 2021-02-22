@@ -1,6 +1,6 @@
 from statsmodels.tsa.seasonal import seasonal_decompose
 
-from dku_timeseries.decomposition import TimeseriesDecomposition
+from dku_timeseries.dku_decomposition.decomposition import TimeseriesDecomposition
 
 
 class ClassicalDecomposition(TimeseriesDecomposition):

@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from dku_config.decomposition_config import DecompositionConfig
-from dku_timeseries.decomposition import TimeseriesDecomposition
+from dku_timeseries.dku_decomposition.decomposition import TimeseriesDecomposition
 from timeseries_preparation.preparation import TimeseriesPreparator
 
 
