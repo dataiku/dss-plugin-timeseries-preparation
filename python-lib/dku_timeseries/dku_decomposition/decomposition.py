@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 import pandas as pd
 
 
@@ -11,18 +12,20 @@ class TimeseriesDecomposition(ABC):
         if self.dku_config.long_format:
             decomposed_df = pd.DataFrame()
             for _, identifiers_df in df.groupby(self.dku_config.timeseries_identifiers):
-                decomposed_df = decomposed_df.append(self._decompose_df(identifiers_df))
+                decomposed_df = pd.concat([decomposed_df, self._decompose_df(identifiers_df)], axis=0)
         else:
             decomposed_df = self._decompose_df(df)
         return decomposed_df
 
     def _decompose_df(self, df):
         time_index = df[self.dku_config.time_column].values
+        decomposed_df = df.copy()
         for target_column in self.dku_config.target_columns:
             target_values = df[target_column].values
             ts = self._prepare_ts(target_values, time_index)
             decomposition = self._decompose(ts)
-            decomposed_df = self._write_decomposition(decomposition, df, target_column)
+            decomposition_columns = self._write_decomposition_columns(decomposition, df, target_column)
+            decomposed_df = pd.concat([decomposed_df, decomposition_columns], axis=1)
         return decomposed_df
 
     def _prepare_ts(self, target_values, time_index):
@@ -32,12 +35,13 @@ class TimeseriesDecomposition(ABC):
     def _decompose(self, ts):
         pass
 
-    def _write_decomposition(self, decomposition, df, target_column):
+    def _write_decomposition_columns(self, decomposition, df, target_column):
         component_names = get_component_names(target_column, df.columns)
-        df.loc[:, component_names["trend"]] = decomposition.trend
-        df.loc[:, component_names["seasonal"]] = decomposition.seasonal
-        df.loc[:, component_names["residuals"]] = decomposition.residuals
-        return df
+        decomposition_columns = pd.DataFrame(index=df.index)
+        decomposition_columns.loc[:, component_names["trend"]] = decomposition.trend
+        decomposition_columns.loc[:, component_names["seasonal"]] = decomposition.seasonal
+        decomposition_columns.loc[:, component_names["residuals"]] = decomposition.residuals
+        return decomposition_columns
 
     class _DecompositionResults:
         def __init__(self, trend=None, seasonal=None, residuals=None):
