@@ -1,6 +1,6 @@
 from enum import Enum
 
 
-class Method(Enum):
+class DecompositionMethod(Enum):
     STL = "STL"
     CLASSICAL = "classical"

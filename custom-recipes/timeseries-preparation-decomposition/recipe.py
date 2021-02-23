@@ -1,38 +1,16 @@
 from dataiku.customrecipe import get_recipe_config
 
-from dku_constants import Method
 from commons import get_input_output
-from dku_config.stl_config import STLConfig
-from dku_config.classical_config import ClassicalConfig
-from dku_input_validator.classical_input_validator import ClassicalInputValidator
-from dku_input_validator.decomposition_input_validator import DecompositionInputValidator
-from dku_timeseries.dku_decomposition.stl_decomposition import STLDecomposition
-from dku_timeseries.dku_decomposition.classical_decomposition import ClassicalDecomposition
+from dku_timeseries.dku_decomposition.helpers import check_and_load_params
 from timeseries_preparation.preparation import TimeseriesPreparator
 
 (input_dataset, output_dataset) = get_input_output()
 
 config = get_recipe_config()
 input_dataset_columns = [column["name"] for column in input_dataset.read_schema()]
-decomposition_method = Method(config.get("time_decomposition_method"))
+(dku_config, input_validator, decomposition) = check_and_load_params(config, input_dataset_columns)
 
-if decomposition_method == Method.STL:
-    dku_config = STLConfig()
-    dku_config.add_parameters(config, input_dataset_columns)
-    input_validator = DecompositionInputValidator(dku_config)
-    decomposition = STLDecomposition(dku_config)
-elif decomposition_method == Method.CLASSICAL:
-    dku_config = ClassicalConfig()
-    dku_config.add_parameters(config, input_dataset_columns)
-    input_validator = ClassicalInputValidator(dku_config)
-    decomposition = ClassicalDecomposition(dku_config)
-
-timeseries_preparator = TimeseriesPreparator(
-    time_column_name=dku_config.time_column,
-    frequency=dku_config.frequency,
-    target_columns_names=dku_config.target_columns,
-    timeseries_identifiers_names=dku_config.timeseries_identifiers
-)
+timeseries_preparator = TimeseriesPreparator(dku_config)
 
 input_df = input_dataset.get_dataframe()
 df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)

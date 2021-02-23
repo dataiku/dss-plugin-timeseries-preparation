@@ -1,8 +1,9 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 from pandas.api.types import is_numeric_dtype, is_string_dtype
-from pandas.tseries.offsets import Tick, BusinessDay, Week, MonthEnd
 from pandas.tseries.frequencies import to_offset
+from pandas.tseries.offsets import Tick, BusinessDay, Week, MonthEnd
+
 from safe_logger import SafeLogger
 
 logger = SafeLogger("Timeseries preparation plugin")
@@ -14,19 +15,14 @@ class TimeseriesPreparator:
     """
 
     def __init__(
-        self,
-        time_column_name,
-        frequency,
-        target_columns_names=[],
-        timeseries_identifiers_names=[],
-        external_features_columns_names=[],
-        max_timeseries_length=None,
+            self,
+            dku_config,
+            max_timeseries_length=None
     ):
-        self.time_column_name = time_column_name
-        self.frequency = frequency
-        self.target_columns_names = target_columns_names
-        self.timeseries_identifiers_names = timeseries_identifiers_names
-        self.external_features_columns_names = external_features_columns_names
+        self.time_column_name = dku_config.time_column
+        self.frequency = dku_config.frequency
+        self.target_columns_names = dku_config.target_columns
+        self.timeseries_identifiers_names = dku_config.timeseries_identifiers
         self.max_timeseries_length = max_timeseries_length
 
     def prepare_timeseries_dataframe(self, dataframe):
@@ -143,7 +139,8 @@ class TimeseriesPreparator:
         truncated_dates = (df_truncated[self.time_column_name] != df[self.time_column_name]).sum()
         if truncated_dates > 0:
             logger.warning(
-                f"Dates truncated to {frequency_custom_label(self.frequency)} frequency: {total_dates - truncated_dates} dates kept, {truncated_dates} dates truncated"
+                f"Dates truncated to {frequency_custom_label(self.frequency)} frequency: {total_dates - truncated_dates} dates kept, {truncated_dates} dates "
+                f"truncated"
             )
             if truncated_dates == total_dates:
                 self._check_end_of_week_frequency(df_truncated, df)
@@ -177,11 +174,12 @@ class TimeseriesPreparator:
             if not is_numeric_dtype(df[column_name]) and not is_string_dtype(df[column_name]):
                 invalid_columns += [column_name]
         if len(invalid_columns) > 0:
-            raise ValueError(f"Time series identifiers columns '{invalid_columns}' must be of string or numeric type. Please change the type in a Prepare recipe.")
+            raise ValueError(
+                f"Time series identifiers columns '{invalid_columns}' must be of string or numeric type. Please change the type in a Prepare recipe.")
 
     def _check_no_missing_values(self, df):
         invalid_columns = []
-        for column_name in [self.time_column_name] + self.target_columns_names + self.timeseries_identifiers_names + self.external_features_columns_names:
+        for column_name in [self.time_column_name] + self.target_columns_names + self.timeseries_identifiers_names:
             if df[column_name].isnull().values.any():
                 invalid_columns += [column_name]
         if len(invalid_columns) > 0:
@@ -203,7 +201,8 @@ class TimeseriesPreparator:
 
 
 def assert_time_column_valid(dataframe, time_column_name, frequency, start_date=None, periods=None):
-    """Assert that the time column has the same values as the pandas.date_range generated with frequency and the first and last row of dataframe[time_column_name]
+    """Assert that the time column has the same values as the pandas.date_range generated with frequency and the first and last row of dataframe[
+    time_column_name]
     (or with start_date and periods if specified).
     Args:
         dataframe (DataFrame)
@@ -229,7 +228,6 @@ def assert_time_column_valid(dataframe, time_column_name, frequency, start_date=
 
 
 FREQUENCY_LABEL = {"T": "minute", "H": "hour", "D": "day", "B": "business day"}
-
 
 WEEKDAYS = [
     "Monday",
