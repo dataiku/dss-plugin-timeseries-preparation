@@ -40,9 +40,29 @@ class DecompositionConfig(DkuConfig):
             required=True
         )
 
-        frequency_value = config.get("frequency_unit")
+        if config.get("frequency_unit") == "W":
+            frequency_value = f"W-{config.get('frequency_end_of_week', 'SUN')}"
+        elif config.get("frequency_unit") == "H":
+            frequency_value = f"{config.get('frequency_step_hours', 1)}H"
+        elif config.get("frequency_unit") == "min":
+            frequency_value = f"{config.get('frequency_step_minutes', 1)}min"
+        else:
+            frequency_value = config.get("frequency_unit")
+
+        self.add_param(
+            name="frequency",
+            value=frequency_value,
+            checks=[
+                {"type": "custom",
+                 "op": frequency_value in ["D", "min", "12M", "3M", "6M", "M", "W", "B", "H"] or frequency_value.startswith("W") or frequency_value.endswith(
+                     "H") or frequency_value.startswith("min")
+                 }
+            ],
+            required=True
+        )
+
         if frequency_value:
-            if frequency_value == "min" or frequency_value == "12M":
+            if frequency_value == "min" or frequency_value == "12M" or frequency_value.endswith("min"):
                 period_value = config.get(f"season_length_{frequency_value}", 1)
             elif frequency_value == "6M":
                 period_value = config.get(f"season_length_{frequency_value}", 2)
@@ -51,31 +71,20 @@ class DecompositionConfig(DkuConfig):
             else:
                 period_value = config.get(f"season_length_{frequency_value}", freq_to_period(frequency_value))
 
-        self.add_param(
-            name="frequency",
-            value=frequency_value,
-            checks=[
-                {"type": "in",
-                 "op": ["D", "min", "12M", "3M", "6M", "M", "W", "B", "H"]
-                 }
-            ],
-            required=True
-        )
-
-        self.add_param(
-            name="period",
-            value=period_value,
-            checks=[
-                {"type": "is_type",
-                 "op": int
-                 },
-                {
-                    "type": "sup_eq",
-                    "op": self.minimum_period
-                }
-            ],
-            required=True
-        )
+            self.add_param(
+                name="period",
+                value=period_value,
+                checks=[
+                    {"type": "is_type",
+                     "op": int
+                     },
+                    {
+                        "type": "sup_eq",
+                        "op": self.minimum_period
+                    }
+                ],
+                required=True
+            )
 
         long_format = config.get("long_format", False)
         timeseries_identifiers = config.get("timeseries_identifiers")

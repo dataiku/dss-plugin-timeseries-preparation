@@ -93,6 +93,62 @@
       "defaultValue": "D"
     },
     {
+      "name": "frequency_end_of_week",
+      "label": "End of week day",
+      "type": "SELECT",
+      "mandatory": false,
+      "defaultValue": "SUN",
+      "visibilityCondition": "model.frequency_unit == 'W'",
+      "selectChoices": [
+        {
+          "value": "SUN",
+          "label": "Sunday"
+        },
+        {
+          "value": "MON",
+          "label": "Monday"
+        },
+        {
+          "value": "TUE",
+          "label": "Tuesday"
+        },
+        {
+          "value": "WED",
+          "label": "Wednesday"
+        },
+        {
+          "value": "THU",
+          "label": "Thursday"
+        },
+        {
+          "value": "FRI",
+          "label": "Friday"
+        },
+        {
+          "value": "SAT",
+          "label": "Saturday"
+        }
+      ]
+    },
+    {
+      "name": "frequency_step_hours",
+      "label": "Number of hours",
+      "type": "INT",
+      "defaultValue": 1,
+      "mandatory": false,
+      "minI": 1,
+      "visibilityCondition": "model.frequency_unit == 'H'"
+    },
+    {
+      "name": "frequency_step_minutes",
+      "label": "Number of minutes",
+      "type": "INT",
+      "defaultValue": 1,
+      "mandatory": false,
+      "minI": 1,
+      "visibilityCondition": "model.frequency_unit == 'min'"
+    },
+    {
       "name": "season_length_min",
       "label": "Season length",
       "description": "Length of the seasonal period",

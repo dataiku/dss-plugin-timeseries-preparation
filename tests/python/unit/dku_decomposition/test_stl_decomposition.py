@@ -34,6 +34,48 @@ def dku_config():
     return dku_config
 
 
+@pytest.fixture
+def expected_dates():
+    expected = {"3M": np.array(['1959-01-31T00:00:00.000000000', '1959-04-30T00:00:00.000000000',
+                                '1959-07-31T00:00:00.000000000', '1959-10-31T00:00:00.000000000',
+                                '1960-01-31T00:00:00.000000000', '1960-04-30T00:00:00.000000000',
+                                '1960-07-31T00:00:00.000000000'], dtype='datetime64[ns]'),
+                "6M": np.array(['1959-01-31T00:00:00.000000000', '1959-07-31T00:00:00.000000000',
+                                '1960-01-31T00:00:00.000000000', '1960-07-31T00:00:00.000000000',
+                                '1961-01-31T00:00:00.000000000', '1961-07-31T00:00:00.000000000',
+                                '1962-01-31T00:00:00.000000000'], dtype='datetime64[ns]'),
+                "M": np.array(['1959-01-31T00:00:00.000000000', '1959-02-28T00:00:00.000000000',
+                               '1959-03-31T00:00:00.000000000', '1959-04-30T00:00:00.000000000',
+                               '1959-05-31T00:00:00.000000000', '1959-06-30T00:00:00.000000000',
+                               '1959-07-31T00:00:00.000000000'], dtype='datetime64[ns]'),
+                "W": np.array(['1959-01-04T00:00:00.000000000', '1959-01-11T00:00:00.000000000',
+                               '1959-01-18T00:00:00.000000000', '1959-01-25T00:00:00.000000000',
+                               '1959-02-01T00:00:00.000000000', '1959-02-08T00:00:00.000000000',
+                               '1959-02-15T00:00:00.000000000'], dtype='datetime64[ns]'),
+                "W-FRI": np.array(['1959-01-02T00:00:00.000000000', '1959-01-09T00:00:00.000000000',
+                                   '1959-01-16T00:00:00.000000000', '1959-01-23T00:00:00.000000000',
+                                   '1959-01-30T00:00:00.000000000', '1959-02-06T00:00:00.000000000',
+                                   '1959-02-13T00:00:00.000000000'], dtype='datetime64[ns]'),
+                "B": np.array(['1959-01-01T00:00:00.000000000', '1959-01-02T00:00:00.000000000',
+                               '1959-01-05T00:00:00.000000000', '1959-01-06T00:00:00.000000000',
+                               '1959-01-07T00:00:00.000000000', '1959-01-08T00:00:00.000000000',
+                               '1959-01-09T00:00:00.000000000'], dtype='datetime64[ns]'),
+                "H": np.array(['1959-01-01T00:00:00.000000000', '1959-01-01T01:00:00.000000000',
+                               '1959-01-01T02:00:00.000000000', '1959-01-01T03:00:00.000000000',
+                               '1959-01-01T04:00:00.000000000', '1959-01-01T05:00:00.000000000',
+                               '1959-01-01T06:00:00.000000000'], dtype='datetime64[ns]'),
+                "4H": np.array(['1959-01-01T00:00:00.000000000', '1959-01-01T04:00:00.000000000',
+                                '1959-01-01T08:00:00.000000000', '1959-01-01T12:00:00.000000000',
+                                '1959-01-01T16:00:00.000000000', '1959-01-01T20:00:00.000000000',
+                                '1959-01-02T00:00:00.000000000'], dtype='datetime64[ns]'),
+                "D": np.array(['1959-01-01T00:00:00.000000000', '1959-01-02T00:00:00.000000000',
+                               '1959-01-03T00:00:00.000000000', '1959-01-04T00:00:00.000000000',
+                               '1959-01-05T00:00:00.000000000', '1959-01-06T00:00:00.000000000',
+                               '1959-01-07T00:00:00.000000000'], dtype='datetime64[ns]')
+                }
+    return expected
+
+
 class TestSTLDecomposition:
     def test_STL_multiplicative(self, dku_config, input_df):
         timeseries_preparator = TimeseriesPreparator(dku_config)
@@ -65,52 +107,47 @@ class TestSTLDecomposition:
         rounded_results = np.round(results["value1_trend"].values, 8)
         np.testing.assert_equal(rounded_results, expected_array)
 
-    def test_several_frequencies(self):
-        quarterly_config = config_from_freq("3M")
-        quarterly_prepared = df_from_freq("3M", quarterly_config)
-        decomposition = STLDecomposition(quarterly_config)
-        results_df = decomposition.fit(quarterly_prepared)
+    def test_several_frequencies(self, expected_dates):
+        results_df = get_result_df("3M")
         assert results_df.shape == (7, 5)
+        np.testing.assert_equal(results_df["date"].values, expected_dates["3M"])
 
-        semiannual_config = config_from_freq("6M")
-        semiannual_prepared = df_from_freq("6M", semiannual_config)
-        decomposition = STLDecomposition(semiannual_config)
-        results_df = decomposition.fit(semiannual_prepared)
+        results_df = get_result_df("6M")
         assert results_df.shape == (7, 5)
+        np.testing.assert_equal(results_df["date"].values, expected_dates["6M"])
 
-        monthly_config = config_from_freq("M")
-        monthly_prepared = df_from_freq("M", monthly_config)
-        decomposition = STLDecomposition(monthly_config)
-        results_df = decomposition.fit(monthly_prepared)
+        results_df = get_result_df("M")
         assert results_df.shape == (7, 5)
+        np.testing.assert_equal(results_df["date"].values, expected_dates["M"])
 
-        weekly_config = config_from_freq("W")
-        weekly_prepared = df_from_freq("W", weekly_config)
-        decomposition = STLDecomposition(weekly_config)
-        results_df = decomposition.fit(weekly_prepared)
+        results_df = get_result_df("W")
         assert results_df.shape == (7, 5)
+        np.testing.assert_equal(results_df["date"].values, expected_dates["W"])
 
-        b_weekly_config = config_from_freq("B")
-        b_weekly_prepared = df_from_freq("B", b_weekly_config)
-        decomposition = STLDecomposition(b_weekly_config)
-        results_df = decomposition.fit(b_weekly_prepared)
+        results_df = get_result_df("W", frequency_end_of_week="FRI")
         assert results_df.shape == (7, 5)
+        np.testing.assert_equal(results_df["date"].values, expected_dates["W-FRI"])
 
-        hourly_config = config_from_freq("H")
-        hourly_prepared = df_from_freq("H", hourly_config)
-        decomposition = STLDecomposition(hourly_config)
-        results_df = decomposition.fit(hourly_prepared)
+        results_df = get_result_df("B")
         assert results_df.shape == (7, 5)
+        np.testing.assert_equal(results_df["date"].values, expected_dates["B"])
 
-        daily_config = config_from_freq("D")
-        daily_prepared = df_from_freq("D", daily_config)
-        decomposition = STLDecomposition(daily_config)
-        results_df = decomposition.fit(daily_prepared)
+        results_df = get_result_df("H")
         assert results_df.shape == (7, 5)
+        np.testing.assert_equal(results_df["date"].values, expected_dates["H"])
+
+        results_df = get_result_df("H", frequency_step_hours="4")
+        assert results_df.shape == (7, 5)
+        np.testing.assert_equal(results_df["date"].values, expected_dates["4H"])
+
+        results_df = get_result_df("D")
+        assert results_df.shape == (7, 5)
+        np.testing.assert_equal(results_df["date"].values, expected_dates["D"])
 
 
-def df_from_freq(freq, dku_config):
+def df_from_freq(dku_config):
     data = [315.58, 316.39, 316.79, 312.09, 321.08, 450.08, 298.79]
+    freq = dku_config.frequency
     df = pd.DataFrame.from_dict(
         {"value1": data, "date": pd.date_range("1-1-1959", periods=len(data), freq=freq)})
     timeseries_preparator = TimeseriesPreparator(dku_config)
@@ -118,11 +155,25 @@ def df_from_freq(freq, dku_config):
     return df_prepared
 
 
-def config_from_freq(freq):
+def config_from_freq(freq, frequency_end_of_week=None, frequency_step_hours=None, frequency_step_minutes=None):
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
               "frequency_unit": freq, "time_column": "date", "target_columns": ["value1"],
               "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": False}
+    if frequency_end_of_week:
+        config["frequency_end_of_week"] = frequency_end_of_week
+    elif frequency_step_hours:
+        config["frequency_step_hours"] = frequency_step_hours
+    elif frequency_step_minutes:
+        config["frequency_step_minutes"] = frequency_step_minutes
     input_dataset_columns = ["value1", "value2", "country", "date"]
     dku_config = STLConfig()
     dku_config.add_parameters(config, input_dataset_columns)
     return dku_config
+
+
+def get_result_df(freq, frequency_end_of_week=None, frequency_step_hours=None, frequency_step_minutes=None):
+    dku_config = config_from_freq(freq, frequency_end_of_week, frequency_step_hours, frequency_step_minutes)
+    df_prepared = df_from_freq(dku_config)
+    decomposition = STLDecomposition(dku_config)
+    results_df = decomposition.fit(df_prepared)
+    return results_df
