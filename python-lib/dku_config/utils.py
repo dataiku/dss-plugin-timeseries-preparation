@@ -1,4 +1,5 @@
-def are_keys_in(valid_keys, map_parameter):
+def are_keys_in(keys, map_parameter):
+    valid_keys = keys.copy()
     valid_keys.append("")
     return all(x in valid_keys for x in map_parameter.keys())
 
