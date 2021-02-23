@@ -49,12 +49,7 @@ class TestInputValidator:
     def test_multiplicative_model_with_negative_values(self, basic_dku_config, input_df):
         input_df.loc[0, "value1"] = -2
 
-        timeseries_preparator = TimeseriesPreparator(
-            time_column_name=basic_dku_config.time_column,
-            frequency=basic_dku_config.frequency,
-            target_columns_names=basic_dku_config.target_columns,
-            timeseries_identifiers_names=basic_dku_config.timeseries_identifiers
-        )
+        timeseries_preparator = TimeseriesPreparator(basic_dku_config)
         df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
 
         input_validator = DecompositionInputValidator(basic_dku_config)
@@ -67,12 +62,7 @@ class TestInputValidator:
     def test_insufficient_samples_one_ts_identifier(self, basic_dku_config, long_df):
         basic_dku_config.long_format = True
         basic_dku_config.timeseries_identifiers = ["country"]
-        timeseries_preparator = TimeseriesPreparator(
-            time_column_name=basic_dku_config.time_column,
-            frequency=basic_dku_config.frequency,
-            target_columns_names=basic_dku_config.target_columns,
-            timeseries_identifiers_names=basic_dku_config.timeseries_identifiers
-        )
+        timeseries_preparator = TimeseriesPreparator(basic_dku_config)
         df_too_short = timeseries_preparator.prepare_timeseries_dataframe(long_df)
         input_validator = DecompositionInputValidator(basic_dku_config)
 
@@ -85,12 +75,7 @@ class TestInputValidator:
     def test_insufficient_samples_2_ts_identifiers(self, basic_dku_config, long_df):
         basic_dku_config.long_format = True
         basic_dku_config.timeseries_identifiers = ["country","item"]
-        timeseries_preparator = TimeseriesPreparator(
-            time_column_name=basic_dku_config.time_column,
-            frequency=basic_dku_config.frequency,
-            target_columns_names=basic_dku_config.target_columns,
-            timeseries_identifiers_names=basic_dku_config.timeseries_identifiers
-        )
+        timeseries_preparator = TimeseriesPreparator(basic_dku_config)
         df_too_short = timeseries_preparator.prepare_timeseries_dataframe(long_df)
         input_validator = DecompositionInputValidator(basic_dku_config)
         with pytest.raises(ValueError) as err:
@@ -102,12 +87,7 @@ class TestInputValidator:
 
 
     def test_classical_validator(self, classical_dku_config, input_df):
-        timeseries_preparator = TimeseriesPreparator(
-            time_column_name=classical_dku_config.time_column,
-            frequency=classical_dku_config.frequency,
-            target_columns_names=classical_dku_config.target_columns,
-            timeseries_identifiers_names=classical_dku_config.timeseries_identifiers
-        )
+        timeseries_preparator = TimeseriesPreparator(classical_dku_config)
         df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
 
         input_validator = ClassicalInputValidator(classical_dku_config)

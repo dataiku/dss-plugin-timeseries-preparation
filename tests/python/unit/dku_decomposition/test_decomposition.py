@@ -67,12 +67,7 @@ def basic_dku_config():
 class TestDecomposition:
     def test_single_target(self, basic_dku_config, input_df):
         basic_dku_config.target_columns = ["value1"]
-        timeseries_preparator = TimeseriesPreparator(
-            time_column_name=basic_dku_config.time_column,
-            frequency=basic_dku_config.frequency,
-            target_columns_names=basic_dku_config.target_columns,
-            timeseries_identifiers_names=basic_dku_config.timeseries_identifiers
-        )
+        timeseries_preparator = TimeseriesPreparator(basic_dku_config)
         df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
         decomposition = MockDecomposition(basic_dku_config)
         df_results = decomposition.fit(df_prepared)
@@ -83,12 +78,7 @@ class TestDecomposition:
         np.testing.assert_equal(df_results["value1_residuals"], 3 * np.ones(size))
 
     def test_multiple_targets(self, basic_dku_config, input_df):
-        timeseries_preparator = TimeseriesPreparator(
-            time_column_name=basic_dku_config.time_column,
-            frequency=basic_dku_config.frequency,
-            target_columns_names=basic_dku_config.target_columns,
-            timeseries_identifiers_names=basic_dku_config.timeseries_identifiers
-        )
+        timeseries_preparator = TimeseriesPreparator(basic_dku_config)
         basic_df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
         decomposition = MockDecomposition(basic_dku_config)
         df_results = decomposition.fit(basic_df_prepared)
@@ -106,12 +96,7 @@ class TestDecomposition:
     def test_long_format(self, basic_dku_config, long_df):
         basic_dku_config.long_format = True
         basic_dku_config.timeseries_identifiers = ["country"]
-        timeseries_preparator = TimeseriesPreparator(
-            time_column_name=basic_dku_config.time_column,
-            frequency=basic_dku_config.frequency,
-            target_columns_names=basic_dku_config.target_columns,
-            timeseries_identifiers_names=basic_dku_config.timeseries_identifiers
-        )
+        timeseries_preparator = TimeseriesPreparator(basic_dku_config)
         df_long_prepared = timeseries_preparator.prepare_timeseries_dataframe(long_df)
         decomposition = MockDecomposition(basic_dku_config)
         df_results = decomposition.fit(df_long_prepared)
@@ -123,12 +108,7 @@ class TestDecomposition:
     def test_collision(self, basic_dku_config, input_df):
         basic_dku_config.target_columns = ["value1"]
         input_df = input_df.rename(columns={"value2": "value1_trend"})
-        timeseries_preparator = TimeseriesPreparator(
-            time_column_name=basic_dku_config.time_column,
-            frequency=basic_dku_config.frequency,
-            target_columns_names=basic_dku_config.target_columns,
-            timeseries_identifiers_names=basic_dku_config.timeseries_identifiers
-        )
+        timeseries_preparator = TimeseriesPreparator(basic_dku_config)
         df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
         decomposition = MockDecomposition(basic_dku_config)
         df_results = decomposition.fit(df_prepared)

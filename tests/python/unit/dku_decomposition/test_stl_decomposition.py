@@ -36,12 +36,7 @@ def dku_config():
 
 class TestSTLDecomposition:
     def test_STL_multiplicative(self, dku_config, input_df):
-        timeseries_preparator = TimeseriesPreparator(
-            time_column_name=dku_config.time_column,
-            frequency=dku_config.frequency,
-            target_columns_names=dku_config.target_columns,
-            timeseries_identifiers_names=dku_config.timeseries_identifiers
-        )
+        timeseries_preparator = TimeseriesPreparator(dku_config)
         df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
         decomposition = STLDecomposition(dku_config)
         results = decomposition.fit(df_prepared)
@@ -56,12 +51,7 @@ class TestSTLDecomposition:
 
     def test_STL_additive(self, dku_config, input_df):
         dku_config.model = "additive"
-        timeseries_preparator = TimeseriesPreparator(
-            time_column_name=dku_config.time_column,
-            frequency=dku_config.frequency,
-            target_columns_names=dku_config.target_columns,
-            timeseries_identifiers_names=dku_config.timeseries_identifiers
-        )
+        timeseries_preparator = TimeseriesPreparator(dku_config)
         df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
         decomposition = STLDecomposition(dku_config)
         results = decomposition.fit(df_prepared)
@@ -123,12 +113,7 @@ def df_from_freq(freq, dku_config):
     data = [315.58, 316.39, 316.79, 312.09, 321.08, 450.08, 298.79]
     df = pd.DataFrame.from_dict(
         {"value1": data, "date": pd.date_range("1-1-1959", periods=len(data), freq=freq)})
-    timeseries_preparator = TimeseriesPreparator(
-        time_column_name=dku_config.time_column,
-        frequency=dku_config.frequency,
-        target_columns_names=dku_config.target_columns,
-        timeseries_identifiers_names=dku_config.timeseries_identifiers
-    )
+    timeseries_preparator = TimeseriesPreparator(dku_config)
     df_prepared = timeseries_preparator.prepare_timeseries_dataframe(df)
     return df_prepared
 
