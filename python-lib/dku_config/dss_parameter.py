@@ -1,8 +1,9 @@
-from .custom_check import CustomCheck, CustomCheckError
 from typing import Any, List
 
-import logging
-logger = logging.getLogger(__name__)
+from safe_logger import SafeLogger
+from .custom_check import CustomCheck, CustomCheckError
+
+logger = SafeLogger("Timeseries preparation plugin")
 
 
 class DSSParameterError(Exception):
@@ -20,6 +21,7 @@ class DSSParameter:
         checks(list[dict], optional): Checks to run on provided value
         required(bool, optional): Whether the value can be None
     """
+
     def __init__(self, name: str, value: Any, checks: List[dict] = None, required: bool = False):
         """Initialization method for the DSSParameter class
 

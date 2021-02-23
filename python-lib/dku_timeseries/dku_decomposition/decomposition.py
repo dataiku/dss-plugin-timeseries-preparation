@@ -2,6 +2,10 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 
+from safe_logger import SafeLogger
+
+logger = SafeLogger("Timeseries preparation plugin")
+
 
 class TimeseriesDecomposition(ABC):
     def __init__(self, dku_config):
@@ -11,21 +15,27 @@ class TimeseriesDecomposition(ABC):
     def fit(self, df):
         if self.dku_config.long_format:
             decomposed_df = pd.DataFrame()
-            for _, identifiers_df in df.groupby(self.dku_config.timeseries_identifiers):
+            for values, identifiers_df in df.groupby(self.dku_config.timeseries_identifiers):
+                logger.info(f"Decomposing time series: Starting for the identifiers {values}")
                 decomposed_df = pd.concat([decomposed_df, self._decompose_df(identifiers_df)], axis=0)
+                logger.info(f"Decomposing time series: Done for the identifiers {values}")
         else:
+            logger.info(f"Decomposing time series: Starting for the full dataset")
             decomposed_df = self._decompose_df(df)
+            logger.info(f"Decomposing time series: Done for the full dataset")
         return decomposed_df
 
     def _decompose_df(self, df):
         time_index = df[self.dku_config.time_column].values
         decomposed_df = df.copy()
         for target_column in self.dku_config.target_columns:
+            logger.info(f"Decomposing time series:     Starting for the target column: {target_column}")
             target_values = df[target_column].values
             ts = self._prepare_ts(target_values, time_index)
             decomposition = self._decompose(ts)
             decomposition_columns = self._write_decomposition_columns(decomposition, df, target_column)
             decomposed_df = pd.concat([decomposed_df, decomposition_columns], axis=1)
+            logger.info(f"Decomposing time series:     Done for the target column: {target_column}")
         return decomposed_df
 
     def _prepare_ts(self, target_values, time_index):

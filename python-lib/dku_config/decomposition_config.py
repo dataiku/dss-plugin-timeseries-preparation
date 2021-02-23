@@ -1,6 +1,9 @@
 from statsmodels.tsa.tsatools import freq_to_period
 
 from dku_config.dku_config import DkuConfig
+from safe_logger import SafeLogger
+
+logger = SafeLogger("Timeseries preparation plugin")
 
 
 class DecompositionConfig(DkuConfig):
@@ -70,6 +73,8 @@ class DecompositionConfig(DkuConfig):
                 period_value = config.get(f"season_length_{frequency_value}", 4)
             else:
                 period_value = config.get(f"season_length_{frequency_value}", freq_to_period(frequency_value))
+                if not config.get(f"season_length_{frequency_value}"):
+                    logger.warning(f"The recipe relies on the default period = {period_value} for a frequency = {frequency_value}")
 
             self.add_param(
                 name="period",
