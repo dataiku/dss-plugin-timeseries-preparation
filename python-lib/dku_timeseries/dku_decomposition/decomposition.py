@@ -16,9 +16,9 @@ class TimeseriesDecomposition(ABC):
         if self.dku_config.long_format:
             decomposed_df = pd.DataFrame()
             for values, identifiers_df in df.groupby(self.dku_config.timeseries_identifiers):
-                logger.info(f"Decomposing time series: Starting for the identifiers {values}")
+                logger.info(f"Decomposing time series: Starting for the identifier {values}")
                 decomposed_df = pd.concat([decomposed_df, self._decompose_df(identifiers_df)], axis=0)
-                logger.info(f"Decomposing time series: Done for the identifiers {values}")
+                logger.info(f"Decomposing time series: Done for the identifier {values}")
         else:
             logger.info(f"Decomposing time series: Starting for the full dataset")
             decomposed_df = self._decompose_df(df)
