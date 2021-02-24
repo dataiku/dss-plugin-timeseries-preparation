@@ -7,17 +7,36 @@ logger = SafeLogger("Timeseries preparation plugin")
 
 
 class DecompositionConfig(DkuConfig):
+    """Mapping structure containing the parameters of the time series decomposition
+
+    Attributes:
+        config(dict): Dict storing the DSSParameters
+        minimum_period: Minimum period required by the decomposition method
+    """
+
     def __init__(self):
         super().__init__()
         self.minimum_period = 1
 
     def add_parameters(self, config, input_dataset_columns):
+        """Adds the recipe parameters to dku_config
+
+        Args:
+            config(dict):  map of the recipe parameters
+            input_dataset_columns(list): the columns of the input datasets
+        """
         self._load_input_parameters(config, input_dataset_columns)
         self._load_settings(config)
         if self.advanced:
             self._load_advanced_parameters(config)
 
     def _load_input_parameters(self, config, input_dataset_columns):
+        """Adds the input parameters to dku_config
+
+        Args:
+            config(dict):  map of the recipe parameters
+            input_dataset_columns(list): the columns of the input datasets
+        """
         self.add_param(
             name="time_column",
             value=config.get("time_column"),
@@ -127,6 +146,11 @@ class DecompositionConfig(DkuConfig):
             )
 
     def _load_settings(self, config):
+        """Adds the mandatory decomposition parameters to dku_config
+
+        Args:
+            config(dict):  map of the recipe parameters
+        """
         self.add_param(
             name="time_decomposition_method",
             value=config.get("time_decomposition_method"),
@@ -160,4 +184,9 @@ class DecompositionConfig(DkuConfig):
         )
 
     def _load_advanced_parameters(self, config):
+        """Adds the advanced decomposition parameters to dku_config
+
+        Args:
+            config(dict):  map of the recipe parameters
+        """
         pass

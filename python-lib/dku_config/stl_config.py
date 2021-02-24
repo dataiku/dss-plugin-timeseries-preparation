@@ -3,6 +3,12 @@ from dku_config.utils import are_keys_in, is_positive_int
 
 
 class STLConfig(DecompositionConfig):
+    """Mapping structure containing the parameters of the STL decomposition
+
+    Attributes:
+        config(dict): Dict storing the DSSParameters
+        minimum_period: Minimum period required by STL
+    """
     def __init__(self):
         super().__init__()
         self.minimum_period = 2

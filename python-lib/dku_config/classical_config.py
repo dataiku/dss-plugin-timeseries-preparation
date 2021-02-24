@@ -8,6 +8,12 @@ from dku_config.utils import is_positive_int, are_keys_in
 
 
 class ClassicalConfig(DecompositionConfig):
+    """Mapping structure containing the parameters of the classical decomposition
+
+    Attributes:
+        config(dict): Dict storing the DSSParameters
+        minimum_period: Minimum period required by the classical decomposition
+    """
     def __init__(self):
         super().__init__()
 
