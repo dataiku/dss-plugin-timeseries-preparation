@@ -27,7 +27,9 @@ def input_df(data):
 def dku_config():
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
               "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["value1"],
-              "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": False}
+              "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": True, "stl_degree_kwargs": {},
+              "stl_speed_jump_kwargs": {},
+              "stl_smoothers_kwargs": {}}
     input_dataset_columns = ["value1", "value2", "country", "date"]
     dku_config = STLConfig()
     dku_config.add_parameters(config, input_dataset_columns)
@@ -158,7 +160,7 @@ def df_from_freq(dku_config):
 def config_from_freq(freq, frequency_end_of_week=None, frequency_step_hours=None, frequency_step_minutes=None):
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
               "frequency_unit": freq, "time_column": "date", "target_columns": ["value1"],
-              "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": False}
+              "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": True}
     if frequency_end_of_week:
         config["frequency_end_of_week"] = frequency_end_of_week
     elif frequency_step_hours:

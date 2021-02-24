@@ -106,7 +106,7 @@ class TestDecompositionConfig:
 def config_from_freq(freq, frequency_end_of_week=None, frequency_step_hours=None, frequency_step_minutes=None):
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
               "frequency_unit": freq, "time_column": "date", "target_columns": ["value1"],
-              "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": False}
+              "long_format": False, "decomposition_model": "multiplicative", "expert": False}
     if frequency_end_of_week:
         config["frequency_end_of_week"] = frequency_end_of_week
     elif frequency_step_hours:

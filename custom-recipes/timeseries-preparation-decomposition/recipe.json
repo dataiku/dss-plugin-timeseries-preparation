@@ -322,15 +322,6 @@
       "description": " If the magnitude of the seasonality varies over time, then the series is multiplicative. Otherwise, the series is additive."
     },
     {
-      "name": "seasonal_stl",
-      "label": "Seasonal smoother",
-      "type": "INT",
-      "description": "Odd integer. Number of consecutive timesteps (years, weeks..) to be used in estimating each value in the seasonal component. It controls how rapidly the seasonal component can change.",
-      "defaultValue": 13,
-      "minI": 7,
-      "visibilityCondition": "model.time_decomposition_method == 'STL'"
-    },
-    {
       "type": "SEPARATOR",
       "name": "advanced_parameters",
       "label": "Advanced parameters"
@@ -340,6 +331,15 @@
       "label": "Expert mode",
       "type": "BOOLEAN",
       "defaultValue": false
+    },
+    {
+      "name": "seasonal_stl",
+      "label": "Seasonal smoother",
+      "type": "INT",
+      "description": "Odd integer. Number of consecutive timesteps (years, weeks..) to be used in estimating each value in the seasonal component. It controls how rapidly the seasonal component can change.",
+      "defaultValue": 7,
+      "minI": 7,
+      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
     },
     {
       "name": "robust_stl",

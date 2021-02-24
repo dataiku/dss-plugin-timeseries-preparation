@@ -8,7 +8,7 @@ from dku_config.stl_config import STLConfig
 def basic_config():
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
               "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["target"],
-              "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 7, "expert": False}
+              "long_format": False, "decomposition_model": "multiplicative", "expert": False}
     return config
 
 
@@ -36,29 +36,32 @@ class TestSTLConfig:
         dku_config = STLConfig()
         assert dku_config.add_parameters(basic_config, input_dataset_columns) is None
 
-    def test_invalid_seasonal(self, basic_config, input_dataset_columns):
+    def test_invalid_seasonal(self, advanced_config, input_dataset_columns):
         dku_config = STLConfig()
-        basic_config["seasonal_stl"] = 8
+        advanced_config["seasonal_stl"] = 8
         with pytest.raises(DSSParameterError) as odd_err:
-            _ = dku_config.add_parameters(basic_config, input_dataset_columns)
+            _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
         assert "odd" in str(odd_err.value)
 
-        basic_config["seasonal_stl"] = 9.5
+        advanced_config["seasonal_stl"] = 9.5
         with pytest.raises(DSSParameterError) as double_err:
-            _ = dku_config.add_parameters(basic_config, input_dataset_columns)
+            _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
         assert "type" in str(double_err.value)
         assert "int" in str(double_err.value)
 
-        basic_config["seasonal_stl"] = "string"
+        advanced_config["seasonal_stl"] = "string"
         with pytest.raises(DSSParameterError) as str_err:
-            _ = dku_config.add_parameters(basic_config, input_dataset_columns)
+            _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
         assert "type" in str(str_err.value)
         assert "int" in str(str_err.value)
 
-        basic_config.pop("seasonal_stl")
-        with pytest.raises(DSSParameterError) as required_err:
-            _ = dku_config.add_parameters(basic_config, input_dataset_columns)
-        assert "required" in str(required_err.value)
+    def test_default_values(self, advanced_config, input_dataset_columns):
+        dku_config = STLConfig()
+        advanced_config.pop("seasonal_stl")
+        advanced_config.pop("robust_stl")
+        dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert dku_config.seasonal == 7
+        assert dku_config.robust_stl == False
 
     def test_advanced_parameters(self, advanced_config, input_dataset_columns):
         dku_config = STLConfig()

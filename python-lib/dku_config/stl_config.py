@@ -7,9 +7,8 @@ class STLConfig(DecompositionConfig):
         super().__init__()
         self.minimum_period = 2
 
-    def _load_settings(self, config):
-        super()._load_settings(config)
-        seasonal = config.get("seasonal_stl")
+    def _load_advanced_parameters(self, config):
+        seasonal = config.get("seasonal_stl", 7)
         self.add_param(
             name="seasonal",
             value=seasonal,
@@ -31,7 +30,6 @@ class STLConfig(DecompositionConfig):
             required=True
         )
 
-    def _load_advanced_parameters(self, config):
         self.add_param(
             name="robust_stl",
             value=config.get("robust_stl", False),
