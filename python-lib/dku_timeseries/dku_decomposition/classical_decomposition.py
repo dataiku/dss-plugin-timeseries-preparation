@@ -1,9 +1,17 @@
 from statsmodels.tsa.seasonal import seasonal_decompose
 
-from dku_timeseries.dku_decomposition.decomposition import TimeseriesDecomposition
+from dku_timeseries.dku_decomposition.decomposition import TimeseriesDecomposition, _DecompositionResults
 
 
 class ClassicalDecomposition(TimeseriesDecomposition):
+    """Season-Trend decomposition using moving averages
+
+    Attributes:
+        dku_config(DecompositionConfig): mapping structure storing the recipe parameters
+        parameters(dict): parameters formatted for the Statsmodel functions
+
+    """
+
     def __init__(self, dku_config):
         super().__init__(dku_config)
         self.parameters = format_parameters(dku_config)
@@ -11,7 +19,7 @@ class ClassicalDecomposition(TimeseriesDecomposition):
     def _decompose(self, ts):
         self.parameters["x"] = ts
         statsmodel_results = seasonal_decompose(**self.parameters)
-        decomposition = self._DecompositionResults()
+        decomposition = _DecompositionResults()
         decomposition.load(statsmodel_results)
         return decomposition
 

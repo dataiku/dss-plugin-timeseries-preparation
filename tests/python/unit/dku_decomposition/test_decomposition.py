@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from dku_config.decomposition_config import DecompositionConfig
-from dku_timeseries.dku_decomposition.decomposition import TimeseriesDecomposition
+from dku_timeseries.dku_decomposition.decomposition import TimeseriesDecomposition, _DecompositionResults
 from timeseries_preparation.preparation import TimeseriesPreparator
 
 
@@ -24,13 +24,13 @@ class MockDecomposition(TimeseriesDecomposition):
         size = ts.shape[0]
         if self.dku_config.long_format:
             statsmodel_results = MockStatsmodelResults(size, self.counter)
-            decomposition = self._DecompositionResults()
+            decomposition = _DecompositionResults()
             decomposition.load(statsmodel_results)
             self.counter += 1
             return decomposition
         else:
             statsmodel_results = MockStatsmodelResults(size)
-            decomposition = self._DecompositionResults()
+            decomposition = _DecompositionResults()
             decomposition.load(statsmodel_results)
             return decomposition
 
