@@ -37,6 +37,20 @@ def dku_config():
 
 
 @pytest.fixture
+def advanced_dku_config():
+    config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
+              "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["value1"],
+              "long_format": False, "decomposition_model": "additive", "seasonal_stl": 13, "expert": True,
+              "stl_degree_kwargs": {"seasonal_deg": "1", "trend_deg": "0", "low_pass_deg": "1"},
+              "stl_speed_jump_kwargs": {"seasonal_jump": '', "trend_jump": "12", "low_pass_jump": ''},
+              "stl_smoothers_kwargs": {"trend": "13", "low_pass": ''}}
+    input_dataset_columns = ["value1", "value2", "country", "date"]
+    dku_config = STLConfig()
+    dku_config.add_parameters(config, input_dataset_columns)
+    return dku_config
+
+
+@pytest.fixture
 def expected_dates():
     expected = {"3M": np.array(['1959-01-31T00:00:00.000000000', '1959-04-30T00:00:00.000000000',
                                 '1959-07-31T00:00:00.000000000', '1959-10-31T00:00:00.000000000',
@@ -107,6 +121,17 @@ class TestSTLDecomposition:
                                    495684.78235812, 504325.60788619, 513126.17464565, 522081.85641882,
                                    531195.14275262, 540473.28351069])
         rounded_results = np.round(results["value1_trend"].values, 8)
+        np.testing.assert_equal(rounded_results, expected_array)
+
+    def test_advanced_STL(self, advanced_dku_config, input_df):
+        timeseries_preparator = TimeseriesPreparator(advanced_dku_config)
+        df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
+        decomposition = STLDecomposition(advanced_dku_config)
+        results = decomposition.fit(df_prepared)
+        expected_array = np.array([507693, 502152, 496611, 491070, 485529, 479988, 474447, 468906, 463365,
+                                   457824, 452283, 446742, 441201, 445989, 450777, 455565, 460353, 465141,
+                                   469928, 474716, 479504, 484292, 489080, 493868, 498655, 499737])
+        rounded_results = np.round(results["value1_trend"].values)
         np.testing.assert_equal(rounded_results, expected_array)
 
     def test_several_frequencies(self, expected_dates):

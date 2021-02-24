@@ -66,6 +66,16 @@ class TestSTLConfig:
     def test_advanced_parameters(self, advanced_config, input_dataset_columns):
         dku_config = STLConfig()
         assert dku_config.add_parameters(advanced_config, input_dataset_columns) is None
+        assert dku_config.get_param("loess_degrees") is not None
+
+    def test_missing_loess_degrees(self, advanced_config, input_dataset_columns):
+        dku_config = STLConfig()
+        advanced_config["stl_degree_kwargs"] = {}
+        dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert dku_config.get_param("loess_degrees") is None
+        advanced_config.pop("stl_degree_kwargs")
+        dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert dku_config.get_param("loess_degrees") is None
 
     def test_invalid_advanced_parameters(self, advanced_config, input_dataset_columns):
         dku_config = STLConfig()
