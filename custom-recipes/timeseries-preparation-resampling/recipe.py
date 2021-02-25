@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from dataiku.customrecipe import *
-from dku_timeseries import ResamplerParams, Resampler
+from dataiku.customrecipe import get_recipe_config
+from dku_timeseries import Resampler
 from commons import *
 
 logger = logging.getLogger(__name__)
