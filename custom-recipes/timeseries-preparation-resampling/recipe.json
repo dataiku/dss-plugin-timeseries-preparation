@@ -111,7 +111,7 @@
       "defaultValue": "seconds"
     },
     {
-      "name": "frequency_end_of_week",
+      "name": "time_unit_end_of_week",
       "label": "End of week day",
       "type": "SELECT",
       "mandatory": false,

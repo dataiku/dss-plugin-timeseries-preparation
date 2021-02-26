@@ -26,6 +26,7 @@ def get_resampling_params(recipe_config):
     constant_value = _p('constant_value')
     time_step = _p('time_step')
     time_unit = _p('time_unit')
+    time_unit_end_of_week = _p('time_unit_end_of_week')
     clip_start = _p('clip_start')
     clip_end = _p('clip_end')
     shift = _p('shift')
@@ -35,6 +36,7 @@ def get_resampling_params(recipe_config):
                              constant_value=constant_value,
                              time_step=time_step,
                              time_unit=time_unit,
+                             time_unit_end_of_week=time_unit_end_of_week,
                              clip_start=clip_start,
                              clip_end=clip_end,
                              shift=shift)

@@ -6,3 +6,4 @@ state.json
 htmlcov
 .DS_Store
 .wlock
+venv/
