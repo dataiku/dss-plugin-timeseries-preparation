@@ -66,10 +66,6 @@ def get_date_offset(time_unit, offset_value):
     return pd.DateOffset(**{formatted_time_unit: offset_value})
 
 
-def get_period_start_date(time, frequency):
-    return time.to_period(freq=frequency).start_time.floor("D").tz_localize(time.tz)
-
-
 def get_period_end_date(time, frequency):
     return time.to_period(freq=frequency).to_timestamp(how="End").tz_localize(time.tz)
 
@@ -88,7 +84,6 @@ def generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequ
             end_index = get_period_end_date(end_time.round("D") + clip_start_value + shift_value, frequency)
         else:
             end_index = end_time.round("D") - clip_end_value + shift_value
-            return pd.date_range(start=start_index, end=end_index, freq=frequency)[1:]
     return pd.date_range(start=start_index, end=end_index, freq=frequency)
 
 
