@@ -74,12 +74,19 @@ def generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequ
         end_index = end_time.round(rounding_freq_string) - clip_end_value + shift_value
     else:
         start_index = start_time.round('D') + clip_start_value + shift_value
-        # for some reason date_range omit the last entry when dealing with months, years
-        if extrapolation_method != "none":
-            end_index = end_time.round('D') - clip_end_value + get_date_offset(time_unit, time_step)
-        else:
-            end_index = end_time.round('D') - clip_end_value
+        end_index = round_end_index(end_time.round('D') - clip_end_value + shift_value, extrapolation_method, frequency, time_unit, time_step)
     return pd.date_range(start=start_index, end=end_index, freq=frequency)
+
+
+def round_end_index(end_index, extrapolation_method, frequency, time_unit, time_step):
+    # date_range omits the last entry when dealing with months, years, weeks, business days and when end_index is not the last element of the period
+    if extrapolation_method != "none":
+        # get the first element of the period containing end_index
+        period_start = end_index.to_period(freq=frequency).to_timestamp()
+        rounded_end_index = period_start + get_date_offset(time_unit, time_step)
+    else:
+        rounded_end_index = end_index
+    return rounded_end_index
 
 
 def get_smaller_unit(window_unit):
