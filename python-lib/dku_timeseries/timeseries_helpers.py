@@ -60,8 +60,18 @@ def get_date_offset(time_unit, offset_value):
     if time_unit == "business_days":
         return BDay(offset_value)
     elif time_unit == "semi_annual" or time_unit == "quarters":
-        time_unit = "months"
-    return pd.DateOffset(**{time_unit: offset_value})
+        formatted_time_unit = "months"
+    else:
+        formatted_time_unit = time_unit
+    return pd.DateOffset(**{formatted_time_unit: offset_value})
+
+
+def get_period_start_date(time, frequency):
+    return time.to_period(freq=frequency).start_time.floor("D").tz_localize(time.tz)
+
+
+def get_period_end_date(time, frequency):
+    return time.to_period(freq=frequency).to_timestamp(how="End").tz_localize(time.tz)
 
 
 def generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit, extrapolation_method):
@@ -73,20 +83,13 @@ def generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequ
         start_index = start_time.round(rounding_freq_string) + clip_start_value + shift_value
         end_index = end_time.round(rounding_freq_string) - clip_end_value + shift_value
     else:
-        start_index = start_time.round('D') + clip_start_value + shift_value
-        end_index = round_end_index(end_time.round('D') - clip_end_value + shift_value, extrapolation_method, frequency, time_unit, time_step)
+        start_index = start_time.round("D") + clip_start_value + shift_value
+        if extrapolation_method != "none":
+            end_index = get_period_end_date(end_time.round("D") + clip_start_value + shift_value, frequency)
+        else:
+            end_index = end_time.round("D") - clip_end_value + shift_value
+            return pd.date_range(start=start_index, end=end_index, freq=frequency)[1:]
     return pd.date_range(start=start_index, end=end_index, freq=frequency)
-
-
-def round_end_index(end_index, extrapolation_method, frequency, time_unit, time_step):
-    # date_range omits the last entry when dealing with months, years, weeks, business days and when end_index is not the last element of the period
-    if extrapolation_method != "none":
-        # get the first element of the period containing end_index
-        period_start = end_index.to_period(freq=frequency).to_timestamp()
-        rounded_end_index = period_start + get_date_offset(time_unit, time_step)
-    else:
-        rounded_end_index = end_index
-    return rounded_end_index
 
 
 def get_smaller_unit(window_unit):

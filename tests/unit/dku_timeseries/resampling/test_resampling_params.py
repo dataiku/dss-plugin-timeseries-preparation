@@ -36,3 +36,8 @@ class TestResamplerParams:
         assert params.time_unit_end_of_week == "MON"
         assert params.resampling_step == "2W-MON"
 
+    def test_b_days_params(self, config):
+        config["time_unit"] = "business_days"
+        params = get_resampling_params(config)
+        assert params.resampling_step == "2B"
+        assert params.time_step == 2

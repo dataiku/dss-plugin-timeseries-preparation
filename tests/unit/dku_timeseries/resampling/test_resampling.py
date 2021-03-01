@@ -1,9 +1,10 @@
-import pandas as pd
-import sys
+import math
 import os
 import random
-from datetime import datetime
+import sys
+
 import numpy as np
+import pandas as pd
 
 ## Add stuff to the path to enable exec outside of DSS
 plugin_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -13,7 +14,8 @@ import dku_timeseries
 
 JUST_BEFORE_SPRING_DST = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
 JUST_BEFORE_FALL_DST = pd.Timestamp('20191027 02:59:00').tz_localize('CET',
-                                                                     ambiguous=True)  # It's ambiguous because there are 2 instants with these dates! We select the first
+                                                                     ambiguous=True)  # It's ambiguous because there are 2 instants with these dates! We
+# select the first
 
 TIME_COL = 'time_col'
 DATA_COL = 'data_col'
@@ -33,7 +35,7 @@ def _make_df_with_one_col_one_group_per_col(column_data, period=pd.DateOffset(se
 
 def _make_df_with_one_col_group(column_data, num_group, period=pd.DateOffset(seconds=1), start_time=JUST_BEFORE_SPRING_DST):
     df_list = []
-    for x in xrange(num_group):
+    for x in range(num_group):
         group_name = 'group_{}'.format(x)
         temp_df = _make_df_with_one_col(column_data, period=period)
         temp_df[GROUP_COL] = group_name
@@ -84,8 +86,8 @@ def test_identity_resampling():
     for x in range(1000):
         assert output_df[DATA_COL][x] == df[DATA_COL][x]
 
-def test_nan_data():
 
+def test_nan_data():
     length = 1000
     data = [np.nan for _ in range(length)]
     df = _make_df_with_one_col(data)
@@ -96,7 +98,6 @@ def test_nan_data():
 
 
 def test_identity_resampling_month():
-
     length = 100
     data = [random.random() for _ in range(length)]
     df = _make_df_with_one_col(data, period=pd.DateOffset(months=1))
@@ -117,6 +118,7 @@ def test_half_freq_resampling():
     for x in range(100):
         assert output_df[DATA_COL][x] == 2 * x
 
+
 def test_one_group_per_line():
     length = 100
     data = [random.random() for _ in range(length)]
@@ -124,6 +126,7 @@ def test_one_group_per_line():
     resampler = _make_resampler()
     output_df = resampler.transform(df, TIME_COL, groupby_columns=[GROUP_COL])
     assert output_df.shape == (length, 3)
+
 
 def test_identity_resampling_group():
     """
@@ -137,14 +140,14 @@ def test_identity_resampling_group():
     df2 = resampler.transform(df, TIME_COL, groupby_columns=[GROUP_COL])
     assert len(df2) == length * num_group
 
-    for x in xrange(num_group):
+    for x in range(num_group):
         df_ref = df.loc[df[GROUP_COL] == 'group_{}'.format(x), [TIME_COL, DATA_COL]].reset_index()
         df_ref = df_ref.sort_values(TIME_COL)
 
         df_check = df2.loc[df2[GROUP_COL] == 'group_{}'.format(x), [TIME_COL, DATA_COL]].reset_index()
         df_check = df_check.sort_values(TIME_COL)
 
-        for y in xrange(1000):
+        for y in range(1000):
             assert df_check[DATA_COL][y] == df_ref[DATA_COL][y]
 
 
@@ -159,14 +162,14 @@ def test_half_freq_resampling_group():
     resampler = _make_resampler()
     df2 = resampler.transform(df, TIME_COL, groupby_columns=[GROUP_COL])
 
-    for x in xrange(num_group):
+    for x in range(num_group):
         df_ref = df.loc[df[GROUP_COL] == 'group_{}'.format(x), [TIME_COL, DATA_COL]].reset_index()
         df_ref = df_ref.sort_values(TIME_COL)
 
         df_check = df2.loc[df2[GROUP_COL] == 'group_{}'.format(x), [TIME_COL, DATA_COL]].reset_index()
         df_check = df_check.sort_values(TIME_COL)
 
-        for y in xrange(1000):
+        for y in range(1000):
             assert df_check[DATA_COL][y] == 2 * df_ref[DATA_COL][y]
 
 
@@ -255,3 +258,21 @@ def test_group_inclusion_different_freq():
     ref_data_1 = np.linspace(start_value, start_value + 198, num=199)
     resample_data_1 = output_df.groupby(GROUP_COL).get_group('group_1').data_col.values
     assert np.array_equal(resample_data_1, ref_data_1)
+
+
+def test_no_empty_rows():
+    # [ch61615] The recipe should not add empty rows when there is no extrapolation
+    length = 10
+    data = [random.random() for _ in range(length)]
+    start_time = pd.Timestamp('20210101 00:00:00').tz_localize('CET')
+    df = _make_df_with_one_col(data, period=pd.DateOffset(months=1), start_time = start_time)
+    params = dku_timeseries.ResamplerParams(time_unit="months", extrapolation_method='none')
+    resampler = dku_timeseries.Resampler(params)
+    output_df = resampler.transform(df, TIME_COL)
+    assert not math.isnan(output_df["data_col"].values[-1])
+
+    df = _make_df_with_one_col(data, period=pd.DateOffset(months=1))
+    params = dku_timeseries.ResamplerParams(time_unit="months", extrapolation_method="none")
+    resampler = dku_timeseries.Resampler(params)
+    output_df = resampler.transform(df, TIME_COL)
+    assert not math.isnan(output_df["data_col"].values[-1])
