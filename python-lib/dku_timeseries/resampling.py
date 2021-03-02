@@ -95,7 +95,6 @@ class Resampler:
             df_resampled = self._resample(df_copy, datetime_column, columns_to_resample, reference_time_index)
 
         df_resampled = df_resampled[df.columns].reset_index(drop=True)
-
         return df_resampled
 
     def _compute_full_time_index(self, df, datetime_column):
@@ -108,9 +107,9 @@ class Resampler:
         clip_end = self.params.clip_end
         shift = self.params.shift
         frequency = self.params.resampling_step
+        time_step = self.params.time_step
         time_unit = self.params.time_unit
-        extrapolation_method = self.params.extrapolation_method
-        return generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_unit, extrapolation_method)
+        return generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
 
     def _resample(self, df, datetime_column, columns_to_resample, reference_time_index, df_id=''):
         """
@@ -180,4 +179,6 @@ class Resampler:
         if self.params.extrapolation_method == "clip" and self.params.interpolation_method != 'none':
             df_resample = df_resample.ffill().bfill()
 
-        return df_resample.loc[reference_index].drop('numerical_index', axis=1)
+        df_resampled = df_resample.loc[reference_index].drop('numerical_index', axis=1)
+        df_resampled.dropna(subset=filtered_columns_to_resample, inplace=True)
+        return df_resampled
