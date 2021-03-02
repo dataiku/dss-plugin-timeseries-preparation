@@ -16,38 +16,37 @@ def config():
 
 class TestResamplerHelpers:
     def test_period_end_date(self, config):
-        time = pd.Timestamp('2021-01-23 00:00:00')
         frequency = "M"
-        period_end = get_period_end_date(time, frequency)
-        assert period_end == pd.Timestamp('2021-01-31 00:00:00')
-
-        time = pd.Timestamp('2021-01-31 00:00:00')
-        frequency = "M"
-        period_end = get_period_end_date(time, frequency)
-        assert period_end == pd.Timestamp('2021-01-31 00:00:00')
-
-        time = pd.Timestamp('2021-01-23 00:00:00').tz_localize('CET')
-        frequency = "M"
-        period_end = get_period_end_date(time, frequency)
+        middle_month = pd.Timestamp('2021-01-23 00:00:00')
+        period_end_middle_month = get_period_end_date(middle_month, frequency)
+        assert period_end_middle_month == pd.Timestamp('2021-01-31 00:00:00')
+        end_month = pd.Timestamp('2021-01-31 00:00:00')
+        period_end_month = get_period_end_date(end_month, frequency)
+        assert period_end_month == pd.Timestamp('2021-01-31 00:00:00')
+        tz_time = pd.Timestamp('2021-01-23 00:00:00').tz_localize('CET')
+        period_end = get_period_end_date(tz_time, frequency)
         assert period_end == pd.Timestamp('2021-01-31 00:00:00').tz_localize('CET')
 
-        time = pd.Timestamp('2021-01-23 00:00:00').tz_localize('CET')
         frequency = "B"
-        period_end = get_period_end_date(time, frequency)
+        saturday = pd.Timestamp('2021-01-23 00:00:00').tz_localize('CET')
+        period_end = get_period_end_date(saturday, frequency)
         assert period_end == pd.Timestamp('2021-01-25 00:00:00').tz_localize('CET')
+        friday = pd.Timestamp('2021-01-22 00:00:00').tz_localize('CET')
+        period_end = get_period_end_date(friday, frequency)
+        assert period_end == pd.Timestamp('2021-01-22 00:00:00').tz_localize('CET')
 
-        time = pd.Timestamp('2021-01-23 00:00:00').tz_localize('CET')
         frequency = "6M"
+        time = pd.Timestamp('2021-01-23 00:00:00').tz_localize('CET')
         period_end = get_period_end_date(time, frequency)
         assert period_end == pd.Timestamp('2021-06-30 00:00:00').tz_localize('CET')
 
-        time = pd.Timestamp('2021-01-23 00:00:00').tz_localize('CET')
         frequency = "3M"
+        time = pd.Timestamp('2021-01-23 00:00:00').tz_localize('CET')
         period_end = get_period_end_date(time, frequency)
         assert period_end == pd.Timestamp('2021-03-31 00:00:00').tz_localize('CET')
 
-        time = pd.Timestamp('2021-01-23 00:00:00').tz_localize('CET')
         frequency = "Y"
+        time = pd.Timestamp('2021-01-23 00:00:00').tz_localize('CET')
         period_end = get_period_end_date(time, frequency)
         assert period_end == pd.Timestamp('2021-12-31 00:00:00').tz_localize('CET')
 
@@ -55,39 +54,47 @@ class TestResamplerHelpers:
         config["time_unit"] = "months"
         params = get_resampling_params(config)
         frequency = params.resampling_step
-        time_step = params.time_step
         time_unit = params.time_unit
 
-        start_time = pd.Timestamp('2021-01-23 00:00:00')
         end_time = pd.Timestamp('2021-06-20 00:00:00')
+
         extrapolation_method = "none"
-        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit, extrapolation_method)
-        assert date_range.shape[0] == 2
+        start_time = pd.Timestamp('2021-01-31 00:00:00')
+        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_unit, extrapolation_method)
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-31', '2021-03-31', '2021-05-31']))
+
+        start_time = pd.Timestamp('2021-01-23 00:00:00')
+        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_unit, extrapolation_method)
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-31', '2021-03-31', '2021-05-31']))
+
+        start_time = pd.Timestamp('2021-01-31 10:00:00')
+        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_unit, extrapolation_method)
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-03-31', '2021-05-31']))
+
         extrapolation_method = "clip"
-        date_range_extrapolation = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit, extrapolation_method)
-        assert date_range_extrapolation.shape[0] == 4
+        date_range_extrapolation = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_unit, extrapolation_method)
+        np.testing.assert_array_equal(date_range_extrapolation, pd.DatetimeIndex(['2021-01-31', '2021-03-31', '2021-05-31', '2021-07-31']))
 
     def test_generate_date_range_week(self, config):
         config["time_unit"] = "weeks"
         params = get_resampling_params(config)
         frequency = params.resampling_step
-        time_step = params.time_step
         time_unit = params.time_unit
 
         start_time = pd.Timestamp('2020-12-23 00:00:00')
         end_time = pd.Timestamp('2021-01-18 00:00:00')
 
-        extrapolation_method = "none"
-        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit, extrapolation_method)
-        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-03', '2021-01-17']))
+        #extrapolation_method = "none"
+        #date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency,  time_unit, extrapolation_method)
+        #np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-03', '2021-01-17']))
 
         extrapolation_method = "clip"
-        date_range_extrapolation = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit, extrapolation_method)
-        np.testing.assert_array_equal(date_range_extrapolation, pd.DatetimeIndex(['2020-12-27','2021-01-03', '2021-01-17']))
+        date_range_extrapolation = generate_date_range(start_time, end_time, 0, 0, 0, frequency,  time_unit, extrapolation_method)
+        np.testing.assert_array_equal(date_range_extrapolation, pd.DatetimeIndex(['2020-12-27', '2021-01-10', '2021-01-24']))
 
         end_time = pd.Timestamp('2021-01-24 00:00:00')
-        date_range_extrapolation = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit, extrapolation_method)
-        assert date_range_extrapolation.shape[0] == 3
+        date_range_extrapolation = generate_date_range(start_time, end_time, 0, 0, 0, frequency,  time_unit, extrapolation_method)
+        np.testing.assert_array_equal(date_range_extrapolation, pd.DatetimeIndex(['2020-12-27', '2021-01-10', '2021-01-24']))
 
     def test_generate_date_range_quarters(self, config):
         config["time_step"] = 1
@@ -97,17 +104,15 @@ class TestResamplerHelpers:
 
         params = get_resampling_params(config)
         frequency = params.resampling_step
-        time_step = params.time_step
         time_unit = params.time_unit
 
         extrapolation_method = "none"
-        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit, extrapolation_method)
-        assert date_range.shape[0] == 3
-        assert date_range[-1] == pd.Timestamp('2020-10-31')
+        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency,  time_unit, extrapolation_method)
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2020-01-31', '2020-04-30', '2020-07-31', '2020-10-31']))
 
         extrapolation_method = "clip"
-        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit, extrapolation_method)
-        assert date_range[-1] == pd.Timestamp('2021-01-31')
+        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency,  time_unit, extrapolation_method)
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2020-01-31', '2020-04-30', '2020-07-31', '2020-10-31','2021-01-31']))
 
     def test_generate_date_range_half_year(self, config):
         config["time_step"] = 1
@@ -117,17 +122,16 @@ class TestResamplerHelpers:
 
         params = get_resampling_params(config)
         frequency = params.resampling_step
-        time_step = params.time_step
         time_unit = params.time_unit
 
         extrapolation_method = "none"
-        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit, extrapolation_method)
-        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2020-07-31', '2021-01-31']))
-        date_range_year = generate_date_range(start_time, end_time, 0, 0, 0, frequency, 1, "years", extrapolation_method)
+        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency,  time_unit, extrapolation_method)
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2020-01-31','2020-07-31', '2021-01-31']))
+        date_range_year = generate_date_range(start_time, end_time, 0, 0, 0, frequency,"years", extrapolation_method)
         np.testing.assert_array_equal(date_range, date_range_year)
 
         extrapolation_method = "clip"
-        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit, extrapolation_method)
+        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency,  time_unit, extrapolation_method)
         np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2020-01-31', '2020-07-31', '2021-01-31', '2021-07-31']))
 
     def test_generate_date_range_b_days(self, config):
@@ -138,13 +142,11 @@ class TestResamplerHelpers:
 
         params = get_resampling_params(config)
         frequency = params.resampling_step
-        time_step = params.time_step
         time_unit = params.time_unit
 
         extrapolation_method = "none"
-        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit, extrapolation_method)
-        print(date_range)
-        # np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08']))
+        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency,  time_unit, extrapolation_method)
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08']))
 
     def test_generate_date_range_end_of_period(self, config):
         extrapolation_method = "clip"
@@ -154,25 +156,22 @@ class TestResamplerHelpers:
         config["time_unit"] = "months"
         params = get_resampling_params(config)
         frequency = params.resampling_step
-        time_step = params.time_step
         time_unit = params.time_unit
-        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit, extrapolation_method)
+        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency,  time_unit, extrapolation_method)
         np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-31', '2021-03-31', '2021-05-31', '2021-07-31']))
 
         config["time_unit"] = "weeks"
         end_time = pd.Timestamp('2021-02-07 00:00:00')
         params = get_resampling_params(config)
         frequency = params.resampling_step
-        time_step = params.time_step
         time_unit = params.time_unit
-        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit, extrapolation_method)
+        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency,  time_unit, extrapolation_method)
         np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-24', '2021-02-07']))
 
         config["time_unit"] = "days"
         end_time = pd.Timestamp('2021-01-24 12:00:00')
         params = get_resampling_params(config)
         frequency = params.resampling_step
-        time_step = params.time_step
         time_unit = params.time_unit
-        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit, extrapolation_method)
+        date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency,  time_unit, extrapolation_method)
         np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-23', '2021-01-25']))

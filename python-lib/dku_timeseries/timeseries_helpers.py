@@ -58,7 +58,10 @@ def format_resampling_step(time_unit, time_step, time_unit_end_of_week):
 
 def get_date_offset(time_unit, offset_value):
     if time_unit == "business_days":
-        return BDay(offset_value)
+        if offset_value != 0:
+            return BDay(offset_value)
+        else:
+            formatted_time_unit = "days"
     elif time_unit == "semi_annual" or time_unit == "quarters":
         formatted_time_unit = "months"
     else:
@@ -70,7 +73,7 @@ def get_period_end_date(time, frequency):
     return time.to_period(freq=frequency).to_timestamp(how="End").tz_localize(time.tz)
 
 
-def generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit, extrapolation_method):
+def generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_unit, extrapolation_method):
     rounding_freq_string = FREQUENCY_STRINGS.get(time_unit)
     clip_start_value = get_date_offset(time_unit, clip_start)
     clip_end_value = get_date_offset(time_unit, clip_end)
@@ -78,12 +81,15 @@ def generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequ
     if time_unit in ROUND_COMPATIBLE_TIME_UNIT:
         start_index = start_time.round(rounding_freq_string) + clip_start_value + shift_value
         end_index = end_time.round(rounding_freq_string) - clip_end_value + shift_value
-    else:
+    else:  # for week, month, year we round up to closest day
         start_index = start_time.round("D") + clip_start_value + shift_value
         if extrapolation_method != "none":
+            # for some reason date_range omit the last entry when dealing with months, years, weeks, business days
             end_index = get_period_end_date(end_time.round("D") + clip_start_value + shift_value, frequency)
         else:
             end_index = end_time.round("D") - clip_end_value + shift_value
+            if start_time > start_index:
+                start_index = get_period_end_date(start_time.ceil("D") + clip_start_value + shift_value, frequency)
     return pd.date_range(start=start_index, end=end_index, freq=frequency)
 
 

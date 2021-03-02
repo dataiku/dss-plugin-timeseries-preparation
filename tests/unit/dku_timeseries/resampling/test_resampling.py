@@ -269,6 +269,7 @@ def test_no_empty_rows():
     params = dku_timeseries.ResamplerParams(time_unit="months", extrapolation_method='none')
     resampler = dku_timeseries.Resampler(params)
     output_df = resampler.transform(df, TIME_COL)
+    assert not math.isnan(output_df["data_col"].values[0])
     assert not math.isnan(output_df["data_col"].values[-1])
 
     df = _make_df_with_one_col(data, period=pd.DateOffset(months=1))

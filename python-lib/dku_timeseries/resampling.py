@@ -6,6 +6,7 @@ from scipy import interpolate
 
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
 from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, generate_date_range, reformat_time_value, format_resampling_step, reformat_time_step
+
 logger = logging.getLogger(__name__)
 
 INTERPOLATION_METHODS = ['linear', 'nearest', 'slinear', 'zero', 'quadratic', 'cubic', 'previous', 'next', 'constant', 'none']
@@ -107,10 +108,9 @@ class Resampler:
         clip_end = self.params.clip_end
         shift = self.params.shift
         frequency = self.params.resampling_step
-        time_step = self.params.time_step
         time_unit = self.params.time_unit
         extrapolation_method = self.params.extrapolation_method
-        return generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit, extrapolation_method)
+        return generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_unit, extrapolation_method)
 
     def _resample(self, df, datetime_column, columns_to_resample, reference_time_index, df_id=''):
         """
