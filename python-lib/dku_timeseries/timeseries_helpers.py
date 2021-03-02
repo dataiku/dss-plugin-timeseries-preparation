@@ -58,7 +58,8 @@ def format_resampling_step(time_unit, time_step, time_unit_end_of_week):
 
 def get_date_offset(time_unit, offset_value):
     if time_unit == "business_days":
-        if offset_value != 0:
+        # adding a Bday converts the timestamps into a business day, so BDay(0) + Saturday January 1st =  Monday January 4th
+        if offset_value == 0:
             return BDay(offset_value)
         else:
             formatted_time_unit = "days"
