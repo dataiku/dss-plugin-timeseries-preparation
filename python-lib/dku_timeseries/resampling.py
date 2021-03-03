@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-import pandas as pd
-import numpy as np
 import logging
+
+import pandas as pd
 from scipy import interpolate
 
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, ROUND_COMPATIBLE_TIME_UNIT, generate_date_range, reformat_time_value
+from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, generate_date_range, reformat_time_value
 
 logger = logging.getLogger(__name__)
 
@@ -84,9 +84,15 @@ class Resampler:
             resampled_groups = []
             for group_id, group in grouped:
                 logger.info("Computing for group: {}".format(group_id))
-                group_resampled = self._resample(group.drop(groupby_columns, axis=1), datetime_column, columns_to_resample, reference_time_index, df_id=group_id)
-                group_resampled.loc[:, groupby_columns[0]] = group_id  # TODO make this work with multiple group cols
+                group_resampled = self._resample(group.drop(groupby_columns, axis=1), datetime_column, columns_to_resample, reference_time_index,
+                                                 df_id=group_id)
+                if len(groupby_columns) == 1:
+                    group_id = [group_id]
+                else:
+                    group_id = list(group_id)
+                group_resampled[groupby_columns] = pd.DataFrame([group_id], index=group_resampled.index)
                 resampled_groups.append(group_resampled)
+                logger.info("Computing for group: {} - Done!".format(group_id))
             df_resampled = pd.concat(resampled_groups)
         else:
             df_resampled = self._resample(df_copy, datetime_column, columns_to_resample, reference_time_index)
@@ -143,10 +149,12 @@ class Resampler:
         for filtered_column in filtered_columns_to_resample:
 
             df_without_nan = df.dropna(subset=[filtered_column], how='all')
-            interpolation_index_mask = (df_resample[datetime_column] >= df_without_nan[datetime_column].min()) & (df_resample[datetime_column] <= df_without_nan[datetime_column].max())
+            interpolation_index_mask = (df_resample[datetime_column] >= df_without_nan[datetime_column].min()) & (
+                    df_resample[datetime_column] <= df_without_nan[datetime_column].max())
             interpolation_index = df_resample.index[interpolation_index_mask]
 
-            extrapolation_index_mask = (df_resample[datetime_column] < df_without_nan[datetime_column].min()) | (df_resample[datetime_column] > df_without_nan[datetime_column].max())
+            extrapolation_index_mask = (df_resample[datetime_column] < df_without_nan[datetime_column].min()) | (
+                    df_resample[datetime_column] > df_without_nan[datetime_column].max())
             extrapolation_index = df_resample.index[extrapolation_index_mask]
 
             index_with_data = df_resample.loc[interpolation_index, filtered_column].dropna(how='all').index
@@ -165,8 +173,9 @@ class Resampler:
                 if self.params.extrapolation_method == 'interpolation':
                     df_resample.loc[:, filtered_column] = df_resample.loc[:, filtered_column].fillna(self.params.constant_value)
                 else:
-                    df_resample.loc[interpolation_index, filtered_column] = df_resample.loc[interpolation_index, filtered_column].fillna(self.params.constant_value)
-            else: # none interpolation - nothing to do
+                    df_resample.loc[interpolation_index, filtered_column] = df_resample.loc[interpolation_index, filtered_column].fillna(
+                        self.params.constant_value)
+            else:  # none interpolation - nothing to do
                 if self.params.extrapolation_method == "clip":
                     temp_df = df_resample.copy().ffill().bfill()
                     df_resample.loc[extrapolation_index, filtered_column] = temp_df.loc[extrapolation_index, filtered_column]
