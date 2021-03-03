@@ -18,13 +18,15 @@ class TestResamplerHelpers:
     def test_date_offset(self):
         time_unit = "business_days"
         offset_value = 0
-        sunday = pd.Timestamp('2021-01-31 00:00:00')
+        sunday = pd.Timestamp('2021-01-31 10:00:00')
         offset = get_date_offset(time_unit, offset_value)
         assert sunday + offset == sunday
 
         sunday = pd.Timestamp('2021-01-31 00:00:00')
         offset = get_date_offset(time_unit, 1)
         assert sunday + offset == pd.Timestamp('2021-02-01 00:00:00')
+        assert sunday - offset == pd.Timestamp('2021-01-29 00:00:00')
+        assert sunday + offset + offset == pd.Timestamp('2021-02-02 00:00:00')
 
         friday = pd.Timestamp('2021-01-29 00:00:00')
         offset = get_date_offset(time_unit, 1)
