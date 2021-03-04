@@ -82,11 +82,12 @@ class Resampler:
         if groupby_columns:
             grouped = df_copy.groupby(groupby_columns)
             resampled_groups = []
+            identifiers_number = len(groupby_columns)
             for group_id, group in grouped:
                 logger.info("Computing for group: {}".format(group_id))
                 group_resampled = self._resample(group.drop(groupby_columns, axis=1), datetime_column, columns_to_resample, reference_time_index,
                                                  df_id=group_id)
-                if len(groupby_columns) == 1:
+                if identifiers_number == 1:
                     group_id = [group_id]
                 else:
                     group_id = list(group_id)

@@ -7,3 +7,4 @@ htmlcov
 .DS_Store
 .wlock
 venv/
+*.pytest_cache/
