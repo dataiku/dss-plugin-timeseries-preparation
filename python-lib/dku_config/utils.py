@@ -1,3 +1,9 @@
+class PluginCodeEnvError(Exception):
+    """Exception raised when the code env is not compatible with the plugin
+    """
+    pass
+
+
 def are_keys_in(expected_keys, map_parameter):
     valid_keys = expected_keys.copy()
     valid_keys.append("")
