@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from commons import get_resampling_params
+from dku_timeseries.resampling.resampling import ResamplerParams
 from dku_timeseries.timeseries_helpers import generate_date_range, get_date_offset
 
 
@@ -12,6 +12,26 @@ def config():
               u'datetime_column': u'Date', u'advanced_activated': False, u'time_unit': u'quarters', u'clip_start': 0, u'time_step': 2,
               u'interpolation_method': u'linear'}
     return config
+
+
+def get_params(config):
+    def _p(param_name, default=None):
+        return config.get(param_name, default)
+
+    interpolation_method = _p('interpolation_method')
+    extrapolation_method = _p('extrapolation_method')
+    constant_value = _p('constant_value')
+    time_step = _p('time_step')
+    time_unit = _p('time_unit')
+    time_unit_end_of_week = _p('time_unit_end_of_week')
+
+    params = ResamplerParams(interpolation_method=interpolation_method,
+                             extrapolation_method=extrapolation_method,
+                             constant_value=constant_value,
+                             time_step=time_step,
+                             time_unit=time_unit,
+                             time_unit_end_of_week=time_unit_end_of_week)
+    return params
 
 
 class TestResamplerHelpers:
@@ -46,7 +66,7 @@ class TestResamplerHelpers:
 
     def test_generate_date_range_month(self, config):
         config["time_unit"] = "months"
-        params = get_resampling_params(config)
+        params = get_params(config)
         frequency = params.resampling_step
         time_unit = params.time_unit
         time_step = params.time_step
@@ -74,11 +94,11 @@ class TestResamplerHelpers:
         start_time = pd.Timestamp('2021-01-31 10:00:00')
         end_time = pd.Timestamp('2021-06-20 00:00:00')
         date_range = generate_date_range(start_time, end_time, 1, 0, 1, frequency, time_step, time_unit)
-        np.testing.assert_array_equal(date_range, pd.DatetimeIndex([ '2021-03-31', '2021-05-31','2021-07-31']))
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-03-31', '2021-05-31', '2021-07-31']))
 
     def test_generate_date_range_week(self, config):
         config["time_unit"] = "weeks"
-        params = get_resampling_params(config)
+        params = get_params(config)
         frequency = params.resampling_step
         time_unit = params.time_unit
         time_step = params.time_step
@@ -94,11 +114,11 @@ class TestResamplerHelpers:
         np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2020-12-27', '2021-01-10', '2021-01-24', '2021-02-07']))
 
         date_range = generate_date_range(start_time, end_time, 1, 0, 1, frequency, time_step, time_unit)
-        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-10', '2021-01-24','2021-02-07']))
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-10', '2021-01-24', '2021-02-07']))
 
         config["time_unit"] = "weeks"
         config["time_unit_end_of_week"] = "WED"
-        params = get_resampling_params(config)
+        params = get_params(config)
         frequency = params.resampling_step
         time_unit = params.time_unit
         time_step = params.time_step
@@ -111,7 +131,7 @@ class TestResamplerHelpers:
         start_time = pd.Timestamp('2020-01-23 00:00:00')
         end_time = pd.Timestamp('2021-01-18 00:00:00')
 
-        params = get_resampling_params(config)
+        params = get_params(config)
         frequency = params.resampling_step
         time_unit = params.time_unit
         time_step = params.time_step
@@ -125,7 +145,7 @@ class TestResamplerHelpers:
         start_time = pd.Timestamp('2020-01-01 00:00:00')
         end_time = pd.Timestamp('2021-06-18 00:00:00')
 
-        params = get_resampling_params(config)
+        params = get_params(config)
         frequency = params.resampling_step
         time_unit = params.time_unit
         time_step = params.time_step
@@ -139,7 +159,7 @@ class TestResamplerHelpers:
         start_time = pd.Timestamp('2021-01-02 00:00:00')
         end_time = pd.Timestamp('2021-01-10 00:00:00')
 
-        params = get_resampling_params(config)
+        params = get_params(config)
         frequency = params.resampling_step
         time_unit = params.time_unit
         time_step = params.time_step

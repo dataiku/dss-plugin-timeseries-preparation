@@ -1,6 +1,6 @@
 import pytest
 
-from commons import get_resampling_params
+from dku_timeseries import ResamplerParams
 
 
 @pytest.fixture
@@ -11,33 +11,53 @@ def config():
     return config
 
 
+def get_params(config):
+    def _p(param_name, default=None):
+        return config.get(param_name, default)
+
+    interpolation_method = _p('interpolation_method')
+    extrapolation_method = _p('extrapolation_method')
+    constant_value = _p('constant_value')
+    time_step = _p('time_step')
+    time_unit = _p('time_unit')
+    time_unit_end_of_week = _p('time_unit_end_of_week')
+
+    params = ResamplerParams(interpolation_method=interpolation_method,
+                             extrapolation_method=extrapolation_method,
+                             constant_value=constant_value,
+                             time_step=time_step,
+                             time_unit=time_unit,
+                             time_unit_end_of_week=time_unit_end_of_week)
+    return params
+
+
 class TestResamplerParams:
     def test_quarter_params(self, config):
-        params = get_resampling_params(config)
+        params = get_params(config)
         assert params.time_step == 6
         assert params.resampling_step == "6M"
 
     def test_semi_annual_params(self, config):
         config["time_unit"] = "semi_annual"
-        params = get_resampling_params(config)
+        params = get_params(config)
         assert params.time_step == 12
         assert params.resampling_step == "12M"
         config["time_step"] = 1.5
-        params = get_resampling_params(config)
+        params = get_params(config)
         assert params.time_step == 9
         assert params.resampling_step == "9M"
 
     def test_weekly_params(self, config):
         config["time_unit"] = "weeks"
-        params = get_resampling_params(config)
+        params = get_params(config)
         assert params.resampling_step == "2W-SUN"
         config["time_unit_end_of_week"] = "MON"
-        params = get_resampling_params(config)
+        params = get_params(config)
         assert params.time_unit_end_of_week == "MON"
         assert params.resampling_step == "2W-MON"
 
     def test_b_days_params(self, config):
         config["time_unit"] = "business_days"
-        params = get_resampling_params(config)
+        params = get_params(config)
         assert params.resampling_step == "2B"
         assert params.time_step == 2
