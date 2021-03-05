@@ -2,10 +2,10 @@
 import dataiku
 from dataiku.customrecipe import *
 
-from dku_timeseries.extrema_extraction import ExtremaExtractorParams
-from dku_timeseries.interval_restriction import IntervalRestrictorParams
-from dku_timeseries.resampling.resampling import ResamplerParams
-from dku_timeseries.windowing import WindowAggregator, WindowAggregatorParams
+from dku_timeseries import ExtremaExtractorParams
+from dku_timeseries import IntervalRestrictorParams
+from dku_timeseries import ResamplerParams
+from dku_timeseries import WindowAggregator, WindowAggregatorParams
 
 
 def get_input_output():

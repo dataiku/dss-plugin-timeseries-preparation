@@ -4,7 +4,7 @@ import logging
 from dataiku.customrecipe import get_recipe_config
 
 from commons import get_resampling_params, get_input_output
-from dku_timeseries.resampling.resampling import Resampler
+from dku_timeseries import Resampler
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
