@@ -65,9 +65,11 @@ class TestResamplerLongFormat:
 
     def test_empty_identifiers(self, df, params, config):
         resampler = Resampler(params)
-        groupby_columns = []
         datetime_column = config.get('datetime_column')
-        output_df = resampler.transform(df, datetime_column, groupby_columns=groupby_columns)
-        assert output_df.shape == (8,4)
+        output_df = resampler.transform(df, datetime_column, groupby_columns=[])
+        assert output_df.shape == (8, 4)
         output_df = resampler.transform(df, datetime_column)
         assert output_df.shape == (8, 4)
+        output_df = resampler.transform(df, datetime_column, groupby_columns=None)
+        assert output_df.shape == (8, 4)
+
