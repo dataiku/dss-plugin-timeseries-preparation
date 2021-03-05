@@ -145,11 +145,11 @@ class Resampler:
 
             df_without_nan = df.dropna(subset=[filtered_column], how='all')
             interpolation_index_mask = (df_resample[datetime_column] >= df_without_nan[datetime_column].min()) & (
-                        df_resample[datetime_column] <= df_without_nan[datetime_column].max())
+                    df_resample[datetime_column] <= df_without_nan[datetime_column].max())
             interpolation_index = df_resample.index[interpolation_index_mask]
 
             extrapolation_index_mask = (df_resample[datetime_column] < df_without_nan[datetime_column].min()) | (
-                        df_resample[datetime_column] > df_without_nan[datetime_column].max())
+                    df_resample[datetime_column] > df_without_nan[datetime_column].max())
             extrapolation_index = df_resample.index[extrapolation_index_mask]
 
             index_with_data = df_resample.loc[interpolation_index, filtered_column].dropna(how='all').index
@@ -170,12 +170,9 @@ class Resampler:
                 else:
                     df_resample.loc[interpolation_index, filtered_column] = df_resample.loc[interpolation_index, filtered_column].fillna(
                         self.params.constant_value)
-            else:  # none interpolation - nothing to do
-                if self.params.extrapolation_method == "clip":
-                    temp_df = df_resample.copy().ffill().bfill()
-                    df_resample.loc[extrapolation_index, filtered_column] = temp_df.loc[extrapolation_index, filtered_column]
 
-            if self.params.extrapolation_method == "clip" and self.params.interpolation_method != 'none':
-                df_resample.loc[extrapolation_index, filtered_column] = df_resample.loc[extrapolation_index, filtered_column].copy().ffill().bfill()
+            if self.params.extrapolation_method == "clip":
+                temp_df = df_resample.copy().ffill().bfill()
+                df_resample.loc[extrapolation_index, filtered_column] = temp_df.loc[extrapolation_index, filtered_column]
 
         return df_resample.loc[reference_index].drop('numerical_index', axis=1)
