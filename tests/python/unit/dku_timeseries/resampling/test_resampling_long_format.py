@@ -6,6 +6,16 @@ from dku_timeseries import ResamplerParams, Resampler
 
 
 @pytest.fixture
+def df():
+    co2 = [315.58, 316.39, 316.79, 316.2]
+    country = ["first", "first", "second", "second"]
+    time_index = pd.date_range("1-1-1959", periods=4, freq="M")
+    df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "country": country, "Date": time_index})
+    return df
+
+
+@pytest.fixture
 def long_df_numerical():
     co2 = [315.58, 316.39, 316.79, 316.2]
     country = [0, 0, 1, 1]
@@ -52,3 +62,12 @@ class TestResamplerLongFormat:
         np.testing.assert_array_equal(output_df[datetime_column].values,
                                       pd.DatetimeIndex(["1959-02-01", "1959-02-15", "1959-03-01", "1959-02-01", "1959-02-15", "1959-03-01"]))
         np.testing.assert_array_equal(output_df["country"].values, np.array([0, 0, 0, 1, 1, 1]))
+
+    def test_empty_identifiers(self, df, params, config):
+        resampler = Resampler(params)
+        groupby_columns = []
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(df, datetime_column, groupby_columns=groupby_columns)
+        assert output_df.shape == (8,4)
+        output_df = resampler.transform(df, datetime_column)
+        assert output_df.shape == (8, 4)

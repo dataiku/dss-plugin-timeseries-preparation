@@ -62,7 +62,9 @@ class Resampler:
         self.params = params
         self.params.check()
 
-    def transform(self, df, datetime_column, groupby_columns=[]):
+    def transform(self, df, datetime_column, groupby_columns=None):
+        if groupby_columns is None:
+            groupby_columns = []
         generic_check_compute_arguments(datetime_column, groupby_columns)
         df_copy = df.copy()
 
@@ -144,11 +146,11 @@ class Resampler:
 
             df_without_nan = df.dropna(subset=[filtered_column], how='all')
             interpolation_index_mask = (df_resample[datetime_column] >= df_without_nan[datetime_column].min()) & (
-                        df_resample[datetime_column] <= df_without_nan[datetime_column].max())
+                    df_resample[datetime_column] <= df_without_nan[datetime_column].max())
             interpolation_index = df_resample.index[interpolation_index_mask]
 
             extrapolation_index_mask = (df_resample[datetime_column] < df_without_nan[datetime_column].min()) | (
-                        df_resample[datetime_column] > df_without_nan[datetime_column].max())
+                    df_resample[datetime_column] > df_without_nan[datetime_column].max())
             extrapolation_index = df_resample.index[extrapolation_index_mask]
 
             index_with_data = df_resample.loc[interpolation_index, filtered_column].dropna(how='all').index
