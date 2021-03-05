@@ -77,7 +77,7 @@ class Resampler:
         # when having multiple timeseries, their time range is not necessarily the same
         # we thus compute a unified time index for all partitions
         reference_time_index = self._compute_full_time_index(df_copy, datetime_column)
-        columns_to_resample = [col for col in df_copy.select_dtypes([int, float]).columns.tolist() if col != datetime_column]
+        columns_to_resample = [col for col in df_copy.select_dtypes([int, float]).columns.tolist() if col != datetime_column and col not in groupby_columns]
 
         if groupby_columns:
             grouped = df_copy.groupby(groupby_columns)
