@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from dku_timeseries.resampling.resampling import ResamplerParams, Resampler
+from dku_timeseries import ResamplerParams, Resampler
 
 
 @pytest.fixture

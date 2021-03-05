@@ -1,7 +1,7 @@
 import pandas as pd
 import random
 import numpy as np
-from dku_timeseries.resampling.resampling import ResamplerParams, Resampler
+from dku_timeseries import ResamplerParams, Resampler
 
 
 JUST_BEFORE_SPRING_DST = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
