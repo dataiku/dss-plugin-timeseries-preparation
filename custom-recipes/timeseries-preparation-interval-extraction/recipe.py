@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 import logging
-import sys
 
-from dataiku.customrecipe import *
+from dataiku.customrecipe import get_recipe_config
 
-from commons import *
+from commons import check_python_version, get_input_output, get_interval_restriction_params
 from dku_timeseries import IntervalRestrictor
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
 
-if sys.version_info.major == 2:
-    logger.warning("You are using Python {}.{}. Python 2 is now deprecated for the Time Series preparation plugin. Please consider creating a new Python 3.6 "
-                   "code environment".format(sys.version_info.major, sys.version_info.minor))
+check_python_version()
 
 # --- Setup
 (input_dataset, output_dataset) = get_input_output()
