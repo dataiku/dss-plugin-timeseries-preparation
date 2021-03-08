@@ -2,7 +2,7 @@
 import logging
 import sys
 
-from dataiku.customrecipe import *
+from dataiku.customrecipe import get_recipe_config
 
 from commons import *
 from dku_timeseries import Resampler
@@ -21,7 +21,7 @@ datetime_column = recipe_config.get('datetime_column')
 if recipe_config.get('advanced_activated') and recipe_config.get('groupby_column'):
     groupby_columns = [recipe_config.get('groupby_column')]
 else:
-    groupby_columns = None
+    groupby_columns = []
 params = get_resampling_params(recipe_config)
 
 # --- Run
