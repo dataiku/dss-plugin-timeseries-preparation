@@ -57,11 +57,11 @@
       "columnRole": "input_dataset",
       "mandatory": false,
       "description": "⚠️  Deprecated. Use the field 'Column with identifiers' instead",
-      "visibilityCondition": "model.advanced_activated && model.groupby_column"
+      "visibilityCondition": "model.advanced_activated && (model.groupby_column.length > 0)"
     },
     {
       "name": "groupby_columns",
-      "label": "Columns with identifiers",
+      "label": "Time series identifiers",
       "description": "Columns that identify the multiple time series - mandatory for long format",
       "type": "COLUMNS",
       "allowedColumnTypes": [
@@ -74,7 +74,7 @@
       ],
       "columnRole": "input_dataset",
       "mandatory": false,
-      "visibilityCondition": "model.advanced_activated && (!model.groupby_column)"
+      "visibilityCondition": "model.advanced_activated && (model.groupby_column.length == 0 || !model.groupby_column)"
     },
     {
       "name": "sep1",
