@@ -7,6 +7,7 @@ if sys.version_info.major == 2:
                              "environment for this plugin if you want to use the decomposition recipe".format(sys.version_info.major, sys.version_info.minor))
 
 from time import perf_counter
+
 from dataiku.customrecipe import get_recipe_config
 
 from commons import get_input_output
