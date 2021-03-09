@@ -23,6 +23,11 @@ class TestRecipeConfigLoading:
             _ = check_and_get_groupby_columns(config, restricted_dataset_columns)
         assert "Invalid time series identifiers selection" in str(err.value)
 
+        config["groupby_columns"] = ["country", ""]
+        with pytest.raises(ValueError) as err:
+            _ = check_and_get_groupby_columns(config, restricted_dataset_columns)
+        assert "Invalid time series identifiers selection" in str(err.value)
+
         config.pop("groupby_columns")
         with pytest.raises(ValueError) as err:
             _ = check_and_get_groupby_columns(config, restricted_dataset_columns)
@@ -38,11 +43,11 @@ class TestRecipeConfigLoading:
 
         config["groupby_column"] = "not_ok"
         with pytest.raises(ValueError) as err:
-            _ = check_and_get_groupby_columns(config, restricted_dataset_columns)
+            _ = check_and_get_groupby_columns(config, dataset_columns)
         assert "Invalid time series identifiers selection" in str(err.value)
 
         config.pop("groupby_column")
         config.pop("groupby_columns")
         with pytest.raises(ValueError) as err:
-            _ = check_and_get_groupby_columns(config, restricted_dataset_columns)
+            _ = check_and_get_groupby_columns(config, dataset_columns)
         assert "Long format is activated but no time series identifiers have been provided" in str(err.value)
