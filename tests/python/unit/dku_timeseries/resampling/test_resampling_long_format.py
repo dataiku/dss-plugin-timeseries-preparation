@@ -6,6 +6,16 @@ from dku_timeseries import ResamplerParams, Resampler
 
 
 @pytest.fixture
+def df():
+    co2 = [315.58, 316.39, 316.79, 316.2]
+    country = ["first", "first", "second", "second"]
+    time_index = pd.date_range("1-1-1959", periods=4, freq="M")
+    df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "country": country, "Date": time_index})
+    return df
+
+
+@pytest.fixture
 def long_df():
     co2 = [315.58, 316.39, 316.79, 316.2]
     country = ["first", "first", "second", "second"]
@@ -54,12 +64,23 @@ def long_df_4():
 
 
 @pytest.fixture
+def long_df_numerical():
+    co2 = [315.58, 316.39, 316.79, 316.2]
+    country = [0, 0, 1, 1]
+    time_index = pd.date_range("1-1-1959", periods=2, freq="M").append(pd.date_range("1-1-1959", periods=2, freq="M"))
+    df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "country": country, "Date": time_index})
+    return df
+
+
+@pytest.fixture
 def config():
     config = {u'clip_end': 0, u'constant_value': 0, u'extrapolation_method': u'clip', u'shift': 0, u'time_unit_end_of_week': u'SUN',
               u'datetime_column': u'Date', u'advanced_activated': True, u"groupby_columns": ["country"], u'time_unit': u'weeks', u'clip_start': 0,
               u'time_step': 2,
               u'interpolation_method': u'linear'}
     return config
+
 
 @pytest.fixture
 def params(config):
@@ -81,7 +102,7 @@ def params(config):
 
 
 class TestResamplerLongFormat:
-    def test_long_format(self, long_df, params,config):
+    def test_long_format(self, long_df, params, config):
         resampler = Resampler(params)
         groupby_columns = ["country"]
         datetime_column = config.get('datetime_column')
@@ -89,7 +110,7 @@ class TestResamplerLongFormat:
         np.testing.assert_array_equal(output_df[datetime_column].values,
                                       pd.DatetimeIndex(["1959-02-01", "1959-02-15", "1959-03-01", "1959-02-01", "1959-02-15", "1959-03-01"]))
 
-    def test_two_identifiers(self, long_df_2,params, config):
+    def test_two_identifiers(self, long_df_2, params, config):
         resampler = Resampler(params)
         groupby_columns = ["country", "item"]
         datetime_column = config.get('datetime_column')
@@ -99,7 +120,7 @@ class TestResamplerLongFormat:
                                       pd.DatetimeIndex(["1959-02-01", "1959-02-15", "1959-03-01", "1959-02-01", "1959-02-15", "1959-03-01", "1959-02-01",
                                                         "1959-02-15", "1959-03-01"]))
 
-    def test_three_identifiers(self, long_df_3,params, config):
+    def test_three_identifiers(self, long_df_3, params, config):
         resampler = Resampler(params)
         groupby_columns = ["country", "item", "store"]
         datetime_column = config.get('datetime_column')
@@ -109,7 +130,7 @@ class TestResamplerLongFormat:
                                       pd.DatetimeIndex(["1959-02-01", "1959-02-15", "1959-03-01", "1959-02-01", "1959-02-15", "1959-03-01", "1959-02-01",
                                                         "1959-02-15", "1959-03-01", "1959-02-01", "1959-02-15", "1959-03-01", ]))
 
-    def test_mix_identifiers(self, long_df_4,params, config):
+    def test_mix_identifiers(self, long_df_4, params, config):
         resampler = Resampler(params)
         groupby_columns = ["country", "item", "store"]
         datetime_column = config.get('datetime_column')
@@ -121,3 +142,22 @@ class TestResamplerLongFormat:
                                            '2020-02-02T00:00:00.000000000', '2020-02-16T00:00:00.000000000',
                                            '2020-03-01T00:00:00.000000000'])
         np.testing.assert_array_equal(output_df[datetime_column].values, expected_dates)
+
+    def test_numerical_long_format(self, long_df_numerical, params, config):
+        resampler = Resampler(params)
+        groupby_columns = ["country"]
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(long_df_numerical, datetime_column, groupby_columns=groupby_columns)
+        np.testing.assert_array_equal(output_df[datetime_column].values,
+                                      pd.DatetimeIndex(["1959-02-01", "1959-02-15", "1959-03-01", "1959-02-01", "1959-02-15", "1959-03-01"]))
+        np.testing.assert_array_equal(output_df["country"].values, np.array([0, 0, 0, 1, 1, 1]))
+
+    def test_empty_identifiers(self, df, params, config):
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(df, datetime_column, groupby_columns=[])
+        assert output_df.shape == (8, 4)
+        output_df = resampler.transform(df, datetime_column)
+        assert output_df.shape == (8, 4)
+        output_df = resampler.transform(df, datetime_column, groupby_columns=None)
+        assert output_df.shape == (8, 4)

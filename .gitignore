@@ -8,3 +8,5 @@ htmlcov
 .wlock
 venv/
 *.pytest_cache/
+env/
+unit.xml

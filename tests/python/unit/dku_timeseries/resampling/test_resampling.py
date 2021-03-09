@@ -1,8 +1,15 @@
 import pandas as pd
+import sys
+import os
 import random
+from datetime import datetime
 import numpy as np
-from dku_timeseries import ResamplerParams, Resampler
 
+## Add stuff to the path to enable exec outside of DSS
+plugin_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(os.path.join(plugin_root, 'python-lib'))
+
+import dku_timeseries
 
 JUST_BEFORE_SPRING_DST = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
 JUST_BEFORE_FALL_DST = pd.Timestamp('20191027 02:59:00').tz_localize('CET',
@@ -36,14 +43,14 @@ def _make_df_with_one_col_group(column_data, num_group, period=pd.DateOffset(sec
 
 
 def _make_resampling_params():
-    params = ResamplerParams()
+    params = dku_timeseries.ResamplerParams()
     params.datetime_column = TIME_COL
     return params
 
 
 def _make_resampler():
     params = _make_resampling_params()
-    return Resampler(params)
+    return dku_timeseries.Resampler(params)
 
 
 ### Test cases
@@ -93,8 +100,8 @@ class TestResampler:
         length = 100
         data = [random.random() for _ in range(length)]
         df = _make_df_with_one_col(data, period=pd.DateOffset(months=1))
-        params = ResamplerParams(time_unit='months')
-        resampler = Resampler(params)
+        params = dku_timeseries.ResamplerParams(time_unit='months')
+        resampler = dku_timeseries.Resampler(params)
         output_df = resampler.transform(df, TIME_COL)
         assert output_df.shape == (length, 2)
 
@@ -191,8 +198,8 @@ class TestResampler:
 
         df = pd.concat(df_list, axis=0)
 
-        params = ResamplerParams(extrapolation_method='interpolation')
-        resampler = Resampler(params)
+        params = dku_timeseries.ResamplerParams(extrapolation_method='interpolation')
+        resampler = dku_timeseries.Resampler(params)
         output_df = resampler.transform(df, TIME_COL, groupby_columns=[GROUP_COL])
 
         assert np.array_equal(output_df.groupby(GROUP_COL).size().values, [100, 100])
@@ -234,8 +241,8 @@ class TestResampler:
 
         df = pd.concat(df_list, axis=0)
 
-        params = ResamplerParams(extrapolation_method='interpolation')
-        resampler = Resampler(params)
+        params = dku_timeseries.ResamplerParams(extrapolation_method='interpolation')
+        resampler = dku_timeseries.Resampler(params)
         output_df = resampler.transform(df, TIME_COL, groupby_columns=[GROUP_COL])
 
         assert np.array_equal(output_df.groupby(GROUP_COL).size().values, [199, 199])

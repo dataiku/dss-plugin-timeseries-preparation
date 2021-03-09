@@ -19,7 +19,7 @@ if recipe_config.get('advanced_activated') and recipe_config.get('groupby_column
 elif recipe_config.get('advanced_activated') and recipe_config.get('groupby_columns'):
     groupby_columns = recipe_config.get('groupby_columns')
 else:
-    groupby_columns = None
+    groupby_columns = []
 params = get_resampling_params(recipe_config)
 
 # --- Run
