@@ -9,6 +9,7 @@ htmlcov
 # DSS specific stuff
 dist/
 .wlock
+venv/
 .ts
 
 # Byte-compiled / optimized / DLL files
