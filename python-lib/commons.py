@@ -138,4 +138,4 @@ def check_python_version():
     if sys.version_info.major == 2:
         logger.warning(
             "You are using Python {}.{}. Python 2 is now deprecated for the Time Series preparation plugin. Please consider creating a new Python 3.6 "
-            "code environment".format(sys.version_info.major, sys.version_info.minor))
+            "code environment for this plugin".format(sys.version_info.major, sys.version_info.minor))
