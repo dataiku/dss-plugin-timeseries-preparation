@@ -4,7 +4,7 @@ import logging
 from dataiku.customrecipe import get_recipe_config
 
 from commons import get_resampling_params, get_input_output
-from recipe_config_loading import check_and_get_groupby_columns
+from long_format_config_loading import check_and_get_groupby_columns
 from dku_timeseries import Resampler
 
 logger = logging.getLogger(__name__)
