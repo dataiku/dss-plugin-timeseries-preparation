@@ -7,3 +7,5 @@ htmlcov
 .DS_Store
 .wlock
 venv/
+env/
+unit.xml
