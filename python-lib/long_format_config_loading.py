@@ -1,6 +1,6 @@
 from safe_logger import SafeLogger
 
-logger = SafeLogger("Time-series preparation plugin")
+logger = SafeLogger("Time series preparation plugin")
 
 
 def check_and_get_groupby_columns(recipe_config, dataset_columns):
