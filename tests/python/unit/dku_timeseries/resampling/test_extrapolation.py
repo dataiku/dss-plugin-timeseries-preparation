@@ -44,7 +44,7 @@ def get_params(config):
 
 
 class TestExtrapolation:
-    def test_numerical_long_format(self, df, config):
+    def test_extrapolation(self, df, config):
         params = get_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
@@ -57,8 +57,9 @@ class TestExtrapolation:
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(df, datetime_column)
-        assert math.isnan(output_df.loc[7, "value1"])
-        assert math.isnan(output_df.loc[7, "country"])
+        assert math.isnan(output_df.loc[6, "country"])
+        category_results = np.array(output_df["country"].values, dtype=np.float64)
+        assert np.isnan(category_results).all()
 
         config["extrapolation_method"] = "interpolation"
         params = get_params(config)
