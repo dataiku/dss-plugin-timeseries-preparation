@@ -215,7 +215,7 @@
     },
     {
       "name": "sepEdition",
-      "label": "Edit series",
+      "label": "Edit series [Advanced]",
       "type": "SEPARATOR"
     },
     {
