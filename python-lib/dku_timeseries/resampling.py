@@ -189,9 +189,7 @@ class Resampler:
             if self.params.category_column_method != "empty":
                 processed_df = df_resample.copy().loc[interpolation_index.union(extrapolation_index)]
                 df_resample = self._fill_in_category_values(processed_df, columns_to_resample, datetime_column)
-
-        df_resample_cleaned = df_resample.loc[reference_index].drop('numerical_index', axis=1)
-        return df_resample_cleaned
+        return df_resample.loc[reference_index].drop('numerical_index', axis=1)
 
     def _fill_in_category_values(self, df, columns_to_resample, datetime_column):
         non_category_columns = columns_to_resample

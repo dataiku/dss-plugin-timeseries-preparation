@@ -104,3 +104,61 @@ class TestCategoryMethods:
         assert output_df.loc[6, "categorical"] == "second"
         assert math.isnan(output_df.loc[7, "categorical"])
 
+    def test_custom_value_filling(self, df2, config):
+        config["category_column_method"] = "custom"
+        config["category_custom_value"] = "myvalue"
+        config["time_unit"] = "hours"
+        config["time_step"] = 12
+        params = get_params(config)
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(df2, datetime_column)
+        assert output_df.loc[0, "categorical"] == "first"
+        assert output_df.loc[1, "categorical"] == "myvalue"
+        assert output_df.loc[2, "categorical"] == "myvalue"
+        assert output_df.loc[6, "categorical"] == "second"
+        assert output_df.loc[7, "categorical"] == "myvalue"
+
+    def test_first_filling(self, df2, config):
+        config["category_column_method"] = "first"
+        config["time_unit"] = "hours"
+        config["time_step"] = 12
+        params = get_params(config)
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(df2, datetime_column)
+        np.testing.assert_array_equal(output_df.categorical.values,
+                                      np.array(['first', 'first', 'first', 'first', 'first', 'first', 'second', 'second', 'second', 'second', 'third']))
+
+    def test_last_filling(self, df2, config):
+        config["category_column_method"] = "last"
+        config["time_unit"] = "hours"
+        config["time_step"] = 12
+        params = get_params(config)
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(df2, datetime_column)
+        assert output_df.loc[0, "categorical"] == "first"
+        assert output_df.loc[1, "categorical"] == "first"
+        assert output_df.loc[3, "categorical"] == "first"
+        assert output_df.loc[5, "categorical"] == "second"
+        assert output_df.loc[9, "categorical"] == "third"
+
+    def test_no_category_values(self, df, config):
+        config["category_column_method"] = "first"
+        params = get_params(config)
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df_first = resampler.transform(df, datetime_column)
+        np.testing.assert_array_equal(output_df_first.categorical.values,
+                                      np.array(['first', 'first', 'first', 'first', 'first', 'second', 'second', 'second']))
+
+
+        config["category_column_method"] = "empty"
+        params = get_params(config)
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df_empty = resampler.transform(df, datetime_column)
+        assert math.isnan(output_df_empty.loc[0,"categorical"])
+
+
