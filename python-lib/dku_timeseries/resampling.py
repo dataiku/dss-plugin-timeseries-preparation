@@ -94,7 +94,6 @@ class Resampler:
                     group_id = list(group_id)
                 group_resampled[groupby_columns] = pd.DataFrame([group_id], index=group_resampled.index)
                 resampled_groups.append(group_resampled)
-                logger.info("Computing for group: {} - Done!".format(group_id))
             df_resampled = pd.concat(resampled_groups, sort=True)
         else:
             df_resampled = self._resample(df_copy, datetime_column, columns_to_resample, reference_time_index)
