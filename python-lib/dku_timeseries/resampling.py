@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 INTERPOLATION_METHODS = ['linear', 'nearest', 'slinear', 'zero', 'quadratic', 'cubic', 'previous', 'next', 'constant', 'none']
 EXTRAPOLATION_METHODS = ['none', 'clip', 'interpolation']
+CATEGORY_COLUMN_METHODS = ['empty', 'custom', 'first', 'last']
 TIME_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 
 
@@ -20,6 +21,8 @@ class ResamplerParams:
                  interpolation_method='linear',
                  extrapolation_method='clip',
                  constant_value=0,
+                 category_column_method='empty',
+                 category_custom_value='',
                  time_step=1,
                  time_unit='seconds',
                  clip_start=0,
@@ -29,6 +32,8 @@ class ResamplerParams:
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
         self.constant_value = constant_value
+        self.category_column_method = category_column_method
+        self.category_custom_value = category_custom_value
         self.time_step = reformat_time_value(float(time_step), time_unit)
         self.time_unit = time_unit
         self.resampling_step = str(self.time_step) + FREQUENCY_STRINGS.get(self.time_unit, '')
@@ -44,6 +49,11 @@ class ResamplerParams:
         if self.extrapolation_method not in EXTRAPOLATION_METHODS:
             raise ValueError(
                 'Method "{0}" is not valid. Possible extrapolation methods are: {1}.'.format(self.extrapolation_method, EXTRAPOLATION_METHODS))
+        if self.category_column_method not in CATEGORY_COLUMN_METHODS:
+            raise ValueError(
+                '"{0}" is not valid way to fill in category valyes. Possible methods are: {1}.'.format(self.category_column_method,
+                                                                                                       CATEGORY_COLUMN_METHODS))
+
         if self.time_step < 0:
             raise ValueError('Time step can not be negative.')
         if self.time_unit not in TIME_UNITS:
@@ -176,5 +186,21 @@ class Resampler:
             if self.params.extrapolation_method == "clip":
                 temp_df = df_resample.copy().ffill().bfill()
                 df_resample.loc[extrapolation_index, filtered_column] = temp_df.loc[extrapolation_index, filtered_column]
+            if self.params.category_column_method != "empty":
+                processed_df = df_resample.copy().loc[interpolation_index.union(extrapolation_index)]
+                df_resample = self._fill_in_category_values(processed_df, columns_to_resample, datetime_column)
 
-        return df_resample.loc[reference_index].drop('numerical_index', axis=1)
+        df_resample_cleaned = df_resample.loc[reference_index].drop('numerical_index', axis=1)
+        return df_resample_cleaned
+
+    def _fill_in_category_values(self, df, columns_to_resample, datetime_column):
+        non_category_columns = columns_to_resample
+        non_category_columns.append(datetime_column)
+        category_columns = list(set(df.columns) - set(non_category_columns))
+        if self.params.category_column_method == "custom":
+            df.loc[:, category_columns] = df.loc[:, category_columns].fillna(self.params.category_custom_value)
+        elif self.params.category_column_method == "first":
+            df.loc[:, category_columns] = df.loc[:, category_columns].copy().ffill()
+        elif self.params.category_column_method == "last":
+            df.loc[:, category_columns] = df.loc[:, category_columns].copy().bfill()
+        return df

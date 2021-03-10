@@ -2,11 +2,12 @@
 import dataiku
 from dataiku.customrecipe import *
 
+from dku_timeseries import ExtremaExtractorParams
+from dku_timeseries import IntervalRestrictorParams
 from dku_timeseries import ResamplerParams
 from dku_timeseries import WindowAggregator
 from dku_timeseries import WindowAggregatorParams
-from dku_timeseries import IntervalRestrictorParams
-from dku_timeseries import ExtremaExtractorParams
+
 
 def get_input_output():
     if len(get_input_names_for_role('input_dataset')) == 0:
@@ -17,6 +18,7 @@ def get_input_output():
     output_dataset = dataiku.Dataset(output_dataset_name)
     return (input_dataset, output_dataset)
 
+
 def get_resampling_params(recipe_config):
     def _p(param_name, default=None):
         return recipe_config.get(param_name, default)
@@ -24,6 +26,8 @@ def get_resampling_params(recipe_config):
     interpolation_method = _p('interpolation_method')
     extrapolation_method = _p('extrapolation_method')
     constant_value = _p('constant_value')
+    category_column_method = _p('category_column_method','empty')
+    category_custom_value = _p('category_custom_value','')
     time_step = _p('time_step')
     time_unit = _p('time_unit')
     clip_start = _p('clip_start')
@@ -33,6 +37,8 @@ def get_resampling_params(recipe_config):
     params = ResamplerParams(interpolation_method=interpolation_method,
                              extrapolation_method=extrapolation_method,
                              constant_value=constant_value,
+                             category_column_method=category_column_method,
+                             category_custom_value=category_custom_value,
                              time_step=time_step,
                              time_unit=time_unit,
                              clip_start=clip_start,
@@ -63,12 +69,12 @@ def get_windowing_params(recipe_config):
     aggregation_types = _p('aggregation_types')
 
     params = WindowAggregatorParams(window_unit=window_unit,
-                                window_width=window_width,
-                                window_type=window_type,
-                                gaussian_std=gaussian_std,
-                                closed_option=closed_option,
-                                causal_window=causal_window,
-                                aggregation_types=aggregation_types)
+                                    window_width=window_width,
+                                    window_type=window_type,
+                                    gaussian_std=gaussian_std,
+                                    closed_option=closed_option,
+                                    causal_window=causal_window,
+                                    aggregation_types=aggregation_types)
 
     params.check()
     return params
@@ -111,12 +117,12 @@ def get_extrema_extraction_params(recipe_config):
     aggregation_types = _p('aggregation_types') + ['retrieve']
 
     window_params = WindowAggregatorParams(window_unit=window_unit,
-                                       window_width=window_width,
-                                       window_type=window_type,
-                                       gaussian_std=gaussian_std,
-                                       closed_option=closed_option,
-                                       causal_window=causal_window,
-                                       aggregation_types=aggregation_types)
+                                           window_width=window_width,
+                                           window_type=window_type,
+                                           gaussian_std=gaussian_std,
+                                           closed_option=closed_option,
+                                           causal_window=causal_window,
+                                           aggregation_types=aggregation_types)
 
     window_aggregator = WindowAggregator(window_params)
     params = ExtremaExtractorParams(window_aggregator=window_aggregator, extrema_type=extrema_type)

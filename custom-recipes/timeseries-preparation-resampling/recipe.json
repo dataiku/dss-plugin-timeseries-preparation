@@ -109,6 +109,26 @@
             "defaultValue": "clip"
         },
         {
+            "name": "category_column_method",
+            "label": "Fill in category columns",
+            "description": "How to fill in category values during interpolation and extrapolation?",
+            "type": "SELECT",
+            "selectChoices": [
+                { "value": "empty", "label": "Leave empty"},
+                { "value": "custom", "label": "Enter a custom value"},
+                { "value": "first", "label": "Fill with previous value"},
+                { "value": "last", "label": "Fill with last value"}
+            ],
+            "defaultValue": "empty"
+        },
+        {
+            "name": "category_custom_value",
+            "label": "Custom value",
+            "type": "STRING",
+            "defaultValue": "",
+            "visibilityCondition": "model.category_column_method == 'custom'"
+        },
+        {
             "name": "sepEdition",
             "label": "Edit series",
             "type": "SEPARATOR"
