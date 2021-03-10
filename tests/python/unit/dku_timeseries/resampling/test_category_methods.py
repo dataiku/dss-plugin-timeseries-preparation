@@ -41,6 +41,30 @@ def long_df():
 
 
 @pytest.fixture
+def df_multiple_dates():
+    dates = np.array(['2013-01-01T00:00:00.000000000', '2013-01-03T00:00:00.000000000',
+                      '2013-01-04T00:00:00.000000000', '2013-01-05T00:00:00.000000000',
+                      '2013-01-06T00:00:00.000000000'], dtype='datetime64[ns]')
+    holiday = np.array([0, 1, 2, 3, 4])
+    sales_1 = np.array([13, 14, 13, 10, 12])
+    categorical = ["first", "first", "second", "second", "third"]
+    df2 = pd.DataFrame.from_dict({"Date": dates, "holiday": holiday, "sales_1": sales_1, "categorical": categorical, "date2": dates})
+    return df2
+
+
+@pytest.fixture
+def bool_df():
+    dates = np.array(['2013-01-01T00:00:00.000000000', '2013-01-03T00:00:00.000000000',
+                      '2013-01-04T00:00:00.000000000', '2013-01-05T00:00:00.000000000',
+                      '2013-01-06T00:00:00.000000000'], dtype='datetime64[ns]')
+    holiday = np.array([0, 1, 2, 3, 4])
+    sales_1 = np.array([13, 14, 13, 10, 12])
+    categorical = [True, True, False, False, False]
+    df2 = pd.DataFrame.from_dict({"Date": dates, "holiday": holiday, "sales_1": sales_1, "categorical": categorical})
+    return df2
+
+
+@pytest.fixture
 def config():
     config = {u'clip_end': 0, u'constant_value': 0, u'extrapolation_method': u'clip', u'shift': 0, u'time_unit_end_of_week': u'SUN',
               u'datetime_column': u'Date', u'advanced_activated': False, u"groupby_columns": [], u'time_unit': u'weeks', u'clip_start': 0,
@@ -188,7 +212,7 @@ class TestCategoryMethods:
         expected_categorical = np.array(['first', 'first', 'first', 'first', 'second', 'third', 'third', 'third', 'third', 'fourth'])
         np.testing.assert_array_equal(output_df.categorical.values, expected_categorical)
 
-    def test_next_filling_long_format(self, long_df , config):
+    def test_next_filling_long_format(self, long_df, config):
         config["category_column_method"] = "next"
         config["time_unit"] = "weeks"
         config["time_step"] = 1
@@ -196,5 +220,25 @@ class TestCategoryMethods:
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(long_df, datetime_column, groupby_columns=["country"])
-        assert math.isnan(output_df.loc[4,"categorical"])
-        assert output_df.loc[3,"categorical"] == "second"
+        assert math.isnan(output_df.loc[4, "categorical"])
+        assert output_df.loc[3, "categorical"] == "second"
+
+    def test_df_multiple_dates(self, df_multiple_dates, config):
+        config["category_column_method"] = "previous"
+        config["time_unit"] = "hours"
+        config["time_step"] = 12
+        params = get_params(config)
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(df_multiple_dates, datetime_column)
+        assert pd.isnull(output_df.loc[1, "date2"])
+
+    def test_bool_column(self, bool_df, config):
+        config["category_column_method"] = "previous"
+        config["time_unit"] = "hours"
+        config["time_step"] = 12
+        params = get_params(config)
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(bool_df, datetime_column)
+        np.testing.assert_array_equal(output_df.categorical.values, np.array([True, True, True, True, True, True, False, False, False, False, False]))

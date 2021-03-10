@@ -90,14 +90,16 @@ class Resampler:
         # we thus compute a unified time index for all partitions
         reference_time_index = self._compute_full_time_index(df_copy, datetime_column)
         columns_to_resample = [col for col in df_copy.select_dtypes([int, float]).columns.tolist() if col != datetime_column and col not in groupby_columns]
-
+        category_columns = [col for col in df.select_dtypes([object, bool]).columns.tolist() if col != datetime_column and col not in columns_to_resample and
+                            col not in groupby_columns]
         if groupby_columns:
             grouped = df_copy.groupby(groupby_columns)
             resampled_groups = []
             identifiers_number = len(groupby_columns)
             for group_id, group in grouped:
                 logger.info("Computing for group: {}".format(group_id))
-                group_resampled = self._resample(group.drop(groupby_columns, axis=1), datetime_column, columns_to_resample, reference_time_index,
+                group_resampled = self._resample(group.drop(groupby_columns, axis=1), datetime_column, columns_to_resample, category_columns,
+                                                 reference_time_index,
                                                  df_id=group_id)
                 if identifiers_number == 1:
                     group_id = [group_id]
@@ -107,7 +109,7 @@ class Resampler:
                 resampled_groups.append(group_resampled)
             df_resampled = pd.concat(resampled_groups, sort=True)
         else:
-            df_resampled = self._resample(df_copy, datetime_column, columns_to_resample, reference_time_index)
+            df_resampled = self._resample(df_copy, datetime_column, columns_to_resample, category_columns, reference_time_index)
 
         df_resampled = df_resampled[df.columns].reset_index(drop=True)
 
@@ -127,7 +129,7 @@ class Resampler:
         time_unit = self.params.time_unit
         return generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
 
-    def _resample(self, df, datetime_column, columns_to_resample, reference_time_index, df_id=''):
+    def _resample(self, df, datetime_column, columns_to_resample, category_columns, reference_time_index, df_id=''):
         """
         1. Move datetime column to the index.
         2. Merge the original datetime index with the full_time_index.
@@ -157,9 +159,6 @@ class Resampler:
         reference_index = df_resample.loc[reference_time_index, 'numerical_index']
 
         df_resample = df_resample.rename_axis(datetime_column).reset_index()
-
-        category_columns = self._get_category_columns(df.columns, columns_to_resample, datetime_column)
-
         for filtered_column in filtered_columns_to_resample:
 
             df_without_nan = df.dropna(subset=[filtered_column], how='all')
@@ -207,9 +206,3 @@ class Resampler:
         elif self.params.category_column_method == "next":
             category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].copy().bfill()
         return category_filled_df
-
-    def _get_category_columns(self, columns, columns_to_resample, datetime_column):
-        non_category_columns = columns_to_resample[:]
-        non_category_columns.append(datetime_column)
-        category_columns = list(set(columns) - set(non_category_columns))
-        return category_columns
