@@ -30,6 +30,11 @@
   ],
   "params": [
     {
+      "type": "SEPARATOR",
+      "name": "separator_input",
+      "label": "Input parameters"
+    },
+    {
       "name": "datetime_column",
       "label": "Timestamp column",
       "type": "COLUMN",
@@ -38,6 +43,38 @@
         "date"
       ],
       "mandatory": true
+    },
+    {
+      "name": "advanced_activated",
+      "label": "Long format",
+      "description": "If multiple time series are stored in the same column",
+      "type": "BOOLEAN"
+    },
+    {
+      "name": "groupby_column",
+      "label": "Column with identifier",
+      "type": "COLUMN",
+      "columnRole": "input_dataset",
+      "mandatory": false,
+      "description": "⚠️  Deprecated. Use the field 'Column with identifiers' instead",
+      "visibilityCondition": "model.advanced_activated && (model.groupby_column.length > 0)"
+    },
+    {
+      "name": "groupby_columns",
+      "label": "Time series identifiers",
+      "description": "Columns that identify the multiple time series - mandatory for long format",
+      "type": "COLUMNS",
+      "allowedColumnTypes": [
+        "tinyint",
+        "smallint",
+        "int",
+        "bigint",
+        "string",
+        "boolean"
+      ],
+      "columnRole": "input_dataset",
+      "mandatory": false,
+      "visibilityCondition": "model.advanced_activated && (model.groupby_column.length == 0 || !model.groupby_column)"
     },
     {
       "name": "sep1",
@@ -228,7 +265,7 @@
     },
     {
       "name": "sepEdition",
-      "label": "Edit series",
+      "label": "Edit series [Advanced]",
       "type": "SEPARATOR"
     },
     {
@@ -251,26 +288,6 @@
       "description": "Shift all time stamps by this amount (can be negative).",
       "type": "DOUBLE",
       "defaultValue": 0
-    },
-    {
-      "name": "sep3",
-      "label": "Advanced data format",
-      "type": "SEPARATOR"
-    },
-    {
-      "name": "advanced_activated",
-      "label": "Long format",
-      "description": "Use this option if your data is in the long format, with one column identifying multiple time series and a single column for all values.",
-      "type": "BOOLEAN"
-    },
-    {
-      "name": "groupby_column",
-      "label": "Column with identifier",
-      "type": "COLUMN",
-      "columnRole": "input_dataset",
-      "mandatory": false,
-      "description": "",
-      "visibilityCondition": "model.advanced_activated"
     }
   ]
 }

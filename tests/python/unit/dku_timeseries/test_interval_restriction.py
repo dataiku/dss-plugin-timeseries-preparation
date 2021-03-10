@@ -46,84 +46,85 @@ def _make_interval_restrictor(max_deviation_duration_value=0):
 
 ### Test cases
 
-def test_empty():
-    df = _make_df_with_one_col([])
-    interval_restrictor = _make_interval_restrictor()
-    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
-    assert output_df.shape == (0, 2)
+class TestIntervalRestriction:
+    def test_empty(self):
+        df =     _make_df_with_one_col([])
+        interval_restrictor = _make_interval_restrictor()
+        output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
+        assert output_df.shape == (0, 2)
 
-def test_nan_data():
+    def test_nan_data(self):
 
-    length = 1000
-    data = [np.nan for _ in range(length)]
-    df = _make_df_with_one_col(data)
-    interval_restrictor = _make_interval_restrictor()
-    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
-    assert output_df.shape == (0, 2)
+        length = 1000
+        data = [np.nan for _ in range(length)]
+        df = _make_df_with_one_col(data)
+        interval_restrictor = _make_interval_restrictor()
+        output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
+        assert output_df.shape == (0, 2)
 
-def test_single_row_out_range():
-    df = _make_df_with_one_col([50])
-    interval_restrictor = _make_interval_restrictor()
-    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
-    assert output_df.shape == (0, 2)
-
-
-def test_single_row_in_range():
-    df = _make_df_with_one_col([8])
-    interval_restrictor = _make_interval_restrictor()
-    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
-    assert output_df.shape == (0, 2)
+    def test_single_row_out_range(self):
+        df = _make_df_with_one_col([50])
+        interval_restrictor = _make_interval_restrictor()
+        output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
+        assert output_df.shape == (0, 2)
 
 
-def test_incremental_time_unit():
-    length = 1000
-    data = [x for x in range(length)]
-    df = _make_df_with_one_col(data)
-    interval_restrictor = _make_interval_restrictor()
-    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
-    for x, y in enumerate(range(MIN_THRESHOLD, MAX_THRESHOLD)):
-        assert output_df[DATA_COL][x] == y
+    def test_single_row_in_range(self):
+        df = _make_df_with_one_col([8])
+        interval_restrictor = _make_interval_restrictor()
+        output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
+        assert output_df.shape == (0, 2)
+
+
+    def test_incremental_time_unit(self):
+        length = 1000
+        data = [x for x in range(length)]
+        df = _make_df_with_one_col(data)
+        interval_restrictor = _make_interval_restrictor()
+        output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
+        for x, y in enumerate(range(MIN_THRESHOLD, MAX_THRESHOLD)):
+            assert output_df[DATA_COL][x] == y
 
 
 
-def test_incremental_time_unit_with_noise():
-    length = 1000
-    data = [x for x in range(length)]
-    df = _make_df_with_one_col(data)
-    df.loc[5:6, DATA_COL] = [50, 51]
-    interval_restrictor = _make_interval_restrictor(max_deviation_duration_value=3)
-    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
-    for x, y in zip(range(len(output_df)), pd.date_range(JUST_BEFORE_SPRING_DST, None, 10, pd.DateOffset(seconds=1))):
-        assert output_df[TIME_COL][x] == y
+    def test_incremental_time_unit_with_noise(self):
+        length = 1000
+        data = [x for x in range(length)]
+        df = _make_df_with_one_col(data)
+        df.loc[5:6, DATA_COL] = [50, 51]
+        interval_restrictor = _make_interval_restrictor(max_deviation_duration_value=3)
+        output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT)
+        for x, y in zip(range(len(output_df)), pd.date_range(JUST_BEFORE_SPRING_DST, None, 10, pd.DateOffset(seconds=1))):
+            assert output_df[TIME_COL][x] == y
 
 
-def test_group_incremental_time_unit_no_deviation():
-    start_time_1 = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
-    start_time_2 = pd.Timestamp('20190131 02:00:00').tz_localize('CET')
-    start_time_list = [start_time_1, start_time_2]
+    def test_group_incremental_time_unit_no_deviation(self):
+        start_time_1 = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
+        start_time_2 = pd.Timestamp('20190131 02:00:00').tz_localize('CET')
+        start_time_list = [start_time_1, start_time_2]
 
-    len1 = 100
-    len2 = 10
-    data1 = range(len1)
-    data2 = range(len2)
-    data_list = [data1, data2]
+        len1 = 100
+        len2 = 10
+        data1 = range(len1)
+        data2 = range(len2)
+        data_list = [data1, data2]
 
-    period1 = pd.DateOffset(seconds=1)
-    period2 = pd.DateOffset(seconds=1)
-    period_list = [period1, period2]
+        period1 = pd.DateOffset(seconds=1)
+        period2 = pd.DateOffset(seconds=1)
+        period_list = [period1, period2]
 
-    df_list = []
-    for group_id, data, period, start_time in zip(range(len(data_list)), data_list, period_list, start_time_list):
-        group_name = 'group_{}'.format(group_id)
-        temp_df = _make_df_with_one_col(data, period=period, start_time=start_time)
-        temp_df[GROUP_COL] = group_name
-        df_list.append(temp_df)
+        df_list = []
+        for group_id, data, period, start_time in zip(range(len(data_list)), data_list, period_list, start_time_list):
+            group_name = 'group_{}'.format(group_id)
+            temp_df = _make_df_with_one_col(data, period=period, start_time=start_time)
+            temp_df[GROUP_COL] = group_name
+            df_list.append(temp_df)
 
-    df = pd.concat(df_list, axis=0)
+        df = pd.concat(df_list, axis=0)
 
-    params = dku_timeseries.IntervalRestrictorParams(time_unit='seconds', max_deviation_duration_value=1)
-    interval_restrictor = dku_timeseries.IntervalRestrictor(params)
-    output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT, groupby_columns=[GROUP_COL])
+        params = dku_timeseries.IntervalRestrictorParams(time_unit='seconds', max_deviation_duration_value=1)
+        interval_restrictor = dku_timeseries.IntervalRestrictor(params)
+        output_df = interval_restrictor.compute(df, TIME_COL, THRESHOLD_DICT, groupby_columns=[GROUP_COL])
 
-    assert np.array_equal(output_df.groupby(GROUP_COL).get_group('group_0')[DATA_COL].values, range(11))
-    assert np.array_equal(output_df.groupby(GROUP_COL).get_group('group_1')[DATA_COL].values, range(10))
+        assert np.array_equal(output_df.groupby(GROUP_COL).get_group('group_0')[DATA_COL].values, range(11))
+        assert np.array_equal(output_df.groupby(GROUP_COL).get_group('group_1')[DATA_COL].values, range(10))
