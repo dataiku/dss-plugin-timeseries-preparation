@@ -5,8 +5,7 @@ from dataiku.customrecipe import *
 from dku_timeseries import ExtremaExtractorParams
 from dku_timeseries import IntervalRestrictorParams
 from dku_timeseries import ResamplerParams
-from dku_timeseries import WindowAggregator
-from dku_timeseries import WindowAggregatorParams
+from dku_timeseries import WindowAggregator, WindowAggregatorParams
 
 
 def get_input_output():
