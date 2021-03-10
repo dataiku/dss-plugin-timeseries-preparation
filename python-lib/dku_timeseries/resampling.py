@@ -51,7 +51,7 @@ class ResamplerParams:
                 'Method "{0}" is not valid. Possible extrapolation methods are: {1}.'.format(self.extrapolation_method, EXTRAPOLATION_METHODS))
         if self.category_column_method not in CATEGORY_COLUMN_METHODS:
             raise ValueError(
-                '"{0}" is not valid way to fill in category valyes. Possible methods are: {1}.'.format(self.category_column_method,
+                '"{0}" is not valid way to fill in category values. Possible methods are: {1}.'.format(self.category_column_method,
                                                                                                        CATEGORY_COLUMN_METHODS))
 
         if self.time_step < 0:
