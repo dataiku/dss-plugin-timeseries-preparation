@@ -30,9 +30,20 @@ def df2():
 
 
 @pytest.fixture
+def long_df():
+    co2 = [315.58, 316.39, 316.79, 316.2]
+    country = [0, 0, 1, 1]
+    categorical = ["first", "second", "third", "fourth"]
+    time_index = pd.date_range("1-1-1959", periods=2, freq="M").append(pd.date_range("1-1-1959", periods=2, freq="M"))
+    long_df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "country": country, "categorical": categorical, "Date": time_index})
+    return long_df
+
+
+@pytest.fixture
 def config():
     config = {u'clip_end': 0, u'constant_value': 0, u'extrapolation_method': u'clip', u'shift': 0, u'time_unit_end_of_week': u'SUN',
-              u'datetime_column': u'Date', u'advanced_activated': True, u"groupby_columns": ["categorical"], u'time_unit': u'weeks', u'clip_start': 0,
+              u'datetime_column': u'Date', u'advanced_activated': False, u"groupby_columns": [], u'time_unit': u'weeks', u'clip_start': 0,
               u'time_step': 2, "category_column_method": "empty", u'interpolation_method': u'linear'}
     return config
 
@@ -119,8 +130,8 @@ class TestCategoryMethods:
         assert output_df.loc[6, "categorical"] == "second"
         assert output_df.loc[7, "categorical"] == "myvalue"
 
-    def test_first_filling(self, df2, config):
-        config["category_column_method"] = "first"
+    def test_previous_filling(self, df2, config):
+        config["category_column_method"] = "previous"
         config["time_unit"] = "hours"
         config["time_step"] = 12
         params = get_params(config)
@@ -130,8 +141,8 @@ class TestCategoryMethods:
         np.testing.assert_array_equal(output_df.categorical.values,
                                       np.array(['first', 'first', 'first', 'first', 'first', 'first', 'second', 'second', 'second', 'second', 'third']))
 
-    def test_last_filling(self, df2, config):
-        config["category_column_method"] = "last"
+    def test_next_filling(self, df2, config):
+        config["category_column_method"] = "next"
         config["time_unit"] = "hours"
         config["time_step"] = 12
         params = get_params(config)
@@ -145,7 +156,7 @@ class TestCategoryMethods:
         assert output_df.loc[9, "categorical"] == "third"
 
     def test_no_category_values(self, df, config):
-        config["category_column_method"] = "first"
+        config["category_column_method"] = "previous"
         params = get_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
@@ -153,12 +164,37 @@ class TestCategoryMethods:
         np.testing.assert_array_equal(output_df_first.categorical.values,
                                       np.array(['first', 'first', 'first', 'first', 'first', 'second', 'second', 'second']))
 
-
         config["category_column_method"] = "empty"
         params = get_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df_empty = resampler.transform(df, datetime_column)
-        assert math.isnan(output_df_empty.loc[0,"categorical"])
+        assert math.isnan(output_df_empty.loc[0, "categorical"])
 
+    def test_previous_filling_long_format(self, long_df, config):
+        config["category_column_method"] = "previous"
+        config["time_unit"] = "weeks"
+        config["time_step"] = 1
+        params = get_params(config)
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(long_df, datetime_column, groupby_columns=["country"])
+        expected_dates = pd.DatetimeIndex(['1959-02-01T00:00:00.000000000', '1959-02-08T00:00:00.000000000',
+                                           '1959-02-15T00:00:00.000000000', '1959-02-22T00:00:00.000000000',
+                                           '1959-03-01T00:00:00.000000000', '1959-02-01T00:00:00.000000000',
+                                           '1959-02-08T00:00:00.000000000', '1959-02-15T00:00:00.000000000',
+                                           '1959-02-22T00:00:00.000000000', '1959-03-01T00:00:00.000000000'])
+        np.testing.assert_array_equal(output_df.Date.values, expected_dates)
+        expected_categorical = np.array(['first', 'first', 'first', 'first', 'second', 'third', 'third', 'third', 'third', 'fourth'])
+        np.testing.assert_array_equal(output_df.categorical.values, expected_categorical)
 
+    def test_next_filling_long_format(self, long_df , config):
+        config["category_column_method"] = "next"
+        config["time_unit"] = "weeks"
+        config["time_step"] = 1
+        params = get_params(config)
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(long_df, datetime_column, groupby_columns=["country"])
+        assert math.isnan(output_df.loc[4,"categorical"])
+        assert output_df.loc[3,"categorical"] == "second"

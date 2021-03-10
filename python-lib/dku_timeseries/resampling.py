@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 INTERPOLATION_METHODS = ['linear', 'nearest', 'slinear', 'zero', 'quadratic', 'cubic', 'previous', 'next', 'constant', 'none']
 EXTRAPOLATION_METHODS = ['none', 'clip', 'interpolation']
-CATEGORY_COLUMN_METHODS = ['empty', 'custom', 'first', 'last']
+CATEGORY_COLUMN_METHODS = ['empty', 'custom', 'previous', 'next']
 TIME_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 
 
@@ -153,6 +153,8 @@ class Resampler:
 
         df_resample = df_resample.rename_axis(datetime_column).reset_index()
 
+        category_columns = self._get_category_columns(df.columns, columns_to_resample, datetime_column)
+
         for filtered_column in filtered_columns_to_resample:
 
             df_without_nan = df.dropna(subset=[filtered_column], how='all')
@@ -188,17 +190,21 @@ class Resampler:
                 df_resample.loc[extrapolation_index, filtered_column] = temp_df.loc[extrapolation_index, filtered_column]
             if self.params.category_column_method != "empty":
                 processed_df = df_resample.copy().loc[interpolation_index.union(extrapolation_index)]
-                df_resample = self._fill_in_category_values(processed_df, columns_to_resample, datetime_column)
+                df_resample.loc[interpolation_index.union(extrapolation_index)] = self._fill_in_category_values(processed_df, category_columns)
         return df_resample.loc[reference_index].drop('numerical_index', axis=1)
 
-    def _fill_in_category_values(self, df, columns_to_resample, datetime_column):
-        non_category_columns = columns_to_resample
-        non_category_columns.append(datetime_column)
-        category_columns = list(set(df.columns) - set(non_category_columns))
+    def _fill_in_category_values(self, df, category_columns):
+        category_filled_df = df.copy()
         if self.params.category_column_method == "custom":
-            df.loc[:, category_columns] = df.loc[:, category_columns].fillna(self.params.category_custom_value)
-        elif self.params.category_column_method == "first":
-            df.loc[:, category_columns] = df.loc[:, category_columns].copy().ffill()
-        elif self.params.category_column_method == "last":
-            df.loc[:, category_columns] = df.loc[:, category_columns].copy().bfill()
-        return df
+            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].fillna(self.params.category_custom_value)
+        elif self.params.category_column_method == "previous":
+            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].copy().ffill()
+        elif self.params.category_column_method == "next":
+            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].copy().bfill()
+        return category_filled_df
+
+    def _get_category_columns(self, columns, columns_to_resample, datetime_column):
+        non_category_columns = columns_to_resample[:]
+        non_category_columns.append(datetime_column)
+        category_columns = list(set(columns) - set(non_category_columns))
+        return category_columns

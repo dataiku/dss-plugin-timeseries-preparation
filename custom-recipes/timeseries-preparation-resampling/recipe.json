@@ -116,8 +116,8 @@
             "selectChoices": [
                 { "value": "empty", "label": "Leave empty"},
                 { "value": "custom", "label": "Enter a custom value"},
-                { "value": "first", "label": "Fill with previous value"},
-                { "value": "last", "label": "Fill with last value"}
+                { "value": "previous", "label": "Fill with previous value"},
+                { "value": "next", "label": "Fill with next value"}
             ],
             "defaultValue": "empty"
         },
