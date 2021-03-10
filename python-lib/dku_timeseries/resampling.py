@@ -194,8 +194,8 @@ class Resampler:
                 temp_df = df_resample.copy().ffill().bfill()
                 df_resample.loc[extrapolation_index, filtered_column] = temp_df.loc[extrapolation_index, filtered_column]
             if self.params.category_column_method != "empty":
-                processed_df = df_resample.copy().loc[interpolation_index.union(extrapolation_index)]
-                df_resample.loc[interpolation_index.union(extrapolation_index)] = self._fill_in_category_values(processed_df, category_columns)
+                df_processed = df_resample.copy().loc[interpolation_index.union(extrapolation_index)]
+                df_resample.loc[interpolation_index.union(extrapolation_index)] = self._fill_in_category_values(df_processed, category_columns)
         return df_resample.loc[reference_index].drop('numerical_index', axis=1)
 
     def _fill_in_category_values(self, df, category_columns):
