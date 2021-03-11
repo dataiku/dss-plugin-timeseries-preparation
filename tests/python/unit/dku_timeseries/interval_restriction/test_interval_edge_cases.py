@@ -27,7 +27,7 @@ def get_params(config):
 @pytest.fixture
 def edge_df():
     time_index = pd.date_range("7-1-2020", periods=8, freq="D")
-    revenue = [26000, 20000, 25000, 34000,40000, 43000, 30000, 2700]
+    revenue = [26000, 20000, 25000, 34000,40000, 43000, 30000, 27000]
     edge_df = pd.DataFrame.from_dict(
         {"date": time_index, "revenue": revenue})
     return edge_df
