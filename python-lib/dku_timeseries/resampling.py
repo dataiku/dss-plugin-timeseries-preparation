@@ -192,7 +192,7 @@ class Resampler:
             if self.params.extrapolation_method == "clip":
                 temp_df = df_resample.copy().ffill().bfill()
                 df_resample.loc[extrapolation_index, filtered_column] = temp_df.loc[extrapolation_index, filtered_column]
-            if self.params.category_column_method != "empty":
+            if len(category_columns) > 0 and self.params.category_column_method != "empty":
                 df_processed = df_resample.copy().loc[interpolation_index.union(extrapolation_index)]
                 df_resample.loc[interpolation_index.union(extrapolation_index)] = self._fill_in_category_values(df_processed, category_columns)
         return df_resample.loc[reference_index].drop('numerical_index', axis=1)
