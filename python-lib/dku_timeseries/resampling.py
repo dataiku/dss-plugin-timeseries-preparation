@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 INTERPOLATION_METHODS = ['linear', 'nearest', 'slinear', 'zero', 'quadratic', 'cubic', 'previous', 'next', 'constant', 'none']
 EXTRAPOLATION_METHODS = ['none', 'clip', 'interpolation']
-CATEGORY_COLUMN_METHODS = ['empty', 'custom', 'previous', 'next']
+CATEGORY_COLUMN_METHODS = ['empty', 'custom', 'previous', 'next', 'clip']
 TIME_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 
 
@@ -205,4 +205,6 @@ class Resampler:
             category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].copy().ffill()
         elif self.params.category_column_method == "next":
             category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].copy().bfill()
+        elif self.params.category_column_method == "clip":
+            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].copy().ffill().bfill()
         return category_filled_df

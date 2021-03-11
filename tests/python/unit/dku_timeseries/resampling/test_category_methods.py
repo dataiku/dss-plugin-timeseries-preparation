@@ -223,6 +223,16 @@ class TestCategoryMethods:
         assert math.isnan(output_df.loc[4, "categorical"])
         assert output_df.loc[3, "categorical"] == "second"
 
+    def test_clip_filling(self, long_df, config):
+        config["category_column_method"] = "clip"
+        config["time_unit"] = "weeks"
+        config["time_step"] = 1
+        params = get_params(config)
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(long_df, datetime_column, groupby_columns=["country"])
+        assert output_df.loc[3, "categorical"] == "first"
+
     def test_df_multiple_dates(self, df_multiple_dates, config):
         config["category_column_method"] = "previous"
         config["time_unit"] = "hours"

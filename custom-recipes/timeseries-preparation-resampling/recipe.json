@@ -228,6 +228,10 @@
           "label": "Enter a custom value"
         },
         {
+          "value": "clip",
+          "label": "Fill with previous/next value"
+        },
+        {
           "value": "previous",
           "label": "Fill with previous value"
         },
