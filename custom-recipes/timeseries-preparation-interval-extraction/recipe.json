@@ -154,11 +154,6 @@
       "description": "Values must be within the valid interval at least for this duration.",
       "type": "DOUBLE",
       "defaultValue": 10
-    },
-    {
-      "name": "sep3",
-      "label": "Advanced data format",
-      "type": "SEPARATOR"
     }
   ]
 }
