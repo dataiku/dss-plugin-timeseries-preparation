@@ -2,7 +2,7 @@
 import logging
 from dataiku.customrecipe import get_recipe_config
 from commons import *
-from recipe_config_loading import check_input_parameters
+from recipe_config_loading import check_input_parameters, check_and_get_groupby_columns
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
@@ -13,10 +13,7 @@ recipe_config = get_recipe_config()
 input_dataset_columns = [column["name"] for column in input_dataset.read_schema()]
 check_input_parameters(recipe_config, input_dataset_columns)
 datetime_column = recipe_config.get('datetime_column')
-if recipe_config.get('advanced_activated') and recipe_config.get('groupby_column'):
-    groupby_columns = [recipe_config.get('groupby_column')]
-else:
-    groupby_columns = None
+groupby_columns = check_and_get_groupby_columns(recipe_config, input_dataset_columns)
 params = get_windowing_params(recipe_config)
 
 # --- Run

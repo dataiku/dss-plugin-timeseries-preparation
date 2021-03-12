@@ -1,119 +1,164 @@
 {
-    "meta": {
-        "label": "Time series interval extraction",
-        "description": "Extract intervals of accepted values, while allowing small deviations.",
-        "icon": "icon-dku-timeseries-segmenting icon-DKU_timeseries_segmenting",
-        "displayOrderRank": 4
+  "meta": {
+    "label": "Time series interval extraction",
+    "description": "Extract intervals of accepted values, while allowing small deviations.",
+    "icon": "icon-dku-timeseries-segmenting icon-DKU_timeseries_segmenting",
+    "displayOrderRank": 4
+  },
+  "kind": "PYTHON",
+  "selectableFromDataset": "input_dataset",
+  "inputRoles": [
+    {
+      "name": "input_dataset",
+      "label": "Input time series",
+      "description": "Dataset containing your time series data.",
+      "arity": "UNARY",
+      "required": true,
+      "acceptsDataset": true,
+      "acceptsFolder": false
+    }
+  ],
+  "outputRoles": [
+    {
+      "name": "output_dataset",
+      "label": "Output time series.",
+      "description": "",
+      "arity": "UNARY",
+      "required": true,
+      "acceptsDataset": true
+    }
+  ],
+  "params": [
+    {
+      "type": "SEPARATOR",
+      "name": "separator_input",
+      "label": "Input parameters"
     },
-    "kind": "PYTHON",
-    "selectableFromDataset": "input_dataset",
-    "inputRoles": [
+    {
+      "name": "datetime_column",
+      "label": "Timestamp column",
+      "type": "COLUMN",
+      "columnRole": "input_dataset",
+      "allowedColumnTypes": [
+        "date"
+      ],
+      "mandatory": true
+    },
+      {
+      "name": "advanced_activated",
+      "label": "Long format",
+      "description": "If multiple time series are stored in the same column",
+      "type": "BOOLEAN"
+    },
+    {
+      "name": "groupby_column",
+      "label": "Column with identifier",
+      "type": "COLUMN",
+      "columnRole": "input_dataset",
+      "mandatory": false,
+      "description": "⚠️  Deprecated. Use the field 'Time series with identifiers' instead",
+      "visibilityCondition": "model.advanced_activated && (model.groupby_column.length > 0)"
+    },
+    {
+      "name": "groupby_columns",
+      "label": "Time series identifiers",
+      "description": "Columns that identify the multiple time series - mandatory for long format",
+      "type": "COLUMNS",
+      "allowedColumnTypes": [
+        "tinyint",
+        "smallint",
+        "int",
+        "bigint",
+        "string",
+        "boolean"
+      ],
+      "columnRole": "input_dataset",
+      "mandatory": false,
+      "visibilityCondition": "model.advanced_activated && (model.groupby_column.length == 0 || !model.groupby_column)"
+    },
+    {
+      "name": "value_column",
+      "label": "Apply threshold to column",
+      "type": "COLUMN",
+      "columnRole": "input_dataset",
+      "mandatory": true
+    },
+    {
+      "name": "sep",
+      "label": "Threshold parameters",
+      "type": "SEPARATOR"
+    },
+    {
+      "name": "min_threshold",
+      "label": "Minimal valid value",
+      "type": "DOUBLE",
+      "defaultValue": 0
+    },
+    {
+      "name": "max_threshold",
+      "label": "Maximum valid value",
+      "type": "DOUBLE",
+      "defaultValue": 1000
+    },
+    {
+      "name": "sep1",
+      "label": "Segment parameters",
+      "type": "SEPARATOR"
+    },
+    {
+      "name": "time_unit",
+      "label": "Unit",
+      "type": "SELECT",
+      "selectChoices": [
         {
-            "name": "input_dataset",
-            "label": "Input time series",
-            "description": "Dataset containing your time series data.",
-            "arity": "UNARY",
-            "required": true,
-            "acceptsDataset": true,
-            "acceptsFolder": false
+          "value": "nanoseconds",
+          "label": "Nanoseconds"
+        },
+        {
+          "value": "microseconds",
+          "label": "Microseconds"
+        },
+        {
+          "value": "milliseconds",
+          "label": "Milliseconds"
+        },
+        {
+          "value": "seconds",
+          "label": "Seconds"
+        },
+        {
+          "value": "minutes",
+          "label": "Minutes"
+        },
+        {
+          "value": "hours",
+          "label": "Hours"
+        },
+        {
+          "value": "days",
+          "label": "Days"
         }
-    ],
-    "outputRoles": [
-        {
-            "name": "output_dataset",
-            "label": "Output time series.",
-            "description": "",
-            "arity": "UNARY",
-            "required": true,
-            "acceptsDataset": true
-        }
-    ],
-    "params": [
-        {
-            "name": "datetime_column",
-            "label": "Timestamp column",
-            "type": "COLUMN",
-            "columnRole": "input_dataset",
-            "allowedColumnTypes": ["date"],
-            "mandatory": true
-        },
-        {
-            "name": "value_column",
-            "label": "Apply threshold to column",
-            "type": "COLUMN",
-            "columnRole": "input_dataset",
-            "mandatory": true
-        },
-        {
-            "name": "sep",
-            "label": "Threshold parameters",
-            "type": "SEPARATOR"
-        },
-        {
-            "name": "min_threshold",
-            "label": "Minimal valid value",
-            "type": "DOUBLE",
-            "defaultValue": 0
-        },
-        {
-            "name": "max_threshold",
-            "label": "Maximum valid value",
-            "type": "DOUBLE",
-            "defaultValue": 1000
-        },
-        {
-            "name": "sep1",
-            "label": "Segment parameters",
-            "type": "SEPARATOR"
-        },
-        {
-            "name": "time_unit",
-            "label": "Unit",
-            "type": "SELECT",
-            "selectChoices": [
-                { "value": "nanoseconds", "label": "Nanoseconds"},
-                { "value": "microseconds", "label": "Microseconds"},
-                { "value": "milliseconds", "label": "Milliseconds"},
-                { "value": "seconds", "label": "Seconds"},
-                { "value": "minutes", "label": "Minutes"},
-                { "value": "hours", "label": "Hours"},
-                { "value": "days", "label": "Days"}
-            ],
-            "defaultValue": "seconds"
-        },
-        {
-            "name": "min_deviation_duration_value",
-            "label": "Acceptable deviation",
-            "description": "Allows values outside the valid interval for no more than this duration.",
-            "type": "DOUBLE",
-            "defaultValue": 2
-        },
-        {
-            "name": "min_valid_values_duration_value",
-            "label": "Minimal segment duration",
-            "description": "Values must be within the valid interval at least for this duration.",
-            "type": "DOUBLE",
-            "defaultValue": 10
-        },
-        {
-            "name": "sep3",
-            "label": "Advanced data format",
-            "type": "SEPARATOR"
-        },
-        {
-            "name": "advanced_activated",
-            "label": "Long format",
-            "description": "Use this option if your data is in the long format, with one column identifying multiple time series and a single column for all values.",
-            "type": "BOOLEAN"
-        },
-        {
-            "name": "groupby_column",
-            "label": "Column with identifier",
-            "type": "COLUMN",
-            "columnRole": "input_dataset",
-            "mandatory": false,
-            "description": "",
-            "visibilityCondition": "model.advanced_activated"
-        }
-    ]
+      ],
+      "defaultValue": "seconds"
+    },
+    {
+      "name": "min_deviation_duration_value",
+      "label": "Acceptable deviation",
+      "description": "Allows values outside the valid interval for no more than this duration.",
+      "type": "DOUBLE",
+      "defaultValue": 2
+    },
+    {
+      "name": "min_valid_values_duration_value",
+      "label": "Minimal segment duration",
+      "description": "Values must be within the valid interval at least for this duration.",
+      "type": "DOUBLE",
+      "defaultValue": 10
+    },
+    {
+      "name": "sep3",
+      "label": "Advanced data format",
+      "type": "SEPARATOR"
+    }
+  ]
 }
