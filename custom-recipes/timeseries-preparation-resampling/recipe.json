@@ -1,159 +1,243 @@
 {
-    "meta": {
-        "label": "Time series resampling",
-        "description": "Performs interpolations and extrapolations to align time series on a fixed sampling rate.",
-        "icon": "icon-dku-timeseries-resample icon-DKU_timeseries_resample",
-        "displayOrderRank": 1
+  "meta": {
+    "label": "Time series resampling",
+    "description": "Performs interpolations and extrapolations to align time series on a fixed sampling rate.",
+    "icon": "icon-dku-timeseries-resample icon-DKU_timeseries_resample",
+    "displayOrderRank": 1
+  },
+  "kind": "PYTHON",
+  "selectableFromDataset": "input_dataset",
+  "inputRoles": [
+    {
+      "name": "input_dataset",
+      "label": "Input time series",
+      "description": "Dataset containing your time series data.",
+      "arity": "UNARY",
+      "required": true,
+      "acceptsDataset": true,
+      "acceptsFolder": false
+    }
+  ],
+  "outputRoles": [
+    {
+      "name": "output_dataset",
+      "label": "Output time series",
+      "description": "Output dataset with equispaced time series.",
+      "arity": "UNARY",
+      "required": true,
+      "acceptsDataset": true
+    }
+  ],
+  "params": [
+    {
+      "type": "SEPARATOR",
+      "name": "separator_input",
+      "label": "Input parameters"
     },
-    "kind": "PYTHON",
-    "selectableFromDataset": "input_dataset",
-    "inputRoles": [
+    {
+      "name": "datetime_column",
+      "label": "Timestamp column",
+      "type": "COLUMN",
+      "columnRole": "input_dataset",
+      "allowedColumnTypes": [
+        "date"
+      ],
+      "mandatory": true
+    },
+    {
+      "name": "advanced_activated",
+      "label": "Long format",
+      "description": "If multiple time series are stored in the same column",
+      "type": "BOOLEAN"
+    },
+    {
+      "name": "groupby_column",
+      "label": "Column with identifier",
+      "type": "COLUMN",
+      "columnRole": "input_dataset",
+      "mandatory": false,
+      "description": "⚠️  Deprecated. Use the field 'Time series with identifiers' instead",
+      "visibilityCondition": "model.advanced_activated && (model.groupby_column.length > 0)"
+    },
+    {
+      "name": "groupby_columns",
+      "label": "Time series identifiers",
+      "description": "Columns that identify the multiple time series - mandatory for long format",
+      "type": "COLUMNS",
+      "allowedColumnTypes": [
+        "tinyint",
+        "smallint",
+        "int",
+        "bigint",
+        "string",
+        "boolean"
+      ],
+      "columnRole": "input_dataset",
+      "mandatory": false,
+      "visibilityCondition": "model.advanced_activated && (model.groupby_column.length == 0 || !model.groupby_column)"
+    },
+    {
+      "name": "sep1",
+      "label": "Resampling parameters",
+      "type": "SEPARATOR"
+    },
+    {
+      "name": "time_step",
+      "label": "Time step",
+      "type": "DOUBLE",
+      "defaultValue": 1
+    },
+    {
+      "name": "time_unit",
+      "label": "Unit",
+      "type": "SELECT",
+      "selectChoices": [
         {
-            "name": "input_dataset",
-            "label": "Input time series",
-            "description": "Dataset containing your time series data.",
-            "arity": "UNARY",
-            "required": true,
-            "acceptsDataset": true,
-            "acceptsFolder": false
+          "value": "nanoseconds",
+          "label": "Nanoseconds"
+        },
+        {
+          "value": "microseconds",
+          "label": "Microseconds"
+        },
+        {
+          "value": "milliseconds",
+          "label": "Milliseconds"
+        },
+        {
+          "value": "seconds",
+          "label": "Seconds"
+        },
+        {
+          "value": "minutes",
+          "label": "Minutes"
+        },
+        {
+          "value": "hours",
+          "label": "Hours"
+        },
+        {
+          "value": "days",
+          "label": "Days"
+        },
+        {
+          "value": "weeks",
+          "label": "Weeks"
+        },
+        {
+          "value": "months",
+          "label": "Months"
+        },
+        {
+          "value": "years",
+          "label": "Years"
         }
-    ],
-    "outputRoles": [
+      ],
+      "defaultValue": "seconds"
+    },
+    {
+      "name": "sep2",
+      "label": "Methods",
+      "type": "SEPARATOR"
+    },
+    {
+      "name": "interpolation_method",
+      "label": "Interpolation method",
+      "description": "Used to compute values for timestamps located between two existing data points",
+      "type": "SELECT",
+      "selectChoices": [
         {
-            "name": "output_dataset",
-            "label": "Output time series",
-            "description": "Output dataset with equispaced time series.",
-            "arity": "UNARY",
-            "required": true,
-            "acceptsDataset": true
+          "value": "nearest",
+          "label": "Nearest"
+        },
+        {
+          "value": "previous",
+          "label": "Previous"
+        },
+        {
+          "value": "next",
+          "label": "Next"
+        },
+        {
+          "value": "linear",
+          "label": "Linear"
+        },
+        {
+          "value": "zero",
+          "label": "Mean"
+        },
+        {
+          "value": "quadratic",
+          "label": "Quadratic"
+        },
+        {
+          "value": "cubic",
+          "label": "Cubic"
+        },
+        {
+          "value": "constant",
+          "label": "Constant"
+        },
+        {
+          "value": "none",
+          "label": "Don't interpolate (no value)"
         }
-    ],
-    "params": [
+      ],
+      "defaultValue": "linear"
+    },
+    {
+      "name": "constant_value",
+      "label": "Constant value",
+      "type": "DOUBLE",
+      "defaultValue": 0,
+      "visibilityCondition": "model.interpolation_method == 'constant'"
+    },
+    {
+      "name": "extrapolation_method",
+      "label": "Extrapolation method",
+      "description": "Used to compute values for timestamps before or after the last known data point",
+      "type": "SELECT",
+      "selectChoices": [
         {
-            "name": "datetime_column",
-            "label": "Timestamp column",
-            "type": "COLUMN",
-            "columnRole": "input_dataset",
-            "allowedColumnTypes": ["date"],
-            "mandatory": true
+          "value": "clip",
+          "label": "Fill with previous/next value"
         },
         {
-            "name": "sep1",
-            "label": "Resampling parameters",
-            "type": "SEPARATOR"
+          "value": "interpolation",
+          "label": "Same as interpolation"
         },
         {
-            "name": "time_step",
-            "label": "Time step",
-            "type": "DOUBLE",
-            "defaultValue": 1
-        },
-        {
-            "name": "time_unit",
-            "label": "Unit",
-            "type": "SELECT",
-            "selectChoices": [
-                { "value": "nanoseconds", "label": "Nanoseconds"},
-                { "value": "microseconds", "label": "Microseconds"},
-                { "value": "milliseconds", "label": "Milliseconds"},
-                { "value": "seconds", "label": "Seconds"},
-                { "value": "minutes", "label": "Minutes"},
-                { "value": "hours", "label": "Hours"},
-                { "value": "days", "label": "Days"},
-                { "value": "weeks", "label": "Weeks"},
-                { "value": "months", "label": "Months"},
-                { "value": "years", "label": "Years"}
-            ],
-            "defaultValue": "seconds"
-        },
-        {
-            "name": "sep2",
-            "label": "Methods",
-            "type": "SEPARATOR"
-        },
-        {
-            "name": "interpolation_method",
-            "label": "Interpolation method",
-            "description": "Used to compute values for timestamps located between two existing data points",
-            "type": "SELECT",
-            "selectChoices": [
-                { "value": "nearest", "label": "Nearest"},
-                { "value": "previous", "label": "Previous"},
-                { "value": "next", "label": "Next"},
-                { "value": "linear", "label": "Linear"},
-                { "value": "zero", "label": "Mean"},
-                { "value": "quadratic", "label": "Quadratic"},
-                { "value": "cubic", "label": "Cubic"},
-                { "value": "constant", "label":  "Constant"},
-                { "value": "none", "label": "Don't interpolate (no value)" }
-            ],
-            "defaultValue": "linear"
-        },
-        {
-            "name": "constant_value",
-            "label": "Constant value",
-            "type": "DOUBLE",
-            "defaultValue": 0,
-            "visibilityCondition": "model.interpolation_method == 'constant'"
-        },
-        {
-            "name": "extrapolation_method",
-            "label": "Extrapolation method",
-            "description": "Used to compute values for timestamps before or after the last known data point",
-            "type": "SELECT",
-            "selectChoices": [
-                { "value": "clip", "label": "Fill with previous/next value"},
-                { "value": "interpolation", "label": "Same as interpolation"},
-                { "value": "none", "label": "Don't extrapolate (no value)"}
-            ],
-            "defaultValue": "clip"
-        },
-        {
-            "name": "sepEdition",
-            "label": "Edit series",
-            "type": "SEPARATOR"
-        },
-        {
-            "name": "clip_start",
-            "label": "Clip start",
-            "description": "Number of time steps to skip at the beginning of the series.",
-            "type": "DOUBLE",
-            "defaultValue": 0
-        },
-        {
-            "name": "clip_end",
-            "label": "Clip end",
-            "description": "Number of time steps to skip at the end of the series.",
-            "type": "DOUBLE",
-            "defaultValue": 0
-        },
-        {
-            "name": "shift",
-            "label": "Shift value",
-            "description": "Shift all time stamps by this amount (can be negative).",
-            "type": "DOUBLE",
-            "defaultValue": 0
-        },
-        {
-            "name": "sep3",
-            "label": "Advanced data format",
-            "type": "SEPARATOR"
-        },
-        {
-            "name": "advanced_activated",
-            "label": "Long format",
-            "description": "Use this option if your data is in the long format, with one column identifying multiple time series and a single column for all values.",
-            "type": "BOOLEAN"
-        },
-        {
-            "name": "groupby_column",
-            "label": "Column with identifier",
-            "type": "COLUMN",
-            "columnRole": "input_dataset",
-            "mandatory": false,
-            "description": "",
-            "visibilityCondition": "model.advanced_activated"
-
+          "value": "none",
+          "label": "Don't extrapolate (no value)"
         }
-    ]
+      ],
+      "defaultValue": "clip"
+    },
+    {
+      "name": "sepEdition",
+      "label": "Edit series [Advanced]",
+      "type": "SEPARATOR"
+    },
+    {
+      "name": "clip_start",
+      "label": "Clip start",
+      "description": "Number of time steps to skip at the beginning of the series.",
+      "type": "DOUBLE",
+      "defaultValue": 0
+    },
+    {
+      "name": "clip_end",
+      "label": "Clip end",
+      "description": "Number of time steps to skip at the end of the series.",
+      "type": "DOUBLE",
+      "defaultValue": 0
+    },
+    {
+      "name": "shift",
+      "label": "Shift value",
+      "description": "Shift all time stamps by this amount (can be negative).",
+      "type": "DOUBLE",
+      "defaultValue": 0
+    }
+  ]
 }

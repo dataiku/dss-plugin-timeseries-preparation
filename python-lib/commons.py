@@ -8,8 +8,7 @@ from dataiku.customrecipe import *
 from dku_timeseries import ExtremaExtractorParams
 from dku_timeseries import IntervalRestrictorParams
 from dku_timeseries import ResamplerParams
-from dku_timeseries import WindowAggregator
-from dku_timeseries import WindowAggregatorParams
+from dku_timeseries import WindowAggregator, WindowAggregatorParams
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
