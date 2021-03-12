@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
-from dataiku.customrecipe import *
+from dataiku.customrecipe import get_recipe_config
 from dku_timeseries import ExtremaExtractor
 from commons import *
-
+from recipe_config_loading import check_input_parameters
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
@@ -11,6 +11,8 @@ logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(
 # --- Setup
 (input_dataset, output_dataset) = get_input_output()
 recipe_config = get_recipe_config()
+input_dataset_columns = [column["name"] for column in input_dataset.read_schema()]
+check_input_parameters(recipe_config, input_dataset_columns)
 datetime_column = recipe_config.get('datetime_column')
 extrema_column = recipe_config.get('extrema_column')
 if recipe_config.get('advanced_activated') and recipe_config.get('groupby_column'):
