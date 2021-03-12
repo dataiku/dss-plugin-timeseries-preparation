@@ -1,11 +1,11 @@
 # coding: utf-8
+import logging
+import math
+
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
-import math
-import logging
 
 logger = logging.getLogger(__name__)
-
 
 # Frequency strings as defined in https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
 FREQUENCY_STRINGS = {
@@ -81,3 +81,11 @@ def infer_frequency(df):
     else:
         frequency = None
     return frequency
+
+
+def format_group_id(group_id, identifiers_number):
+    if identifiers_number == 1:
+        group_id = [group_id]
+    else:
+        group_id = list(group_id)
+    return group_id

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-import pandas as pd
 import logging
-from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from dku_timeseries.timeseries_helpers import get_date_offset, generate_date_range
+
+import pandas as pd
+
+from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, generic_check_compute_arguments
+from dku_timeseries.timeseries_helpers import get_date_offset, format_group_id
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +35,8 @@ class ExtremaExtractor:
         self.params.check()
 
     def compute(self, df, datetime_column, extrema_column, groupby_columns=None):
-
+        if groupby_columns is None:
+            groupby_columns = []
         generic_check_compute_arguments(datetime_column, groupby_columns)
         df_copy = df.copy()
 
@@ -49,19 +52,22 @@ class ExtremaExtractor:
 
         df_copy.loc[:, datetime_column] = pd.to_datetime(df[datetime_column])
         extrema_df_list = []
+        identifiers_number = len(groupby_columns)
         if groupby_columns:
             grouped = df_copy.groupby(groupby_columns)
             for group_id, group in grouped:
                 logger.info("Computing for group: {}".format(group_id))
                 extrema_neighbor_df_list, extrema_value = self._find_extrema_neighbor_zone(group, datetime_column, extrema_column, df_id=group_id)
+                group_id = format_group_id(group_id, identifiers_number)
+
                 if len(extrema_neighbor_df_list) == 0:
-                    extrema_df = pd.DataFrame({groupby_columns[0]: [group_id]})
+                    extrema_df = pd.DataFrame([group_id], columns=groupby_columns)
                     extrema_df_list.append(extrema_df)
                 else:
                     for extrema_neighbor_df in extrema_neighbor_df_list:
                         rolling_df = self.params.window_aggregator.compute(extrema_neighbor_df, datetime_column)
-                        extrema_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value].copy() # avoid .loc warning
-                        extrema_df.loc[:, groupby_columns[0]] = group_id
+                        extrema_df = rolling_df.loc[rolling_df[extrema_column] == extrema_value].copy()  # avoid .loc warning
+                        extrema_df[groupby_columns] = pd.DataFrame([group_id], index=extrema_df.index)
                         extrema_df_list.append(extrema_df)
 
             final_df = pd.concat(extrema_df_list)
@@ -107,4 +113,3 @@ class ExtremaExtractor:
             extrema_neighbors.append(df_neighbor)
 
         return extrema_neighbors, extrema_value
-

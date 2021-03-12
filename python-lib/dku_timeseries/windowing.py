@@ -5,7 +5,7 @@ import logging
 import sys
 
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from dku_timeseries.timeseries_helpers import convert_time_freq_to_row_freq, get_smaller_unit, infer_frequency, FREQUENCY_STRINGS, UNIT_ORDER
+from dku_timeseries.timeseries_helpers import convert_time_freq_to_row_freq, get_smaller_unit, infer_frequency, FREQUENCY_STRINGS, UNIT_ORDER, format_group_id
 
 logger = logging.getLogger(__name__)
 
@@ -98,6 +98,8 @@ class WindowAggregator:
         self.params.check()
 
     def compute(self, df, datetime_column, groupby_columns=None):
+        if groupby_columns is None:
+            groupby_columns = []
 
         generic_check_compute_arguments(datetime_column, groupby_columns)
 
@@ -113,6 +115,7 @@ class WindowAggregator:
         if groupby_columns:
             grouped = df_copy.groupby(groupby_columns)
             computed_groups = []
+            identifiers_number = len(groupby_columns)
             for group_id, group in grouped:
                 logger.info("Computing for group {}".format(group_id))
 
@@ -129,7 +132,8 @@ class WindowAggregator:
                     else:
                         raise_(Exception, "Compute stats failed. Check the full error log for more info: {}".format(str(e)), sys.exc_info()[2])
 
-                computed_df[groupby_columns[0]] = group_id  # TODO generalize to multiple groupby cols
+                group_id = format_group_id(group_id, identifiers_number)
+                computed_df[groupby_columns] = pd.DataFrame([group_id], index=computed_df.index)
                 computed_groups.append(computed_df)
             final_df = pd.concat(computed_groups)
         else:
