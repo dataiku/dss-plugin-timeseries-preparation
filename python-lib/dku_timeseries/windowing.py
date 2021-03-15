@@ -135,7 +135,7 @@ class WindowAggregator:
                 group_id = format_group_id(group_id, identifiers_number)
                 computed_df[groupby_columns] = pd.DataFrame([group_id], index=computed_df.index)
                 computed_groups.append(computed_df)
-            final_df = pd.concat(computed_groups)
+            final_df = pd.concat(computed_groups, sort=True)
         else:
             try:
                 if self.params.causal_window:
