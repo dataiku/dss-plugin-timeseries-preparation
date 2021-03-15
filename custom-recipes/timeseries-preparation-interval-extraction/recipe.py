@@ -3,7 +3,7 @@ import logging
 from dataiku.customrecipe import *
 from dku_timeseries import IntervalRestrictor
 from commons import *
-from recipe_config_loading import check_input_parameters
+from recipe_config_loading import check_time_column_parameter
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(
 (input_dataset, output_dataset) = get_input_output()
 recipe_config = get_recipe_config()
 input_dataset_columns = [column["name"] for column in input_dataset.read_schema()]
-check_input_parameters(recipe_config, input_dataset_columns)
+check_time_column_parameter(recipe_config, input_dataset_columns)
 datetime_column = recipe_config.get('datetime_column')
 value_column = recipe_config.get('value_column')
 min_threshold = recipe_config.get('min_threshold')
