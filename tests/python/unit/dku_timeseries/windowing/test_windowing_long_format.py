@@ -64,16 +64,6 @@ def long_df_4():
 
 
 @pytest.fixture
-def long_df_numerical():
-    co2 = [315.58, 316.39, 316.79, 316.2]
-    country = [0, 0, 1, 1]
-    time_index = pd.date_range("1-1-1959", periods=2, freq="M").append(pd.date_range("1-1-1959", periods=2, freq="M"))
-    df = pd.DataFrame.from_dict(
-        {"value1": co2, "value2": co2, "country": country, "Date": time_index})
-    return df
-
-
-@pytest.fixture
 def recipe_config():
     config = {u'window_type': u'none', u'groupby_columns': [u'country'], u'closed_option': u'left', u'window_unit': u'days', u'window_width': 3,
               u'causal_window': True, u'datetime_column': u'Date', u'advanced_activated': True, u'aggregation_types': [u'retrieve', u'average'],
@@ -151,20 +141,10 @@ class TestWindowingLongFormat:
         datetime_column = recipe_config.get('datetime_column')
         output_df = window_aggregator.compute(long_df_4, datetime_column, groupby_columns=groupby_columns)
         expected_dates = pd.DatetimeIndex(['2020-01-31T00:00:00.000000000', '2020-02-29T00:00:00.000000000',
-                                                  '2020-02-29T00:00:00.000000000', '2020-01-31T00:00:00.000000000',
-                                                  '2020-01-31T00:00:00.000000000', '2020-02-29T00:00:00.000000000',
-                                                  '2020-01-31T00:00:00.000000000', '2020-02-29T00:00:00.000000000'])
+                                           '2020-02-29T00:00:00.000000000', '2020-01-31T00:00:00.000000000',
+                                           '2020-01-31T00:00:00.000000000', '2020-02-29T00:00:00.000000000',
+                                           '2020-01-31T00:00:00.000000000', '2020-02-29T00:00:00.000000000'])
         np.testing.assert_array_equal(output_df[datetime_column].values, expected_dates)
-
-    def test_numerical_long_format(self, long_df_numerical, params, recipe_config):
-        window_aggregator = WindowAggregator(params)
-        groupby_columns = ["country"]
-        datetime_column = recipe_config.get('datetime_column')
-        output_df = window_aggregator.compute(long_df_numerical, datetime_column, groupby_columns=groupby_columns)
-        np.testing.assert_array_equal(output_df[datetime_column].values,
-                                      pd.DatetimeIndex(['1959-01-31T00:00:00.000000000', '1959-02-28T00:00:00.000000000',
-                                                        '1959-01-31T00:00:00.000000000', '1959-02-28T00:00:00.000000000']))
-        np.testing.assert_array_equal(output_df["country"].values, np.array([0, 0, 1, 1]))
 
     def test_empty_identifiers(self, df, params, recipe_config):
         window_aggregator = WindowAggregator(params)
