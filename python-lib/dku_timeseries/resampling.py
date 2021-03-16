@@ -5,7 +5,7 @@ import pandas as pd
 from scipy import interpolate
 
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, generate_date_range, reformat_time_value
+from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, generate_date_range, reformat_time_value, reformat_time_step
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class ResamplerParams:
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
         self.constant_value = constant_value
-        self.time_step = reformat_time_value(float(time_step), time_unit)
+        self.time_step = reformat_time_step(time_step, time_unit)
         self.time_unit = time_unit
         self.resampling_step = str(self.time_step) + FREQUENCY_STRINGS.get(self.time_unit, '')
         self.clip_start = reformat_time_value(float(clip_start), time_unit)
@@ -37,15 +37,14 @@ class ResamplerParams:
         self.shift = reformat_time_value(float(shift), time_unit)
 
     def check(self):
-
         if self.interpolation_method not in INTERPOLATION_METHODS:
             raise ValueError(
                 'Method "{0}" is not valid. Possible interpolation methods are: {1}.'.format(self.interpolation_method, INTERPOLATION_METHODS))
         if self.extrapolation_method not in EXTRAPOLATION_METHODS:
             raise ValueError(
                 'Method "{0}" is not valid. Possible extrapolation methods are: {1}.'.format(self.extrapolation_method, EXTRAPOLATION_METHODS))
-        if self.time_step < 0:
-            raise ValueError('Time step can not be negative.')
+        if self.time_step <= 0:
+            raise ValueError('Time step can not be null or negative.')
         if self.time_unit not in TIME_UNITS:
             raise ValueError(
                 '"{0}" is not a valid unit. Possible time units are: {1}'.format(self.time_unit, TIME_UNITS))

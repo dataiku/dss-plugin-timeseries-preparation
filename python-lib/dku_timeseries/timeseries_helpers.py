@@ -1,11 +1,11 @@
 # coding: utf-8
+import logging
+import math
+
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
-import math
-import logging
 
 logger = logging.getLogger(__name__)
-
 
 # Frequency strings as defined in https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
 FREQUENCY_STRINGS = {
@@ -24,6 +24,13 @@ FREQUENCY_STRINGS = {
 ROUND_COMPATIBLE_TIME_UNIT = ['days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds', 'nanoseconds']
 UNIT_ORDER = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds',
               'nanoseconds']
+
+
+def reformat_time_step(time_step, time_unit):
+    if time_step:
+        return reformat_time_value(float(time_step), time_unit)
+    else:
+        raise ValueError("Invalid time step, it must be a number greater than 0")
 
 
 def reformat_time_value(time_value, time_unit):
