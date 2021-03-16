@@ -1,7 +1,7 @@
 {
     "meta": {
         "label": "Time series interval extraction",
-        "description": "Extract intervals of accepted values, while allowing small deviations.",
+        "description": "Identify segments of the time series where the values fall within a given range.",
         "icon": "icon-dku-timeseries-segmenting icon-DKU_timeseries_segmenting",
         "displayOrderRank": 4
     },
