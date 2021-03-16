@@ -31,12 +31,15 @@ UNIT_ORDER = ['years', 'months', 'semi_annual', 'quarters', 'weeks', 'days', 'bu
 
 
 def reformat_time_step(time_step, time_unit):
-    reformatted_time_step = time_step
-    if time_unit == "semi_annual":
-        reformatted_time_step = 6 * time_step
-    elif time_unit == "quarters":
-        reformatted_time_step = 3 * time_step
-    return reformat_time_value(reformatted_time_step, time_unit)
+    if time_step is not None:
+        reformatted_time_step = float(time_step)
+        if time_unit == "semi_annual":
+            reformatted_time_step = 6 * reformatted_time_step
+        elif time_unit == "quarters":
+            reformatted_time_step = 3 * reformatted_time_step
+        return reformat_time_value(reformatted_time_step, time_unit)
+    else:
+        raise ValueError("Invalid time step, it must be a number greater than 0")
 
 
 def reformat_time_value(time_value, time_unit):

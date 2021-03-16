@@ -1,6 +1,6 @@
 import pytest
 
-from long_format_config_loading import check_and_get_groupby_columns
+from recipe_config_loading import check_and_get_groupby_columns
 
 
 @pytest.fixture

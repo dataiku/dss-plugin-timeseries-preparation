@@ -1,6 +1,6 @@
 import pytest
 
-from dku_timeseries import ResamplerParams
+from dku_timeseries import Resampler, ResamplerParams
 
 
 @pytest.fixture
@@ -32,6 +32,18 @@ def get_params(config):
 
 
 class TestResamplerParams:
+    def test_invalid_time_step(self, config):
+        config.pop("time_step")
+        with pytest.raises(ValueError) as err:
+            _ = get_params(config)
+        assert "Invalid time step" in str(err.value)
+
+        config["time_step"] = 0
+        params = get_params(config)
+        with pytest.raises(ValueError) as err:
+            _ = Resampler(params)
+        assert "Time step can not be null or negative" in str(err.value)
+
     def test_quarter_params(self, config):
         params = get_params(config)
         assert params.time_step == 6
@@ -61,3 +73,6 @@ class TestResamplerParams:
         params = get_params(config)
         assert params.resampling_step == "2B"
         assert params.time_step == 2
+
+
+

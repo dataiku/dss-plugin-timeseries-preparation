@@ -30,7 +30,7 @@ class ResamplerParams:
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
         self.constant_value = constant_value
-        self.time_step = reformat_time_step(float(time_step), time_unit)
+        self.time_step = reformat_time_step(time_step, time_unit)
         self.time_unit = time_unit
         self.resampling_step = format_resampling_step(time_unit, self.time_step, time_unit_end_of_week)
         self.time_unit_end_of_week = time_unit_end_of_week
@@ -46,8 +46,8 @@ class ResamplerParams:
         if self.extrapolation_method not in EXTRAPOLATION_METHODS:
             raise ValueError(
                 'Method "{0}" is not valid. Possible extrapolation methods are: {1}.'.format(self.extrapolation_method, EXTRAPOLATION_METHODS))
-        if self.time_step < 0:
-            raise ValueError('Time step can not be negative.')
+        if self.time_step <= 0:
+            raise ValueError('Time step can not be null or negative.')
         if self.time_unit not in TIME_UNITS:
             raise ValueError(
                 '"{0}" is not a valid unit. Possible time units are: {1}'.format(self.time_unit, TIME_UNITS))
@@ -101,6 +101,7 @@ class Resampler:
             df_resampled = self._resample(df_copy, datetime_column, columns_to_resample, reference_time_index)
 
         df_resampled = df_resampled[df.columns].reset_index(drop=True)
+
         return df_resampled
 
     def _compute_full_time_index(self, df, datetime_column):

@@ -36,7 +36,7 @@
     },
     {
       "name": "datetime_column",
-      "label": "Timestamp column",
+      "label": "Time column",
       "type": "COLUMN",
       "columnRole": "input_dataset",
       "allowedColumnTypes": [
@@ -85,7 +85,8 @@
       "name": "time_step",
       "label": "Time step",
       "type": "DOUBLE",
-      "defaultValue": 1
+      "defaultValue": 1,
+      "minD": 0.0001
     },
     {
       "name": "time_unit",
