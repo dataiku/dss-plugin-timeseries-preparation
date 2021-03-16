@@ -27,7 +27,7 @@ UNIT_ORDER = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds',
 
 
 def reformat_time_step(time_step, time_unit):
-    if time_step:
+    if time_step is not None:
         return reformat_time_value(float(time_step), time_unit)
     else:
         raise ValueError("Invalid time step, it must be a number greater than 0")
