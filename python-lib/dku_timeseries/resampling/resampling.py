@@ -5,7 +5,7 @@ import pandas as pd
 from scipy import interpolate
 
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, generate_date_range, reformat_time_value
+from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, generate_date_range, reformat_time_value, format_resampling_step, reformat_time_step
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,7 @@ class ResamplerParams:
                  category_custom_value='',
                  time_step=1,
                  time_unit='seconds',
+                 time_unit_end_of_week="SUN",
                  clip_start=0,
                  clip_end=0,
                  shift=0):
@@ -32,11 +33,13 @@ class ResamplerParams:
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
         self.constant_value = constant_value
+        self.time_step = reformat_time_step(time_step, time_unit)
         self.category_column_method = category_column_method
         self.category_custom_value = category_custom_value
-        self.time_step = reformat_time_value(float(time_step), time_unit)
+        self.time_step = reformat_time_step(time_step, time_unit)
         self.time_unit = time_unit
-        self.resampling_step = str(self.time_step) + FREQUENCY_STRINGS.get(self.time_unit, '')
+        self.resampling_step = format_resampling_step(time_unit, self.time_step, time_unit_end_of_week)
+        self.time_unit_end_of_week = time_unit_end_of_week
         self.clip_start = reformat_time_value(float(clip_start), time_unit)
         self.clip_end = reformat_time_value(float(clip_end), time_unit)
         self.shift = reformat_time_value(float(shift), time_unit)
@@ -49,13 +52,12 @@ class ResamplerParams:
         if self.extrapolation_method not in EXTRAPOLATION_METHODS:
             raise ValueError(
                 'Method "{0}" is not valid. Possible extrapolation methods are: {1}.'.format(self.extrapolation_method, EXTRAPOLATION_METHODS))
+        if self.time_step <= 0:
+            raise ValueError('Time step can not be null or negative.')
         if self.category_column_method not in CATEGORY_COLUMN_METHODS:
             raise ValueError(
                 '"{0}" is not valid way to fill in category values. Possible methods are: {1}.'.format(self.category_column_method,
                                                                                                        CATEGORY_COLUMN_METHODS))
-
-        if self.time_step < 0:
-            raise ValueError('Time step can not be negative.')
         if self.time_unit not in TIME_UNITS:
             raise ValueError(
                 '"{0}" is not a valid unit. Possible time units are: {1}'.format(self.time_unit, TIME_UNITS))
@@ -195,7 +197,9 @@ class Resampler:
             if len(category_columns) > 0 and self.params.category_column_method != "empty":
                 df_processed = df_resample.copy().loc[interpolation_index.union(extrapolation_index)]
                 df_resample.loc[interpolation_index.union(extrapolation_index)] = self._fill_in_category_values(df_processed, category_columns)
-        return df_resample.loc[reference_index].drop('numerical_index', axis=1)
+        df_resampled = df_resample.loc[reference_index].drop('numerical_index', axis=1)
+        df_resampled.dropna(subset=filtered_columns_to_resample, inplace=True)
+        return df_resampled
 
     def _fill_in_category_values(self, df, category_columns):
         category_filled_df = df.copy()

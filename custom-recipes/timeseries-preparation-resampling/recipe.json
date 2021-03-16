@@ -36,7 +36,7 @@
     },
     {
       "name": "datetime_column",
-      "label": "Timestamp column",
+      "label": "Time column",
       "type": "COLUMN",
       "columnRole": "input_dataset",
       "allowedColumnTypes": [
@@ -56,7 +56,7 @@
       "type": "COLUMN",
       "columnRole": "input_dataset",
       "mandatory": false,
-      "description": "⚠️  Deprecated. Use the field 'Column with identifiers' instead",
+      "description": "⚠️  Deprecated. Use the field 'Time series with identifiers' instead",
       "visibilityCondition": "model.advanced_activated && (model.groupby_column.length > 0)"
     },
     {
@@ -85,7 +85,8 @@
       "name": "time_step",
       "label": "Time step",
       "type": "DOUBLE",
-      "defaultValue": 1
+      "defaultValue": 1,
+      "minD": 0.0001
     },
     {
       "name": "time_unit",
@@ -121,6 +122,10 @@
           "label": "Days"
         },
         {
+          "value": "business_days",
+          "label": "Business days (Mon-Fri)"
+        },
+        {
           "value": "weeks",
           "label": "Weeks"
         },
@@ -129,11 +134,57 @@
           "label": "Months"
         },
         {
+          "value": "quarters",
+          "label": "Quarters"
+        },
+        {
+          "value": "semi_annual",
+          "label": "Semi-annual"
+        },
+        {
           "value": "years",
           "label": "Years"
         }
       ],
       "defaultValue": "seconds"
+    },
+    {
+      "name": "time_unit_end_of_week",
+      "label": "End of week day",
+      "type": "SELECT",
+      "mandatory": false,
+      "defaultValue": "SUN",
+      "visibilityCondition": "model.time_unit == 'weeks'",
+      "selectChoices": [
+        {
+          "value": "SUN",
+          "label": "Sunday"
+        },
+        {
+          "value": "MON",
+          "label": "Monday"
+        },
+        {
+          "value": "TUE",
+          "label": "Tuesday"
+        },
+        {
+          "value": "WED",
+          "label": "Wednesday"
+        },
+        {
+          "value": "THU",
+          "label": "Thursday"
+        },
+        {
+          "value": "FRI",
+          "label": "Friday"
+        },
+        {
+          "value": "SAT",
+          "label": "Saturday"
+        }
+      ]
     },
     {
       "name": "sep2",
