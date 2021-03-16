@@ -86,7 +86,7 @@
       "label": "Time step",
       "type": "DOUBLE",
       "defaultValue": 1,
-      "minI": 0
+      "minD": 0
     },
     {
       "name": "time_unit",
