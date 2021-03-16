@@ -33,7 +33,6 @@ class ResamplerParams:
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
         self.constant_value = constant_value
-        self.time_step = reformat_time_step(time_step, time_unit)
         self.category_column_method = category_column_method
         self.category_custom_value = category_custom_value
         self.time_step = reformat_time_step(time_step, time_unit)
