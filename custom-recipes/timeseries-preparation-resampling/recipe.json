@@ -193,7 +193,7 @@
     },
     {
       "name": "interpolation_method",
-      "label": "Interpolation method",
+      "label": "Interpolate",
       "description": "Used to compute values for timestamps located between two existing data points",
       "type": "SELECT",
       "selectChoices": [
@@ -245,13 +245,13 @@
     },
     {
       "name": "extrapolation_method",
-      "label": "Extrapolation method",
+      "label": "Extrapolate",
       "description": "Used to compute values for timestamps before or after the last known data point",
       "type": "SELECT",
       "selectChoices": [
         {
           "value": "clip",
-          "label": "Fill with previous/next value"
+          "label": "with previous/next value"
         },
         {
           "value": "interpolation",
@@ -265,9 +265,9 @@
       "defaultValue": "clip"
     },
     {
-      "name": "category_column_method",
-      "label": "Fill in category columns",
-      "description": "How to fill in category values during interpolation and extrapolation?",
+      "name": "category_imputation_method",
+      "label": "Impute categoricals",
+      "description": "Used to fill in category values during interpolation and extrapolation",
       "type": "SELECT",
       "selectChoices": [
         {
@@ -275,34 +275,38 @@
           "label": "Leave empty"
         },
         {
-          "value": "custom",
-          "label": "Enter a custom value"
+          "value": "constant",
+          "label": "with a constant"
+        },
+        {
+          "value": "mode",
+          "label": "with the most common value"
         },
         {
           "value": "clip",
-          "label": "Fill with previous/next value"
+          "label": "with previous/next value"
         },
         {
           "value": "previous",
-          "label": "Fill with previous value"
+          "label": "with previous value"
         },
         {
           "value": "next",
-          "label": "Fill with next value"
+          "label": "with next value"
         }
       ],
       "defaultValue": "empty"
     },
     {
-      "name": "category_custom_value",
-      "label": "Custom value",
+      "name": "category_constant_value",
+      "label": "Constant value",
       "type": "STRING",
-      "defaultValue": "",
-      "visibilityCondition": "model.category_column_method == 'custom'"
+      "defaultValue": "invalid",
+      "visibilityCondition": "model.category_imputation_method == 'constant'"
     },
     {
       "name": "sepEdition",
-      "label": "Edit series [Advanced]",
+      "label": "Advanced parameters",
       "type": "SEPARATOR"
     },
     {

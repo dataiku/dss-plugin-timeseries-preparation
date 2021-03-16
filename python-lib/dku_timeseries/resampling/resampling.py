@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 INTERPOLATION_METHODS = ['linear', 'nearest', 'slinear', 'zero', 'quadratic', 'cubic', 'previous', 'next', 'constant', 'none']
 EXTRAPOLATION_METHODS = ['none', 'clip', 'interpolation']
-CATEGORY_COLUMN_METHODS = ['empty', 'custom', 'previous', 'next', 'clip']
+CATEGORY_IMPUTATION_METHODS = ['empty', 'constant', 'previous', 'next', 'clip', 'mode']
 TIME_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 
 
@@ -21,8 +21,8 @@ class ResamplerParams:
                  interpolation_method='linear',
                  extrapolation_method='clip',
                  constant_value=0,
-                 category_column_method='empty',
-                 category_custom_value='',
+                 category_imputation_method='empty',
+                 category_constant_value='',
                  time_step=1,
                  time_unit='seconds',
                  time_unit_end_of_week="SUN",
@@ -33,8 +33,8 @@ class ResamplerParams:
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
         self.constant_value = constant_value
-        self.category_column_method = category_column_method
-        self.category_custom_value = category_custom_value
+        self.category_imputation_method = category_imputation_method
+        self.category_constant_value = category_constant_value
         self.time_step = reformat_time_step(time_step, time_unit)
         self.time_unit = time_unit
         self.resampling_step = format_resampling_step(time_unit, self.time_step, time_unit_end_of_week)
@@ -53,10 +53,10 @@ class ResamplerParams:
                 'Method "{0}" is not valid. Possible extrapolation methods are: {1}.'.format(self.extrapolation_method, EXTRAPOLATION_METHODS))
         if self.time_step <= 0:
             raise ValueError('Time step can not be null or negative.')
-        if self.category_column_method not in CATEGORY_COLUMN_METHODS:
+        if self.category_imputation_method not in CATEGORY_IMPUTATION_METHODS:
             raise ValueError(
-                '"{0}" is not valid way to fill in category values. Possible methods are: {1}.'.format(self.category_column_method,
-                                                                                                       CATEGORY_COLUMN_METHODS))
+                '"{0}" is not valid way to impute category values. Possible methods are: {1}.'.format(self.category_imputation_method,
+                                                                                                       CATEGORY_IMPUTATION_METHODS))
         if self.time_unit not in TIME_UNITS:
             raise ValueError(
                 '"{0}" is not a valid unit. Possible time units are: {1}'.format(self.time_unit, TIME_UNITS))
@@ -193,7 +193,7 @@ class Resampler:
             if self.params.extrapolation_method == "clip":
                 temp_df = df_resample.copy().ffill().bfill()
                 df_resample.loc[extrapolation_index, filtered_column] = temp_df.loc[extrapolation_index, filtered_column]
-            if len(category_columns) > 0 and self.params.category_column_method != "empty":
+            if len(category_columns) > 0 and self.params.category_imputation_method != "empty":
                 df_processed = df_resample.copy().loc[interpolation_index.union(extrapolation_index)]
                 df_resample.loc[interpolation_index.union(extrapolation_index)] = self._fill_in_category_values(df_processed, category_columns)
         df_resampled = df_resample.loc[reference_index].drop('numerical_index', axis=1)
@@ -202,12 +202,15 @@ class Resampler:
 
     def _fill_in_category_values(self, df, category_columns):
         category_filled_df = df.copy()
-        if self.params.category_column_method == "custom":
-            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].fillna(self.params.category_custom_value)
-        elif self.params.category_column_method == "previous":
+        if self.params.category_imputation_method == "constant":
+            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].fillna(self.params.category_constant_value)
+        elif self.params.category_imputation_method == "previous":
             category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].copy().ffill()
-        elif self.params.category_column_method == "next":
+        elif self.params.category_imputation_method == "next":
             category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].copy().bfill()
-        elif self.params.category_column_method == "clip":
+        elif self.params.category_imputation_method == "clip":
             category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].copy().ffill().bfill()
+        elif self.params.category_imputation_method == "mode":
+            most_frequent_categoricals = category_filled_df.loc[:, category_columns].mode().iloc[0]
+            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].fillna(most_frequent_categoricals)
         return category_filled_df
