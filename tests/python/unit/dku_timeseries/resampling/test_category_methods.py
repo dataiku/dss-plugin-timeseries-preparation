@@ -38,6 +38,15 @@ def df3():
         {"value1": co2, "value2": co2, "categorical": categorical, "Date": time_index})
     return df
 
+@pytest.fixture
+def missing_row_df():
+    co2 = [315.58, 316.39, 316.79, 316.2]
+    categorical = [np.nan, "second", "second", "second"]
+    time_index = pd.date_range("1-1-1959", periods=4, freq="M")
+    df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "categorical": categorical, "Date": time_index})
+    return df
+
 
 @pytest.fixture
 def long_df():
@@ -252,6 +261,24 @@ class TestCategoryMethods:
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(df3, datetime_column)
         assert np.all(output_df.categorical.values == "second")
+
+    def test_missing_categorical(self, missing_row_df, config):
+        config["time_unit"] = "weeks"
+        config["time_step"] = 12
+        config["category_imputation_method"] = "clip"
+        params = get_params(config)
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(missing_row_df, datetime_column)
+        assert np.all(output_df.categorical.values == "second")
+
+        config["category_imputation_method"] = "previous"
+        params = get_params(config)
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(missing_row_df, datetime_column)
+        assert math.isnan(output_df.loc[0,"categorical"])
+        assert np.all(output_df.loc[1:,"categorical"].values == "second")
 
     def test_df_multiple_dates(self, df_multiple_dates, config):
         config["category_imputation_method"] = "previous"
