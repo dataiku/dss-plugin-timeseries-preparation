@@ -56,7 +56,7 @@ class ResamplerParams:
         if self.category_imputation_method not in CATEGORY_IMPUTATION_METHODS:
             raise ValueError(
                 '"{0}" is not valid way to impute category values. Possible methods are: {1}.'.format(self.category_imputation_method,
-                                                                                                       CATEGORY_IMPUTATION_METHODS))
+                                                                                                      CATEGORY_IMPUTATION_METHODS))
         if self.time_unit not in TIME_UNITS:
             raise ValueError(
                 '"{0}" is not a valid unit. Possible time units are: {1}'.format(self.time_unit, TIME_UNITS))
@@ -158,6 +158,7 @@ class Resampler:
         # `scipy.interpolate.interp1d` only works with numerical index, so we create one
         df_resample['numerical_index'] = range(len(df_resample))
         reference_index = df_resample.loc[reference_time_index, 'numerical_index']
+        category_imputation_index = pd.Index([])
 
         df_resample = df_resample.rename_axis(datetime_column).reset_index()
         for filtered_column in filtered_columns_to_resample:
@@ -193,9 +194,11 @@ class Resampler:
             if self.params.extrapolation_method == "clip":
                 temp_df = df_resample.copy().ffill().bfill()
                 df_resample.loc[extrapolation_index, filtered_column] = temp_df.loc[extrapolation_index, filtered_column]
-            if len(category_columns) > 0 and self.params.category_imputation_method != "empty":
-                df_processed = df_resample.copy().loc[interpolation_index.union(extrapolation_index)]
-                df_resample.loc[interpolation_index.union(extrapolation_index)] = self._fill_in_category_values(df_processed, category_columns)
+            category_imputation_index = category_imputation_index.union(extrapolation_index).union(interpolation_index)
+
+        if len(category_columns) > 0 and self.params.category_imputation_method != "empty":
+            df_processed = df_resample.loc[category_imputation_index]
+            df_resample.loc[category_imputation_index] = self._fill_in_category_values(df_processed, category_columns)
         df_resampled = df_resample.loc[reference_index].drop('numerical_index', axis=1)
         df_resampled.dropna(subset=filtered_columns_to_resample, inplace=True)
         return df_resampled
@@ -205,11 +208,11 @@ class Resampler:
         if self.params.category_imputation_method == "constant":
             category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].fillna(self.params.category_constant_value)
         elif self.params.category_imputation_method == "previous":
-            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].copy().ffill()
+            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].ffill()
         elif self.params.category_imputation_method == "next":
-            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].copy().bfill()
+            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].bfill()
         elif self.params.category_imputation_method == "clip":
-            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].copy().ffill().bfill()
+            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].ffill().bfill()
         elif self.params.category_imputation_method == "mode":
             most_frequent_categoricals = category_filled_df.loc[:, category_columns].mode().iloc[0]
             category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].fillna(most_frequent_categoricals)
