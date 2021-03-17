@@ -58,6 +58,16 @@ def long_df():
         {"value1": co2, "value2": co2, "country": country, "categorical": categorical, "Date": time_index})
     return long_df
 
+@pytest.fixture
+def long_df_mode():
+    co2 = [315.58, 316.39,300, 316.79, 316.2, 390]
+    country = [0, 0,0, 1, 1,1]
+    categorical = ["first","first", "second", "third", "fourth", "fourth"]
+    time_index = pd.date_range("1-1-1959", periods=3, freq="M").append(pd.date_range("1-1-1959", periods=3, freq="M"))
+    long_df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "country": country, "categorical": categorical, "Date": time_index})
+    return long_df
+
 
 @pytest.fixture
 def df_multiple_dates():
@@ -261,6 +271,17 @@ class TestCategoryMethods:
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(df3, datetime_column)
         assert np.all(output_df.categorical.values == "second")
+
+    def test_mode_filling_long_format(self, long_df_mode, config):
+        config["category_imputation_method"] = "mode"
+        config["time_unit"] = "weeks"
+        config["time_step"] = 1
+        params = get_params(config)
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(long_df_mode, datetime_column, groupby_columns=["country"])
+        assert np.all(output_df.loc[output_df.country == 0,"categorical"].values == "first")
+        assert np.all(output_df.loc[output_df.country == 1, "categorical"].values == "fourth")
 
     def test_missing_categorical(self, missing_row_df, config):
         config["time_unit"] = "weeks"
