@@ -267,7 +267,7 @@
     {
       "name": "category_imputation_method",
       "label": "Impute categoricals",
-      "description": "Used to fill in category values during interpolation and extrapolation",
+      "description": "Used to fill in categorical values during interpolation and extrapolation",
       "type": "SELECT",
       "selectChoices": [
         {
