@@ -251,7 +251,7 @@
       "selectChoices": [
         {
           "value": "clip",
-          "label": "with previous/next value"
+          "label": "Previous/next"
         },
         {
           "value": "interpolation",
@@ -272,27 +272,27 @@
       "selectChoices": [
         {
           "value": "empty",
-          "label": "Leave empty"
+          "label": "Empty"
         },
         {
           "value": "constant",
-          "label": "with a constant"
+          "label": "Constant"
         },
         {
           "value": "mode",
-          "label": "with the most common value"
+          "label": "Most common"
         },
         {
           "value": "clip",
-          "label": "with previous/next value"
+          "label": "Previous/next"
         },
         {
           "value": "previous",
-          "label": "with previous value"
+          "label": "Previous"
         },
         {
           "value": "next",
-          "label": "with next value"
+          "label": "Next"
         }
       ],
       "defaultValue": "empty"
