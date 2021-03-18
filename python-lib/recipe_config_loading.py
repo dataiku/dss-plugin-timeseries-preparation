@@ -3,9 +3,9 @@ from safe_logger import SafeLogger
 logger = SafeLogger("Time series preparation plugin")
 
 
-def check_input_parameters(recipe_config, dataset_columns):
+def check_time_column_parameter(recipe_config, dataset_columns):
     if recipe_config.get("datetime_column") not in dataset_columns:
-        raise ValueError("Invalid timestamp column selection: {}".format(recipe_config.get("datetime_column")))
+        raise ValueError("Invalid time column selection: {}".format(recipe_config.get("datetime_column")))
 
 
 def check_and_get_groupby_columns(recipe_config, dataset_columns):

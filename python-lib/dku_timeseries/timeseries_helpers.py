@@ -4,15 +4,19 @@ import math
 
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
+from pandas.tseries.offsets import BDay
 
 logger = logging.getLogger(__name__)
 
 # Frequency strings as defined in https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
 FREQUENCY_STRINGS = {
     'years': 'A',
+    'semi_annual': 'M',
+    'quarters': 'M',
     'months': 'M',
     'weeks': 'W',
     'days': 'D',
+    'business_days': 'B',
     'hours': 'H',
     'minutes': 'T',
     'seconds': 'S',
@@ -22,8 +26,20 @@ FREQUENCY_STRINGS = {
 }
 
 ROUND_COMPATIBLE_TIME_UNIT = ['days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds', 'nanoseconds']
-UNIT_ORDER = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds',
+UNIT_ORDER = ['years', 'months', 'semi_annual', 'quarters', 'weeks', 'days', 'business_days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds',
               'nanoseconds']
+
+
+def reformat_time_step(time_step, time_unit):
+    if time_step is not None:
+        reformatted_time_step = float(time_step)
+        if time_unit == "semi_annual":
+            reformatted_time_step = 6 * reformatted_time_step
+        elif time_unit == "quarters":
+            reformatted_time_step = 3 * reformatted_time_step
+        return reformat_time_value(reformatted_time_step, time_unit)
+    else:
+        raise ValueError("Invalid time step, it must be a number greater than 0")
 
 
 def reformat_time_value(time_value, time_unit):
@@ -36,8 +52,25 @@ def reformat_time_value(time_value, time_unit):
     return formatted_time_value
 
 
+def format_resampling_step(time_unit, time_step, time_unit_end_of_week):
+    frequency = FREQUENCY_STRINGS.get(time_unit, '')
+    if frequency == "W":
+        frequency = "W-{}".format(time_unit_end_of_week)
+    return str(time_step) + frequency
+
+
 def get_date_offset(time_unit, offset_value):
-    return pd.DateOffset(**{time_unit: offset_value})
+    if time_unit == "business_days":
+        # adding a Bday converts the timestamps into a business day, so BDay(0) + Saturday January 1st =  Monday January 4th
+        if offset_value != 0:
+            return BDay(offset_value)
+        else:
+            formatted_time_unit = "days"
+    elif time_unit == "semi_annual" or time_unit == "quarters":
+        formatted_time_unit = "months"
+    else:
+        formatted_time_unit = time_unit
+    return pd.DateOffset(**{formatted_time_unit: offset_value})
 
 
 def generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit):
@@ -49,9 +82,9 @@ def generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequ
         start_index = start_time.round(rounding_freq_string) + clip_start_value + shift_value
         end_index = end_time.round(rounding_freq_string) - clip_end_value + shift_value + shift_value
     else:  # for week, month, year we round up to closest day
-        start_index = start_time.round('D') + clip_start_value + shift_value
+        start_index = start_time.round("D") + clip_start_value + shift_value
         # for some reason date_range omit the last entry when dealing with months, years
-        end_index = end_time.round('D') - clip_end_value + get_date_offset(time_unit, time_step) + shift_value
+        end_index = end_time.round("D") - clip_end_value + get_date_offset(time_unit, time_step) + shift_value
     return pd.date_range(start=start_index, end=end_index, freq=frequency)
 
 

@@ -5,7 +5,7 @@ import pandas as pd
 from scipy import interpolate
 
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, generate_date_range, reformat_time_value, format_group_id
+from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, generate_date_range, reformat_time_value, format_resampling_step, reformat_time_step, format_group_id
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +22,7 @@ class ResamplerParams:
                  constant_value=0,
                  time_step=1,
                  time_unit='seconds',
+                 time_unit_end_of_week="SUN",
                  clip_start=0,
                  clip_end=0,
                  shift=0):
@@ -29,9 +30,10 @@ class ResamplerParams:
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
         self.constant_value = constant_value
-        self.time_step = reformat_time_value(float(time_step), time_unit)
+        self.time_step = reformat_time_step(time_step, time_unit)
         self.time_unit = time_unit
-        self.resampling_step = str(self.time_step) + FREQUENCY_STRINGS.get(self.time_unit, '')
+        self.resampling_step = format_resampling_step(time_unit, self.time_step, time_unit_end_of_week)
+        self.time_unit_end_of_week = time_unit_end_of_week
         self.clip_start = reformat_time_value(float(clip_start), time_unit)
         self.clip_end = reformat_time_value(float(clip_end), time_unit)
         self.shift = reformat_time_value(float(shift), time_unit)
@@ -44,8 +46,8 @@ class ResamplerParams:
         if self.extrapolation_method not in EXTRAPOLATION_METHODS:
             raise ValueError(
                 'Method "{0}" is not valid. Possible extrapolation methods are: {1}.'.format(self.extrapolation_method, EXTRAPOLATION_METHODS))
-        if self.time_step < 0:
-            raise ValueError('Time step can not be negative.')
+        if self.time_step <= 0:
+            raise ValueError('Time step can not be null or negative.')
         if self.time_unit not in TIME_UNITS:
             raise ValueError(
                 '"{0}" is not a valid unit. Possible time units are: {1}'.format(self.time_unit, TIME_UNITS))
@@ -181,4 +183,6 @@ class Resampler:
         if self.params.extrapolation_method == "clip" and self.params.interpolation_method != 'none':
             df_resample = df_resample.ffill().bfill()
 
-        return df_resample.loc[reference_index].drop('numerical_index', axis=1)
+        df_resampled = df_resample.loc[reference_index].drop('numerical_index', axis=1)
+        df_resampled.dropna(subset=filtered_columns_to_resample, inplace=True)
+        return df_resampled
