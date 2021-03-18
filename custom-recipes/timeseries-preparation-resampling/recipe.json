@@ -301,7 +301,7 @@
       "name": "category_constant_value",
       "label": "Constant value",
       "type": "STRING",
-      "defaultValue": "invalid",
+      "defaultValue": "",
       "visibilityCondition": "model.category_imputation_method == 'constant'"
     },
     {
