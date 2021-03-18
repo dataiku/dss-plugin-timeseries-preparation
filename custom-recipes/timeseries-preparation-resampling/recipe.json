@@ -194,7 +194,7 @@
     {
       "name": "interpolation_method",
       "label": "Interpolate",
-      "description": "Used to compute values for timestamps located between two existing data points",
+      "description": "Used to compute values for dates located between two existing data points",
       "type": "SELECT",
       "selectChoices": [
         {
@@ -246,7 +246,7 @@
     {
       "name": "extrapolation_method",
       "label": "Extrapolate",
-      "description": "Used to compute values for timestamps before or after the last known data point",
+      "description": "Used to compute values for dates before or after the last known data point",
       "type": "SELECT",
       "selectChoices": [
         {
