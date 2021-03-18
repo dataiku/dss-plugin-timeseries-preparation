@@ -196,7 +196,7 @@ class Resampler:
                 df_resample.loc[extrapolation_index, filtered_column] = temp_df.loc[extrapolation_index, filtered_column]
             category_imputation_index = category_imputation_index.union(extrapolation_index).union(interpolation_index)
 
-        if len(category_columns) > 0 and self.params.category_imputation_method != "empty":
+        if len(category_columns) > 0 and len(category_imputation_index) > 0 and self.params.category_imputation_method != "empty":
             df_processed = df_resample.loc[category_imputation_index]
             df_resample.loc[category_imputation_index] = self._fill_in_category_values(df_processed, category_columns)
         df_resampled = df_resample.loc[reference_index].drop('numerical_index', axis=1)
