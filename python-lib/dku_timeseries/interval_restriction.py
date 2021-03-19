@@ -79,7 +79,7 @@ class IntervalRestrictor:
                 logger.info("Computing for group {}".format(group_id))
                 filtered_df = self._detect_segment(group, datetime_column, filter_column, filter_function)
                 filtered_groups.append(filtered_df)
-            return pd.concat(filtered_groups).reset_index(drop=True)
+            return pd.concat(filtered_groups, sort=True).reset_index(drop=True)
         else:
             return self._detect_segment(df, datetime_column, filter_column, filter_function)
 
@@ -132,7 +132,6 @@ class IntervalRestrictor:
             end = border_timestamp[-2]
             is_deviation = (end - start) >= self.params.max_deviation_duration
             if is_deviation:
-
                 deviations_indices.extend([border_timestamp[0], border_timestamp[-1]])
 
         if len(deviations_indices) > 0:
