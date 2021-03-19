@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-import pandas as pd
-import numpy as np
 import logging
 import sys
 
-from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from dku_timeseries.timeseries_helpers import convert_time_freq_to_row_freq, get_smaller_unit, infer_frequency, FREQUENCY_STRINGS, UNIT_ORDER, format_group_id
+import numpy as np
+import pandas as pd
+
+from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, generic_check_compute_arguments
+from dku_timeseries.timeseries_helpers import convert_time_freq_to_row_freq, get_smaller_unit, infer_frequency, FREQUENCY_STRINGS, format_group_id
 
 logger = logging.getLogger(__name__)
 
@@ -131,9 +132,9 @@ class WindowAggregator:
                         raise_(Exception, "Window width is too small", sys.exc_info()[2])
                     else:
                         raise_(Exception, "Compute stats failed. Check the full error log for more info: {}".format(str(e)), sys.exc_info()[2])
-
-                group_id = format_group_id(group_id, identifiers_number)
-                computed_df[groupby_columns] = pd.DataFrame([group_id], index=computed_df.index)
+                if not nothing_to_do(group, min_len=2):
+                    group_id = format_group_id(group_id, identifiers_number)
+                    computed_df[groupby_columns] = pd.DataFrame([group_id], index=computed_df.index)
                 computed_groups.append(computed_df)
             final_df = pd.concat(computed_groups, sort=True)
         else:

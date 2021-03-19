@@ -103,6 +103,39 @@ def params(recipe_config):
     params.check()
     return params
 
+@pytest.fixture
+def params_no_causal(recipe_config):
+    recipe_config["causal_window"] = False
+    def _p(param_name, default=None):
+        return recipe_config.get(param_name, default)
+
+    causal_window = _p('causal_window')
+    window_unit = _p('window_unit')
+    window_width = int(_p('window_width'))
+    if _p('window_type') == 'none':
+        window_type = None
+    else:
+        window_type = _p('window_type')
+
+    if window_type == 'gaussian':
+        gaussian_std = _p('gaussian_std')
+    else:
+        gaussian_std = None
+
+    closed_option = _p('closed_option')
+    aggregation_types = _p('aggregation_types')
+
+    params = WindowAggregatorParams(window_unit=window_unit,
+                                    window_width=window_width,
+                                    window_type=window_type,
+                                    gaussian_std=gaussian_std,
+                                    closed_option=closed_option,
+                                    causal_window=causal_window,
+                                    aggregation_types=aggregation_types)
+
+    params.check()
+    return params
+
 
 class TestWindowingLongFormat:
     def test_long_format(self, long_df, params, recipe_config):
@@ -155,3 +188,13 @@ class TestWindowingLongFormat:
         assert output_df.shape == (4, 5)
         output_df = window_aggregator.compute(df, datetime_column, groupby_columns=None)
         assert output_df.shape == (4, 5)
+
+    def test_long_format_no_causal(self, long_df, params_no_causal, recipe_config):
+        window_aggregator = WindowAggregator(params_no_causal)
+        groupby_columns = ["country"]
+        datetime_column = recipe_config.get('datetime_column')
+        output_df = window_aggregator.compute(long_df, datetime_column, groupby_columns=groupby_columns)
+
+        np.testing.assert_array_equal(np.round(output_df.value1_avg.values, 2), np.array([np.nan, 316.25, 316.46, np.nan, np.nan, 226.33,
+                                                                                          211., np.nan]))
+        np.testing.assert_array_equal(output_df.country.values, np.array(['first', 'first', 'first', 'first', 'second', 'second', 'second', 'second']))
