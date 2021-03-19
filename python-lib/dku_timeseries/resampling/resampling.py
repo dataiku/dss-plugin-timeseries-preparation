@@ -5,12 +5,13 @@ import pandas as pd
 from scipy import interpolate
 
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, generate_date_range, reformat_time_value, format_resampling_step, reformat_time_step
+from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, generate_date_range, reformat_time_value, format_resampling_step, reformat_time_step, format_group_id
 
 logger = logging.getLogger(__name__)
 
 INTERPOLATION_METHODS = ['linear', 'nearest', 'slinear', 'zero', 'quadratic', 'cubic', 'previous', 'next', 'constant', 'none']
 EXTRAPOLATION_METHODS = ['none', 'clip', 'interpolation']
+CATEGORY_IMPUTATION_METHODS = ['empty', 'constant', 'previous', 'next', 'clip', 'mode']
 TIME_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 
 
@@ -20,6 +21,8 @@ class ResamplerParams:
                  interpolation_method='linear',
                  extrapolation_method='clip',
                  constant_value=0,
+                 category_imputation_method='empty',
+                 category_constant_value='',
                  time_step=1,
                  time_unit='seconds',
                  time_unit_end_of_week="SUN",
@@ -30,6 +33,8 @@ class ResamplerParams:
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
         self.constant_value = constant_value
+        self.category_imputation_method = category_imputation_method
+        self.category_constant_value = category_constant_value
         self.time_step = reformat_time_step(time_step, time_unit)
         self.time_unit = time_unit
         self.resampling_step = format_resampling_step(time_unit, self.time_step, time_unit_end_of_week)
@@ -48,6 +53,10 @@ class ResamplerParams:
                 'Method "{0}" is not valid. Possible extrapolation methods are: {1}.'.format(self.extrapolation_method, EXTRAPOLATION_METHODS))
         if self.time_step <= 0:
             raise ValueError('Time step can not be null or negative.')
+        if self.category_imputation_method not in CATEGORY_IMPUTATION_METHODS:
+            raise ValueError(
+                '"{0}" is not valid way to impute category values. Possible methods are: {1}.'.format(self.category_imputation_method,
+                                                                                                      CATEGORY_IMPUTATION_METHODS))
         if self.time_unit not in TIME_UNITS:
             raise ValueError(
                 '"{0}" is not a valid unit. Possible time units are: {1}'.format(self.time_unit, TIME_UNITS))
@@ -67,6 +76,7 @@ class Resampler:
     def transform(self, df, datetime_column, groupby_columns=None):
         if groupby_columns is None:
             groupby_columns = []
+
         generic_check_compute_arguments(datetime_column, groupby_columns)
         df_copy = df.copy()
 
@@ -81,24 +91,23 @@ class Resampler:
         # we thus compute a unified time index for all partitions
         reference_time_index = self._compute_full_time_index(df_copy, datetime_column)
         columns_to_resample = [col for col in df_copy.select_dtypes([int, float]).columns.tolist() if col != datetime_column and col not in groupby_columns]
-
+        category_columns = [col for col in df.select_dtypes([object, bool]).columns.tolist() if col != datetime_column and col not in columns_to_resample and
+                            col not in groupby_columns]
         if groupby_columns:
             grouped = df_copy.groupby(groupby_columns)
             resampled_groups = []
             identifiers_number = len(groupby_columns)
             for group_id, group in grouped:
                 logger.info("Computing for group: {}".format(group_id))
-                group_resampled = self._resample(group.drop(groupby_columns, axis=1), datetime_column, columns_to_resample, reference_time_index,
+                group_resampled = self._resample(group.drop(groupby_columns, axis=1), datetime_column, columns_to_resample, category_columns,
+                                                 reference_time_index,
                                                  df_id=group_id)
-                if identifiers_number == 1:
-                    group_id = [group_id]
-                else:
-                    group_id = list(group_id)
+                group_id = format_group_id(group_id, identifiers_number)
                 group_resampled[groupby_columns] = pd.DataFrame([group_id], index=group_resampled.index)
                 resampled_groups.append(group_resampled)
             df_resampled = pd.concat(resampled_groups, sort=True)
         else:
-            df_resampled = self._resample(df_copy, datetime_column, columns_to_resample, reference_time_index)
+            df_resampled = self._resample(df_copy, datetime_column, columns_to_resample, category_columns, reference_time_index)
 
         df_resampled = df_resampled[df.columns].reset_index(drop=True)
 
@@ -118,7 +127,7 @@ class Resampler:
         time_unit = self.params.time_unit
         return generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
 
-    def _resample(self, df, datetime_column, columns_to_resample, reference_time_index, df_id=''):
+    def _resample(self, df, datetime_column, columns_to_resample, category_columns, reference_time_index, df_id=''):
         """
         1. Move datetime column to the index.
         2. Merge the original datetime index with the full_time_index.
@@ -146,9 +155,9 @@ class Resampler:
         # `scipy.interpolate.interp1d` only works with numerical index, so we create one
         df_resample['numerical_index'] = range(len(df_resample))
         reference_index = df_resample.loc[reference_time_index, 'numerical_index']
+        category_imputation_index = pd.Index([])
 
         df_resample = df_resample.rename_axis(datetime_column).reset_index()
-
         for filtered_column in filtered_columns_to_resample:
 
             df_without_nan = df.dropna(subset=[filtered_column], how='all')
@@ -178,14 +187,30 @@ class Resampler:
                 else:
                     df_resample.loc[interpolation_index, filtered_column] = df_resample.loc[interpolation_index, filtered_column].fillna(
                         self.params.constant_value)
-            else:  # none interpolation - nothing to do
-                if self.params.extrapolation_method == "clip":
-                    temp_df = df_resample.copy().ffill().bfill()
-                    df_resample.loc[extrapolation_index, filtered_column] = temp_df.loc[extrapolation_index, filtered_column]
 
-        if self.params.extrapolation_method == "clip" and self.params.interpolation_method != 'none':
-            df_resample = df_resample.ffill().bfill()
+            if self.params.extrapolation_method == "clip":
+                temp_df = df_resample.copy().ffill().bfill()
+                df_resample.loc[extrapolation_index, filtered_column] = temp_df.loc[extrapolation_index, filtered_column]
+            category_imputation_index = category_imputation_index.union(extrapolation_index).union(interpolation_index)
 
+        if len(category_columns) > 0 and len(category_imputation_index) > 0 and self.params.category_imputation_method != "empty":
+            df_processed = df_resample.loc[category_imputation_index]
+            df_resample.loc[category_imputation_index] = self._fill_in_category_values(df_processed, category_columns)
         df_resampled = df_resample.loc[reference_index].drop('numerical_index', axis=1)
         df_resampled.dropna(subset=filtered_columns_to_resample, inplace=True)
         return df_resampled
+
+    def _fill_in_category_values(self, df, category_columns):
+        category_filled_df = df.copy()
+        if self.params.category_imputation_method == "constant":
+            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].fillna(self.params.category_constant_value)
+        elif self.params.category_imputation_method == "previous":
+            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].ffill()
+        elif self.params.category_imputation_method == "next":
+            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].bfill()
+        elif self.params.category_imputation_method == "clip":
+            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].ffill().bfill()
+        elif self.params.category_imputation_method == "mode":
+            most_frequent_categoricals = category_filled_df.loc[:, category_columns].mode().iloc[0]
+            category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].fillna(most_frequent_categoricals)
+        return category_filled_df

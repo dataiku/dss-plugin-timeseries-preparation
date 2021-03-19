@@ -25,6 +25,8 @@ def get_resampling_params(recipe_config):
     interpolation_method = _p('interpolation_method')
     extrapolation_method = _p('extrapolation_method')
     constant_value = _p('constant_value')
+    category_imputation_method = _p('category_imputation_method','empty')
+    category_constant_value = _p('category_constant_value','')
     time_step = _p('time_step')
     time_unit = _p('time_unit')
     time_unit_end_of_week = _p('time_unit_end_of_week')
@@ -35,6 +37,8 @@ def get_resampling_params(recipe_config):
     params = ResamplerParams(interpolation_method=interpolation_method,
                              extrapolation_method=extrapolation_method,
                              constant_value=constant_value,
+                             category_imputation_method=category_imputation_method,
+                             category_constant_value=category_constant_value,
                              time_step=time_step,
                              time_unit=time_unit,
                              time_unit_end_of_week=time_unit_end_of_week,

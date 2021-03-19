@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-import pandas as pd
-import numpy as np
 import logging
-from operator import itemgetter
 from itertools import *
+from operator import itemgetter
 
-from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from dku_timeseries.timeseries_helpers import get_date_offset, generate_date_range
+import numpy as np
+import pandas as pd
+
+from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, generic_check_compute_arguments
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ class IntervalRestrictor:
                 logger.info("Computing for group {}".format(group_id))
                 filtered_df = self._detect_segment(group, datetime_column, filter_column, filter_function)
                 filtered_groups.append(filtered_df)
-            return pd.concat(filtered_groups).reset_index(drop=True)
+            return pd.concat(filtered_groups, sort=True).reset_index(drop=True)
         else:
             return self._detect_segment(df, datetime_column, filter_column, filter_function)
 
@@ -131,7 +131,6 @@ class IntervalRestrictor:
             end = border_timestamp[-2]
             is_deviation = (end - start) >= self.params.max_deviation_duration
             if is_deviation:
-
                 deviations_indices.extend([border_timestamp[0], border_timestamp[-1]])
 
         if len(deviations_indices) > 0:
