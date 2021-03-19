@@ -64,6 +64,16 @@ def long_df_4():
 
 
 @pytest.fixture
+def long_df_numerical():
+    co2 = [315.58, 316.39, 316.79, 316.2, 345, 234, 100, 299]
+    country = [1, 1, 1, 1, 2, 2, 2, 2]
+    time_index = pd.date_range("1-1-1959", periods=4, freq="D").append(pd.date_range("1-1-1959", periods=4, freq="D"))
+    df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "country": country, "Date": time_index})
+    return df
+
+
+@pytest.fixture
 def recipe_config():
     config = {u'window_type': u'none', u'groupby_columns': [u'country'], u'closed_option': u'left', u'window_unit': u'days', u'window_width': 3,
               u'causal_window': True, u'datetime_column': u'Date', u'advanced_activated': True, u'aggregation_types': [u'retrieve', u'average'],
@@ -103,9 +113,11 @@ def params(recipe_config):
     params.check()
     return params
 
+
 @pytest.fixture
 def params_no_causal(recipe_config):
     recipe_config["causal_window"] = False
+
     def _p(param_name, default=None):
         return recipe_config.get(param_name, default)
 
@@ -198,3 +210,10 @@ class TestWindowingLongFormat:
         np.testing.assert_array_equal(np.round(output_df.value1_avg.values, 2), np.array([np.nan, 316.25, 316.46, np.nan, np.nan, 226.33,
                                                                                           211., np.nan]))
         np.testing.assert_array_equal(output_df.country.values, np.array(['first', 'first', 'first', 'first', 'second', 'second', 'second', 'second']))
+
+    def test_long_format_numerical(self, long_df_numerical, params, recipe_config):
+        window_aggregator = WindowAggregator(params)
+        groupby_columns = ["country"]
+        datetime_column = recipe_config.get('datetime_column')
+        output_df = window_aggregator.compute(long_df_numerical, datetime_column, groupby_columns=groupby_columns)
+        np.testing.assert_array_equal(output_df.country.values, np.array([1, 1, 1, 1, 2, 2, 2, 2]))

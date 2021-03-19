@@ -64,6 +64,16 @@ def long_df_4():
 
 
 @pytest.fixture
+def long_df_numerical():
+    co2 = [315.58, 316.39, 100, 116.2, 345, 234, 201, 100]
+    country = [1, 1, 1, 1, 2, 2, 2, 2]
+    time_index = pd.date_range("1-1-1959", periods=4, freq="D").append(pd.date_range("1-1-1959", periods=4, freq="D"))
+    df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "country": country, "Date": time_index})
+    return df
+
+
+@pytest.fixture
 def recipe_config():
     config = {u'groupby_columns': [u'country'], u'max_threshold': 320, u'min_threshold': 200, u'datetime_column': u'Date', u'advanced_activated': True,
               u'time_unit': u'days', u'min_deviation_duration_value': 0, u'value_column': u'value1', u'min_valid_values_duration_value': 0}
@@ -142,3 +152,13 @@ class TestIntervalLongFormat:
         assert output_df.shape == (4, 5)
         output_df = interval_restrictor.compute(df, datetime_column, threshold_dict, groupby_columns=None)
         assert output_df.shape == (4, 5)
+
+    def test_long_format_numerical(self, long_df_numerical, params, recipe_config, threshold_dict):
+        groupby_columns = ["country"]
+        datetime_column = recipe_config.get('datetime_column')
+
+        interval_restrictor = IntervalRestrictor(params)
+        output_df = interval_restrictor.compute(long_df_numerical, datetime_column, threshold_dict, groupby_columns=groupby_columns)
+        np.testing.assert_array_equal(output_df.Date.values, pd.DatetimeIndex(['1959-01-01T00:00:00.000000000', '1959-01-02T00:00:00.000000000',
+                                                                               '1959-01-02T00:00:00.000000000', '1959-01-03T00:00:00.000000000']))
+        np.testing.assert_array_equal(output_df.country.values, np.array([1, 1, 2, 2]))

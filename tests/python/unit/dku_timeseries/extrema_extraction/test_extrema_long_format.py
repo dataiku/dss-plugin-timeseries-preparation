@@ -65,6 +65,15 @@ def long_df_4():
         {"value1": co2, "value2": co2, "country": country, "item": country_2, "store": country_3, "Date": time_index})
     return df
 
+@pytest.fixture
+def long_df_numerical():
+    co2 = [315.58, 316.39, 316.79, 316.2, 345, 234, 100, 299]
+    country = [1, 1, 1, 1, 2, 2, 2, 2]
+    time_index = pd.date_range("1-1-1959", periods=4, freq="D").append(pd.date_range("1-1-1959", periods=4, freq="D"))
+    df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "country": country, "Date": time_index})
+    return df
+
 
 @pytest.fixture
 def recipe_config():
@@ -169,3 +178,13 @@ class TestExtremaLongFormat:
         assert output_df.shape == (1, 4)
         output_df = extrema_extractor.compute(df, datetime_column, extrema_column, groupby_columns=None)
         assert output_df.shape == (1, 4)
+
+    def test_long_format_numerical(self, long_df_numerical, params, recipe_config):
+        datetime_column = recipe_config.get('datetime_column')
+        extrema_column = "value1"
+        groupby_columns = ["country"]
+        extrema_extractor = ExtremaExtractor(params)
+        output_df = extrema_extractor.compute(long_df_numerical, datetime_column, extrema_column, groupby_columns=groupby_columns)
+        np.testing.assert_array_equal(output_df.Date.values, pd.DatetimeIndex(['1959-01-03T00:00:00.000000000', '1959-01-01T00:00:00.000000000']))
+        np.testing.assert_array_equal(output_df.country.values, np.array([1, 2]))
+
