@@ -114,3 +114,11 @@ def infer_frequency(df):
     else:
         frequency = None
     return frequency
+
+
+def format_group_id(group_id, identifiers_number):
+    if identifiers_number == 1:
+        group_id = [group_id]
+    else:
+        group_id = list(group_id)
+    return group_id

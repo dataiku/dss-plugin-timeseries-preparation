@@ -5,7 +5,7 @@ import pandas as pd
 from scipy import interpolate
 
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
-from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, generate_date_range, reformat_time_value, format_resampling_step, reformat_time_step
+from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, generate_date_range, reformat_time_value, format_resampling_step, reformat_time_step, format_group_id
 
 logger = logging.getLogger(__name__)
 
@@ -102,10 +102,7 @@ class Resampler:
                 group_resampled = self._resample(group.drop(groupby_columns, axis=1), datetime_column, columns_to_resample, category_columns,
                                                  reference_time_index,
                                                  df_id=group_id)
-                if identifiers_number == 1:
-                    group_id = [group_id]
-                else:
-                    group_id = list(group_id)
+                group_id = format_group_id(group_id, identifiers_number)
                 group_resampled[groupby_columns] = pd.DataFrame([group_id], index=group_resampled.index)
                 resampled_groups.append(group_resampled)
             df_resampled = pd.concat(resampled_groups, sort=True)

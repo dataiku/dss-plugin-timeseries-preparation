@@ -3,7 +3,7 @@ import logging
 from dataiku.customrecipe import *
 from dku_timeseries import IntervalRestrictor
 from commons import *
-from recipe_config_loading import check_time_column_parameter
+from recipe_config_loading import check_time_column_parameter, check_and_get_groupby_columns
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
@@ -18,10 +18,7 @@ value_column = recipe_config.get('value_column')
 min_threshold = recipe_config.get('min_threshold')
 max_threshold = recipe_config.get('max_threshold')
 threshold_dict = {value_column: (min_threshold, max_threshold)}
-if recipe_config.get('advanced_activated') and recipe_config.get('groupby_column'):
-    groupby_columns = [recipe_config.get('groupby_column')]
-else:
-    groupby_columns = None
+groupby_columns = check_and_get_groupby_columns(recipe_config, input_dataset_columns)
 params = get_interval_restriction_params(recipe_config)
 
 # --- Run
