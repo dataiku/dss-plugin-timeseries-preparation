@@ -1,197 +1,313 @@
 {
-    "meta": {
-        "label": "Time series windowing",
-        "description": "Compute aggregations or filter a time series using a rolling window.",
-        "icon": "icon-dku-timeseries-window icon-DKU_timeseries_window",
-        "displayOrderRank": 2
+  "meta": {
+    "label": "Time series windowing",
+    "description": "Compute aggregations or filter a time series using a rolling window.",
+    "icon": "icon-dku-timeseries-window icon-DKU_timeseries_window",
+    "displayOrderRank": 2
+  },
+  "kind": "PYTHON",
+  "selectableFromDataset": "input_dataset",
+  "inputRoles": [
+    {
+      "name": "input_dataset",
+      "label": "Input time series",
+      "description": "Dataset containing your time series data.",
+      "arity": "UNARY",
+      "required": true,
+      "acceptsDataset": true,
+      "acceptsFolder": false
+    }
+  ],
+  "outputRoles": [
+    {
+      "name": "output_dataset",
+      "label": "Output dataset.",
+      "description": "",
+      "arity": "UNARY",
+      "required": true,
+      "acceptsDataset": true
+    }
+  ],
+  "params": [
+    {
+      "type": "SEPARATOR",
+      "name": "separator_input",
+      "label": "Input parameters"
     },
-    "kind": "PYTHON",
-    "selectableFromDataset": "input_dataset",
-    "inputRoles": [
+    {
+      "name": "datetime_column",
+      "label": "Time column",
+      "type": "COLUMN",
+      "columnRole": "input_dataset",
+      "allowedColumnTypes": [
+        "date"
+      ],
+      "mandatory": true
+    },
+    {
+      "name": "advanced_activated",
+      "label": "Long format",
+      "description": "If multiple time series are stored in the same column",
+      "type": "BOOLEAN"
+    },
+    {
+      "name": "groupby_column",
+      "label": "Column with identifier",
+      "type": "COLUMN",
+      "columnRole": "input_dataset",
+      "mandatory": false,
+      "description": "⚠️  Deprecated. Use the field 'Time series with identifiers' instead",
+      "visibilityCondition": "model.advanced_activated && (model.groupby_column.length > 0)"
+    },
+    {
+      "name": "groupby_columns",
+      "label": "Time series identifiers",
+      "description": "Columns that identify the multiple time series - mandatory for long format",
+      "type": "COLUMNS",
+      "allowedColumnTypes": [
+        "tinyint",
+        "smallint",
+        "int",
+        "bigint",
+        "string",
+        "boolean"
+      ],
+      "columnRole": "input_dataset",
+      "mandatory": false,
+      "visibilityCondition": "model.advanced_activated && (model.groupby_column.length == 0 || !model.groupby_column)"
+    },
+    {
+      "name": "sep1",
+      "label": "Window parameters",
+      "description": "The window will be applied to the values of all other time series",
+      "type": "SEPARATOR"
+    },
+    {
+      "name": "causal_window",
+      "label": "Causal window",
+      "description": "Set the on-going row at the right border of the window.",
+      "type": "BOOLEAN",
+      "defaultValue": true
+    },
+    {
+      "name": "window_type",
+      "label": "Shape",
+      "type": "SELECT",
+      "selectChoices": [
         {
-            "name": "input_dataset",
-            "label": "Input time series",
-            "description": "Dataset containing your time series data.",
-            "arity": "UNARY",
-            "required": true,
-            "acceptsDataset": true,
-            "acceptsFolder": false
+          "value": "none",
+          "label": "Rectangular"
+        },
+        {
+          "value": "triang",
+          "label": "Triangle"
+        },
+        {
+          "value": "bartlett",
+          "label": "Bartlett"
+        },
+        {
+          "value": "gaussian",
+          "label": "Gaussian"
+        },
+        {
+          "value": "parzen",
+          "label": "Parzen"
+        },
+        {
+          "value": "hamming",
+          "label": "Hamming"
+        },
+        {
+          "value": "blackman",
+          "label": "Blackman"
         }
-    ],
-    "outputRoles": [
+      ],
+      "defaultValue": "none"
+    },
+    {
+      "name": "desc_none",
+      "description": "A simple rectangular window with a flat profile",
+      "type": "SEPARATOR",
+      "visibilityCondition": "model.window_type == 'none'"
+    },
+    {
+      "name": "desc_triang",
+      "description": "A triangle window, linearly increasing then decreasing",
+      "type": "SEPARATOR",
+      "visibilityCondition": "model.window_type == 'triang'"
+    },
+    {
+      "name": "desc_bartlett",
+      "description": "Another triangle window, only its normalization differs",
+      "type": "SEPARATOR",
+      "visibilityCondition": "model.window_type == 'bartlett'"
+    },
+    {
+      "name": "desc_gaussian",
+      "description": "A nonlinear window of gaussian (exponential) shape",
+      "type": "SEPARATOR",
+      "visibilityCondition": "model.window_type == 'gaussian'"
+    },
+    {
+      "name": "desc_parzen",
+      "description": "A nonlinear window made of connected polynomials of the third degree",
+      "type": "SEPARATOR",
+      "visibilityCondition": "model.window_type == 'parzen'"
+    },
+    {
+      "name": "desc_hamming",
+      "description": "A nonlinear window obtained with a sum of cosines (trigonometric polynomial of order 1)",
+      "type": "SEPARATOR",
+      "visibilityCondition": "model.window_type == 'hamming'"
+    },
+    {
+      "name": "desc_blackman",
+      "description": "A nonlinear window obtained with a sum of cosines (trigonometric polynomial of order 2)",
+      "type": "SEPARATOR",
+      "visibilityCondition": "model.window_type == 'blackman'"
+    },
+    {
+      "name": "gaussian_std",
+      "label": "Standard deviation of the gaussian window",
+      "type": "DOUBLE",
+      "defaultValue": 1.0,
+      "visibilityCondition": "model.window_type == 'gaussian'"
+    },
+    {
+      "name": "window_width",
+      "label": "Width",
+      "type": "DOUBLE",
+      "defaultValue": 1
+    },
+    {
+      "name": "window_unit",
+      "label": "Unit",
+      "type": "SELECT",
+      "selectChoices": [
         {
-            "name": "output_dataset",
-            "label": "Output dataset.",
-            "description": "",
-            "arity": "UNARY",
-            "required": true,
-            "acceptsDataset": true
+          "value": "nanoseconds",
+          "label": "Nanoseconds"
+        },
+        {
+          "value": "microseconds",
+          "label": "Microseconds"
+        },
+        {
+          "value": "milliseconds",
+          "label": "Milliseconds"
+        },
+        {
+          "value": "seconds",
+          "label": "Seconds"
+        },
+        {
+          "value": "minutes",
+          "label": "Minutes"
+        },
+        {
+          "value": "hours",
+          "label": "Hours"
+        },
+        {
+          "value": "days",
+          "label": "Days"
+        },
+        {
+          "value": "weeks",
+          "label": "Weeks"
+        },
+        {
+          "value": "months",
+          "label": "Months"
+        },
+        {
+          "value": "years",
+          "label": "Years"
         }
-    ],
-    "params": [
+      ],
+      "defaultValue": "seconds"
+    },
+    {
+      "name": "closed_option",
+      "label": "Include window bounds",
+      "description": "Includes the sides of the window to compute aggregations.",
+      "type": "SELECT",
+      "selectChoices": [
         {
-            "name": "datetime_column",
-            "label": "Timestamp column",
-            "type": "COLUMN",
-            "columnRole": "input_dataset",
-            "allowedColumnTypes": ["date"],
-            "mandatory": true
+          "value": "left",
+          "label": "Yes, left only"
         },
         {
-            "name": "sep1",
-            "label": "Window parameters",
-            "description": "The window will be applied to the values of all other time series",
-            "type": "SEPARATOR"
+          "value": "right",
+          "label": "Yes, right only"
         },
         {
-            "name": "causal_window",
-            "label": "Causal window",
-            "description": "Set the on-going row at the right border of the window.",
-            "type": "BOOLEAN",
-            "defaultValue": true
+          "value": "both",
+          "label": "Yes, both"
         },
         {
-            "name": "window_type",
-            "label": "Shape",
-            "type": "SELECT",
-            "selectChoices": [
-                { "value": "none", "label": "Rectangular"},
-                { "value": "triang", "label": "Triangle"},
-                { "value": "bartlett", "label": "Bartlett"},
-                { "value": "gaussian", "label": "Gaussian"},
-                { "value": "parzen", "label": "Parzen"},
-                { "value": "hamming", "label": "Hamming"},
-                { "value": "blackman", "label": "Blackman"}
-            ],
-            "defaultValue": "none"
-        },
-        {
-            "name": "desc_none",
-            "description": "A simple rectangular window with a flat profile",
-            "type": "SEPARATOR",
-            "visibilityCondition": "model.window_type == 'none'"
-        },
-        {
-            "name": "desc_triang",
-            "description": "A triangle window, linearly increasing then decreasing",
-            "type": "SEPARATOR",
-            "visibilityCondition": "model.window_type == 'triang'"
-        },
-        {
-            "name": "desc_bartlett",
-            "description": "Another triangle window, only its normalization differs",
-            "type": "SEPARATOR",
-            "visibilityCondition": "model.window_type == 'bartlett'"
-        },
-        {
-            "name": "desc_gaussian",
-            "description": "A nonlinear window of gaussian (exponential) shape",
-            "type": "SEPARATOR",
-            "visibilityCondition": "model.window_type == 'gaussian'"
-        },
-        {
-            "name": "desc_parzen",
-            "description": "A nonlinear window made of connected polynomials of the third degree",
-            "type": "SEPARATOR",
-            "visibilityCondition": "model.window_type == 'parzen'"
-        },
-        {
-            "name": "desc_hamming",
-            "description": "A nonlinear window obtained with a sum of cosines (trigonometric polynomial of order 1)",
-            "type": "SEPARATOR",
-            "visibilityCondition": "model.window_type == 'hamming'"
-        },
-        {
-            "name": "desc_blackman",
-            "description": "A nonlinear window obtained with a sum of cosines (trigonometric polynomial of order 2)",
-            "type": "SEPARATOR",
-            "visibilityCondition": "model.window_type == 'blackman'"
-        },
-        {
-            "name": "gaussian_std",
-            "label": "Standard deviation of the gaussian window",
-            "type": "DOUBLE",
-            "defaultValue": 1.0,
-            "visibilityCondition": "model.window_type == 'gaussian'"
-
-        },
-        {
-            "name": "window_width",
-            "label": "Width",
-            "type": "DOUBLE",
-            "defaultValue": 1
-        },
-        {
-            "name": "window_unit",
-            "label": "Unit",
-            "type": "SELECT",
-            "selectChoices": [
-                { "value": "nanoseconds", "label": "Nanoseconds"},
-                { "value": "microseconds", "label": "Microseconds"},
-                { "value": "milliseconds", "label": "Milliseconds"},
-                { "value": "seconds", "label": "Seconds"},
-                { "value": "minutes", "label": "Minutes"},
-                { "value": "hours", "label": "Hours"},
-                { "value": "days", "label": "Days"},
-                { "value": "weeks", "label": "Weeks"},
-                { "value": "months", "label": "Months"},
-                { "value": "years", "label": "Years"}
-            ],
-            "defaultValue": "seconds"
-        },
-        {
-            "name": "closed_option",
-            "label": "Include window bounds",
-            "description": "Includes the sides of the window to compute aggregations.",
-            "type": "SELECT",
-            "selectChoices": [
-                { "value": "left", "label": "Yes, left only"},
-                { "value": "right", "label": "Yes, right only"},
-                { "value": "both", "label": "Yes, both"},
-                { "value": "neither", "label": "No"}
-            ],
-            "defaultValue": "left",
-            "visibilityCondition": "model.causal_window"
-        },
-        {
-            "name": "aggregation_types",
-            "label": "Aggregations",
-            "type": "MULTISELECT",
-            "selectChoices": [
-                { "value": "retrieve", "label": "Retrieve"},
-                { "value": "min", "label": "Min"},
-                { "value": "max", "label": "Max"},
-                { "value": "average", "label": "Average"},
-                { "value": "sum", "label": "Sum"},
-                { "value": "std", "label": "Standard deviation"},
-                { "value": "q25", "label": "25th percentile"},
-                { "value": "median", "label": "Median"},
-                { "value": "q75", "label": "75th percentile"},
-                { "value": "first_order_derivative", "label": "First order derivative"},
-                { "value": "second_order_derivative", "label": "Second order derivative"}
-            ],
-            "defaultValue": ["retrieve","average"]
-        },
-        {
-            "name": "sep3",
-            "label": "Advanced data format",
-            "type": "SEPARATOR"
-        },
-        {
-            "name": "advanced_activated",
-            "label": "Long format",
-            "description": "Use this option if your data is in the long format, with one column identifying multiple time series and a single column for all values.",
-            "type": "BOOLEAN"
-        },
-        {
-            "name": "groupby_column",
-            "label": "Column with identifier",
-            "type": "COLUMN",
-            "columnRole": "input_dataset",
-            "mandatory": false,
-            "description": "",
-            "visibilityCondition": "model.advanced_activated"
-
+          "value": "neither",
+          "label": "No"
         }
-    ]
+      ],
+      "defaultValue": "left",
+      "visibilityCondition": "model.causal_window"
+    },
+    {
+      "name": "aggregation_types",
+      "label": "Aggregations",
+      "type": "MULTISELECT",
+      "selectChoices": [
+        {
+          "value": "retrieve",
+          "label": "Retrieve"
+        },
+        {
+          "value": "min",
+          "label": "Min"
+        },
+        {
+          "value": "max",
+          "label": "Max"
+        },
+        {
+          "value": "average",
+          "label": "Average"
+        },
+        {
+          "value": "sum",
+          "label": "Sum"
+        },
+        {
+          "value": "std",
+          "label": "Standard deviation"
+        },
+        {
+          "value": "q25",
+          "label": "25th percentile"
+        },
+        {
+          "value": "median",
+          "label": "Median"
+        },
+        {
+          "value": "q75",
+          "label": "75th percentile"
+        },
+        {
+          "value": "first_order_derivative",
+          "label": "First order derivative"
+        },
+        {
+          "value": "second_order_derivative",
+          "label": "Second order derivative"
+        }
+      ],
+      "defaultValue": [
+        "retrieve",
+        "average"
+      ]
+    }
+  ]
 }

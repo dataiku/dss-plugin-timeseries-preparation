@@ -36,7 +36,7 @@
     },
     {
       "name": "datetime_column",
-      "label": "Timestamp column",
+      "label": "Time column",
       "type": "COLUMN",
       "columnRole": "input_dataset",
       "allowedColumnTypes": [
@@ -85,7 +85,8 @@
       "name": "time_step",
       "label": "Time step",
       "type": "DOUBLE",
-      "defaultValue": 1
+      "defaultValue": 1,
+      "minD": 0.0001
     },
     {
       "name": "time_unit",
@@ -121,12 +122,24 @@
           "label": "Days"
         },
         {
+          "value": "business_days",
+          "label": "Business days (Mon-Fri)"
+        },
+        {
           "value": "weeks",
           "label": "Weeks"
         },
         {
           "value": "months",
           "label": "Months"
+        },
+        {
+          "value": "quarters",
+          "label": "Quarters"
+        },
+        {
+          "value": "semi_annual",
+          "label": "Semi-annual"
         },
         {
           "value": "years",
@@ -136,14 +149,52 @@
       "defaultValue": "seconds"
     },
     {
+      "name": "time_unit_end_of_week",
+      "label": "End of week day",
+      "type": "SELECT",
+      "mandatory": false,
+      "defaultValue": "SUN",
+      "visibilityCondition": "model.time_unit == 'weeks'",
+      "selectChoices": [
+        {
+          "value": "SUN",
+          "label": "Sunday"
+        },
+        {
+          "value": "MON",
+          "label": "Monday"
+        },
+        {
+          "value": "TUE",
+          "label": "Tuesday"
+        },
+        {
+          "value": "WED",
+          "label": "Wednesday"
+        },
+        {
+          "value": "THU",
+          "label": "Thursday"
+        },
+        {
+          "value": "FRI",
+          "label": "Friday"
+        },
+        {
+          "value": "SAT",
+          "label": "Saturday"
+        }
+      ]
+    },
+    {
       "name": "sep2",
       "label": "Methods",
       "type": "SEPARATOR"
     },
     {
       "name": "interpolation_method",
-      "label": "Interpolation method",
-      "description": "Used to compute values for timestamps located between two existing data points",
+      "label": "Interpolate",
+      "description": "Used to compute values for dates located between two existing data points",
       "type": "SELECT",
       "selectChoices": [
         {
@@ -194,13 +245,13 @@
     },
     {
       "name": "extrapolation_method",
-      "label": "Extrapolation method",
-      "description": "Used to compute values for timestamps before or after the last known data point",
+      "label": "Extrapolate",
+      "description": "Used to compute values for dates before or after the last known data point",
       "type": "SELECT",
       "selectChoices": [
         {
           "value": "clip",
-          "label": "Fill with previous/next value"
+          "label": "Previous/next"
         },
         {
           "value": "interpolation",
@@ -214,8 +265,48 @@
       "defaultValue": "clip"
     },
     {
+      "name": "category_imputation_method",
+      "label": "Impute categorical data",
+      "description": "Used to fill in categorical values during interpolation and extrapolation",
+      "type": "SELECT",
+      "selectChoices": [
+        {
+          "value": "empty",
+          "label": "Empty"
+        },
+        {
+          "value": "constant",
+          "label": "Constant"
+        },
+        {
+          "value": "mode",
+          "label": "Most common"
+        },
+        {
+          "value": "clip",
+          "label": "Previous/next"
+        },
+        {
+          "value": "previous",
+          "label": "Previous"
+        },
+        {
+          "value": "next",
+          "label": "Next"
+        }
+      ],
+      "defaultValue": "empty"
+    },
+    {
+      "name": "category_constant_value",
+      "label": "Constant value",
+      "type": "STRING",
+      "defaultValue": "",
+      "visibilityCondition": "model.category_imputation_method == 'constant'"
+    },
+    {
       "name": "sepEdition",
-      "label": "Edit series [Advanced]",
+      "label": "Advanced parameters",
       "type": "SEPARATOR"
     },
     {
