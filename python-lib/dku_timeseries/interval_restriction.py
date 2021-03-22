@@ -105,7 +105,7 @@ class IntervalRestrictor:
         # find index of invalid values
         invalid_values_numerical_index = new_df[~filter_function(new_df[filter_column])]['numerical_index'].values
 
-        if len(invalid_values_numerical_index) == len(df):  # all data is artefact
+        if len(invalid_values_numerical_index) == len(new_df):  # all data is artefact
             return []
 
         artefact_index_list = []
@@ -152,7 +152,6 @@ class IntervalRestrictor:
             duration = group[1] - group[0]
             if duration >= self.params.min_valid_values_duration:
                 final_indexes.append(group)
-
         return final_indexes
 
     def _detect_segment(self, df, datetime_column, filter_column, filter_function, df_id=''):
