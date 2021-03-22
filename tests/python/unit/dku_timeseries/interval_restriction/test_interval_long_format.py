@@ -132,7 +132,8 @@ class TestIntervalLongFormat:
         output_df = interval_restrictor.compute(long_df_3, datetime_column, threshold_dict, groupby_columns=groupby_columns)
         np.testing.assert_array_equal(output_df.Date.values, pd.DatetimeIndex(['1959-01-31T00:00:00.000000000', '1959-02-28T00:00:00.000000000',
                                                                                '1959-01-31T00:00:00.000000000', '1959-02-28T00:00:00.000000000',
-                                                                               '1959-01-31T00:00:00.000000000', '1959-02-28T00:00:00.000000000']))
+                                                                               '1959-01-31T00:00:00.000000000', '1959-02-28T00:00:00.000000000',
+                                                                               '1959-02-28T00:00:00.000000000']))
 
     def test_mix_identifiers(self, long_df_4, params, recipe_config, threshold_dict):
         groupby_columns = ["country", "item", "store"]
@@ -141,7 +142,8 @@ class TestIntervalLongFormat:
         output_df = interval_restrictor.compute(long_df_4, datetime_column, threshold_dict, groupby_columns=groupby_columns)
         np.testing.assert_array_equal(output_df.Date.values, pd.DatetimeIndex(['2020-01-31T00:00:00.000000000', '2020-02-29T00:00:00.000000000',
                                                                                '2020-02-29T00:00:00.000000000', '2020-01-31T00:00:00.000000000',
-                                                                               '2020-01-31T00:00:00.000000000', '2020-02-29T00:00:00.000000000']))
+                                                                               '2020-01-31T00:00:00.000000000', '2020-02-29T00:00:00.000000000',
+                                                                               '2020-02-29T00:00:00.000000000']))
 
     def test_empty_identifiers(self, df, params, recipe_config, threshold_dict):
         datetime_column = recipe_config.get('datetime_column')
