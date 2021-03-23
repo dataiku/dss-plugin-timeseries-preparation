@@ -7,21 +7,38 @@ from dku_timeseries import WindowAggregatorParams, WindowAggregator
 
 @pytest.fixture
 def monthly_df():
-    co2 = [4,9,4,2,5,1]
+    co2 = [4, 9, 4, 2, 5, 1]
     time_index = pd.date_range("1-1-2015", periods=6, freq="M")
     df = pd.DataFrame.from_dict(
         {"value1": co2, "value2": co2, "Date": time_index})
     return df
 
 @pytest.fixture
+def weekly_df():
+    co2 = [4, 9, 4, 2, 5, 1]
+    time_index = pd.date_range("1-1-2015", periods=6, freq="W-MON")
+    df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "Date": time_index})
+    return df
+
+@pytest.fixture
+def annual_df():
+    co2 = [4, 9, 4, 2, 5, 1]
+    time_index = pd.date_range("1-1-2015", periods=6, freq="W-MON")
+    df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "Date": time_index})
+    return df
+
+
+@pytest.fixture
 def recipe_config():
-    config = {u'window_type': u'gaussian', u'groupby_columns': [u'country'], u'closed_option': u'left', u'window_unit': u'months', u'window_width': 1,
-              u'causal_window': True, u'datetime_column': u'Date', u'advanced_activated': False, u'aggregation_types': [u'average',"sum"],
+    config = {u'window_type': u'none', u'groupby_columns': [u'country'], u'closed_option': u'left', u'window_unit': u'months', u'window_width': 3,
+              u'causal_window': False, u'datetime_column': u'Date', u'advanced_activated': False, u'aggregation_types': [u'average', 'retrieve','sum'],
               u'gaussian_std': 1}
     return config
 
-@pytest.fixture
-def params_no_causal(recipe_config):
+
+def get_params(recipe_config):
     def _p(param_name, default=None):
         return recipe_config.get(param_name, default)
 
@@ -52,9 +69,21 @@ def params_no_causal(recipe_config):
     params.check()
     return params
 
-class TestNoCausalWindow:
-    def test_no_causal_windows(self, monthly_df, params_no_causal, recipe_config):
+
+class TestWindowFrequencies:
+    def test_monthly_no_causal(self, monthly_df, recipe_config):
+        params_no_causal = get_params(recipe_config)
         window_aggregator = WindowAggregator(params_no_causal)
         datetime_column = recipe_config.get('datetime_column')
         output_df = window_aggregator.compute(monthly_df, datetime_column)
-        print(output_df)
+        assert output_df.shape == (6,7)
+        np.testing.assert_array_equal(output_df.value1_sum.values, np.array([np.nan, 17, 15, 11, 8, np.nan]))
+
+    def test_monthly_causal(self, monthly_df, recipe_config):
+        recipe_config["causal_window"] = True
+        recipe_config["window_type"] = "triang"
+        params_causal = get_params(recipe_config)
+        window_aggregator = WindowAggregator(params_causal)
+        datetime_column = recipe_config.get('datetime_column')
+        output_df = window_aggregator.compute(monthly_df, datetime_column)
+        assert output_df.shape == (6,7)
