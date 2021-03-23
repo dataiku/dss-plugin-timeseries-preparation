@@ -97,7 +97,10 @@ def get_smaller_unit(window_unit):
 
 
 def convert_time_freq_to_row_freq(frequency, window_description):
-    data_frequency = pd.to_timedelta(to_offset(frequency))
+    data_frequency = to_offset(frequency)
+    time_step, time_unit = convert_to_rolling_compatible_time_unit(data_frequency.n, data_frequency.name)
+    time_description = str(time_step) + FREQUENCY_STRINGS.get(time_unit, time_unit)
+    data_frequency = pd.to_timedelta(to_offset(time_description))
     demanded_frequency = pd.to_timedelta(to_offset(window_description))
     n = demanded_frequency / data_frequency
     if n < 1:
@@ -122,3 +125,14 @@ def format_group_id(group_id, identifiers_number):
     else:
         group_id = list(group_id)
     return group_id
+
+
+def convert_to_rolling_compatible_time_unit(window_width, window_unit):
+    if window_unit == 'weeks' or window_unit.startswith("W"):
+        return 7 * window_width, 'days'
+    elif window_unit == 'months' or window_unit == "M":
+        return 30 * window_width, 'days'
+    elif window_unit == 'years' or window_unit == "Y":
+        return 365 * window_width, 'days'
+    else:
+        return window_width, window_unit

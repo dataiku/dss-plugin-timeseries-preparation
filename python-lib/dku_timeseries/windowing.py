@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, generic_check_compute_arguments
-from dku_timeseries.timeseries_helpers import convert_time_freq_to_row_freq, get_smaller_unit, infer_frequency, FREQUENCY_STRINGS, format_group_id
+from dku_timeseries.timeseries_helpers import convert_time_freq_to_row_freq, get_smaller_unit, infer_frequency, FREQUENCY_STRINGS, format_group_id, \
+    convert_to_rolling_compatible_time_unit
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ class WindowAggregatorParams:  # TODO better naming ?
                  aggregation_types=AGGREGATION_TYPES):
 
         self.causal_window = causal_window
-        self.window_width, self.window_unit = self._convert_to_rolling_compatible_time_unit(window_width, window_unit)
+        self.window_width, self.window_unit = convert_to_rolling_compatible_time_unit(window_width, window_unit)
         self.window_description = str(self.window_width) + FREQUENCY_STRINGS.get(self.window_unit, '')
         self.min_period = min_period
         self.closed_option = closed_option
@@ -77,16 +78,6 @@ class WindowAggregatorParams:  # TODO better naming ?
             raise ValueError('"{0}" is not a valid closed option. Possible values are: {1}'.format(self.closed_option, CLOSED_OPTIONS))
         if self.window_unit == 'rows':
             raise NotImplementedError
-
-    def _convert_to_rolling_compatible_time_unit(self, window_width, window_unit):
-        if window_unit == 'weeks':
-            return 7 * window_width, 'days'
-        elif window_unit == 'months':
-            return 30 * window_width, 'days'
-        elif window_unit == 'years':
-            return 365 * window_width, 'days'
-        else:
-            return window_width, window_unit
 
 
 class WindowAggregator:
