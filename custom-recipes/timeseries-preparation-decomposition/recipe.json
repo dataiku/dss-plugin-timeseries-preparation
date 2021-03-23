@@ -336,7 +336,7 @@
       "name": "seasonal_stl",
       "label": "Seasonal smoother",
       "type": "INT",
-      "description": "Odd integer. Number of consecutive timesteps (years, weeks..) to be used in estimating each value in the seasonal component. It controls how rapidly the seasonal component can change.",
+      "description": "Odd integer greater than 7. Number of consecutive timesteps (years, weeks..) to be used in estimating each value in the seasonal component. It controls how rapidly the seasonal component can change.",
       "defaultValue": 7,
       "minI": 7,
       "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
