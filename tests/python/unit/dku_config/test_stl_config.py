@@ -58,10 +58,9 @@ class TestSTLConfig:
     def test_default_values(self, advanced_config, input_dataset_columns):
         dku_config = STLConfig()
         advanced_config.pop("seasonal_stl")
-        advanced_config.pop("robust_stl")
-        dku_config.add_parameters(advanced_config, input_dataset_columns)
-        assert dku_config.seasonal == 7
-        assert dku_config.robust_stl == False
+        with pytest.raises(DSSParameterError) as str_err:
+            _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert "required" in str(str_err.value)
 
     def test_advanced_parameters(self, advanced_config, input_dataset_columns):
         dku_config = STLConfig()
