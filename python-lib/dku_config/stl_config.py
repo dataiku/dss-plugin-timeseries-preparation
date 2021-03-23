@@ -20,6 +20,11 @@ class STLConfig(DecompositionConfig):
             value=seasonal,
             checks=[
                 {
+                    "type": "exists",
+                    "err_msg": "The seasonal smoother is required and must be an odd integer greater than 7."
+
+                },
+                {
                     "type": "is_type",
                     "op": int
                 },
@@ -32,8 +37,7 @@ class STLConfig(DecompositionConfig):
                     "type": "custom",
                     "cond": (seasonal and isinstance(seasonal, int) and (seasonal % 2 == 1)),
                     "err_msg": "The seasonal smoother must be an odd integer."
-                }],
-            required=True
+                }]
         )
 
         self.add_param(
