@@ -45,7 +45,7 @@ class DecompositionConfig(DkuConfig):
                      },
                     {"type": "in",
                      "op": input_dataset_columns,
-                     "err_msg": f"Invalid time column selection: {config.get('time_column')}"
+                     "err_msg": f"Invalid time column selection: {config.get('time_column')}."
                      }],
             required=True
         )
@@ -57,7 +57,7 @@ class DecompositionConfig(DkuConfig):
                      },
                     {"type": "in",
                      "op": input_dataset_columns,
-                     "err_msg": f"Invalid target column(s) selection: {config.get('target_columns')}"
+                     "err_msg": f"Invalid target column(s) selection: {config.get('target_columns')}."
                      }],
             required=True
         )
@@ -93,7 +93,7 @@ class DecompositionConfig(DkuConfig):
             else:
                 period_value = config.get(f"season_length_{frequency_value}", freq_to_period(frequency_value))
                 if not config.get(f"season_length_{frequency_value}"):
-                    logger.warning(f"The recipe relies on the default period = {period_value} for a frequency = {frequency_value}")
+                    logger.warning(f"The recipe relies on the default period = {period_value} for a frequency = {frequency_value}.")
 
             self.add_param(
                 name="period",
@@ -123,7 +123,7 @@ class DecompositionConfig(DkuConfig):
                      },
                     {"type": "custom",
                      "cond": is_long_format_valid,
-                     "err_msg": "Long format is selected but no time series identifiers were provided"
+                     "err_msg": "Long format is selected but no time series identifiers were provided."
                      }])
 
         if long_format:
@@ -135,7 +135,7 @@ class DecompositionConfig(DkuConfig):
                          },
                         {"type": "in",
                          "op": input_dataset_columns,
-                         "err_msg": f"Invalid time series identifiers selection: {timeseries_identifiers}"
+                         "err_msg": f"Invalid time series identifiers selection: {timeseries_identifiers}."
                          }],
                 required=True
             )

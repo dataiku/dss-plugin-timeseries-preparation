@@ -1,5 +1,6 @@
 import json
 from json import JSONDecodeError
+
 import numpy as np
 from statsmodels.tools.validation.validation import array_like
 
@@ -14,6 +15,7 @@ class ClassicalConfig(DecompositionConfig):
         config(dict): Dict storing the DSSParameters
         minimum_period: Minimum period required by the classical decomposition
     """
+
     def __init__(self):
         super().__init__()
 
@@ -31,7 +33,7 @@ class ClassicalConfig(DecompositionConfig):
                     {
                         "type": "custom",
                         "cond": are_keys_in(["filt", "two_sided", "extrapolate_trend"], advanced_params),
-                        "err_msg": "This field is invalid. The keys should be in the following iterable: [filt, two_sided,extrapolate_trend]"
+                        "err_msg": "This field is invalid. The keys should be in the following iterable: [filt, two_sided,extrapolate_trend]."
                     }
                 ],
                 required=False
@@ -56,7 +58,7 @@ class ClassicalConfig(DecompositionConfig):
                         {
                             "type": "custom",
                             "op": filt_array is not None,
-                            "err_msg": "This field is invalid. It should be a numeric array such as [1, 2]"
+                            "err_msg": "This field is invalid. It should be a numeric array such as [1, 2]."
                         },
 
                     ],
@@ -102,7 +104,7 @@ class ClassicalConfig(DecompositionConfig):
                         {
                             "type": "custom",
                             "cond": is_extrapolate_valid,
-                            "err_msg": "Extrapolate trend must be a positive integer or the string 'freq'"
+                            "err_msg": "Extrapolate trend must be a positive integer or the string 'freq'."
 
                         }
                     ],

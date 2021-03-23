@@ -72,12 +72,12 @@ class STLConfig(DecompositionConfig):
                     {
                         "type": "custom",
                         "cond": are_degree_keys_valid,
-                        "err_msg": "This field is invalid. The keys should be in the following iterable: [seasonal_deg, trend_deg,low_pass_deg]"
+                        "err_msg": "This field is invalid. The keys should be in the following iterable: [seasonal_deg, trend_deg,low_pass_deg]."
                     },
                     {
                         "type": "custom",
                         "cond": are_degree_values_valid,
-                        "err_msg": "This field is invalid. The degrees used for Loess estimation must be equal to 0 or 1"
+                        "err_msg": "This field is invalid. The degrees used for Loess estimation must be equal to 0 or 1."
                     }
                 ],
                 required=False
@@ -103,7 +103,7 @@ class STLConfig(DecompositionConfig):
                     {
                         "type": "custom",
                         "cond": are_speed_up_keys_valid,
-                        "err_msg": "This field is invalid. The keys should be in the following iterable: [seasonal_jump, trend_jump,low_pass_jump]"
+                        "err_msg": "This field is invalid. The keys should be in the following iterable: [seasonal_jump, trend_jump,low_pass_jump]."
                     },
                     {
                         "type": "custom",
@@ -139,12 +139,12 @@ class STLConfig(DecompositionConfig):
                     {
                         "type": "custom",
                         "cond": are_smoothers_keys_valid,
-                        "err_msg": "This field is invalid. The keys should be in the following iterable: [trend, low_pass]"
+                        "err_msg": "This field is invalid. The keys should be in the following iterable: [trend, low_pass]."
                     },
                     {
                         "type": "custom",
                         "cond": are_smoothers_values_valid,
-                        "err_msg": f"This field is invalid. The values should be odd positive integers greater than 3 and the period (= {self.period})"
+                        "err_msg": f"This field is invalid. The values should be odd positive integers greater than 3 and the period (= {self.period})."
                     }
                 ],
                 required=False
