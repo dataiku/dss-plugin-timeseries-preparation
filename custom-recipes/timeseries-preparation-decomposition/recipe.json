@@ -21,8 +21,8 @@
   "outputRoles": [
     {
       "name": "output_dataset",
-      "label": "Transformation results",
-      "description": "Dataset resulting from the time series transformation",
+      "label": "Decomposition results",
+      "description": "Dataset resulting from the time series decomposition",
       "arity": "UNARY",
       "required": true,
       "acceptsDataset": true,
