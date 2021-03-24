@@ -97,8 +97,8 @@ def get_smaller_unit(window_unit):
 
 
 def convert_time_freq_to_row_freq(frequency, window_description):
-    data_frequency = to_offset(frequency)
-    time_step, time_unit = convert_to_rolling_compatible_time_unit(data_frequency.n, data_frequency.name)
+    data_frequency_offset = to_offset(frequency)
+    time_step, time_unit = convert_to_rolling_compatible_time_unit(data_frequency_offset.n, data_frequency_offset.name)
     time_description = str(time_step) + FREQUENCY_STRINGS.get(time_unit, time_unit)
     data_frequency = pd.to_timedelta(to_offset(time_description))
     demanded_frequency = pd.to_timedelta(to_offset(window_description))
