@@ -193,14 +193,14 @@ class IntervalRestrictor:
         """
         df_copy = df.copy()
         if len(df) > 0:
-            columns_without_date = df_copy.columns[1:]
+            columns = df_copy.columns
 
             first_date = df_copy.index[0] - get_date_offset("years", 1)
-            left_edge = pd.DataFrame(columns=columns_without_date, index=[first_date])
+            left_edge = pd.DataFrame(columns=columns, index=[first_date])
             df_initialized = pd.concat([left_edge, df_copy], sort=True)
 
             last_date = df_initialized.index[-1] + get_date_offset("years", 1)
-            right_edge = pd.DataFrame(columns=columns_without_date, index=[last_date])
+            right_edge = pd.DataFrame(columns=columns, index=[last_date])
             df_initialized = pd.concat([df_initialized, right_edge], sort=True)
             return df_initialized
         else:
