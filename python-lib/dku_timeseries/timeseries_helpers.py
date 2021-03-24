@@ -132,7 +132,7 @@ def convert_to_rolling_compatible_time_unit(window_width, window_unit):
         return 7 * window_width, 'days'
     elif window_unit == 'months' or window_unit == "M":
         return 30 * window_width, 'days'
-    elif window_unit == 'years' or window_unit == "Y":
+    elif window_unit == 'years' or window_unit.startswith("A"):
         return 365 * window_width, 'days'
     else:
         return window_width, window_unit
