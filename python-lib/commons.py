@@ -1,4 +1,7 @@
 # coding: utf-8
+import logging
+import sys
+
 import dataiku
 from dataiku.customrecipe import *
 
@@ -7,12 +10,17 @@ from dku_timeseries import IntervalRestrictorParams
 from dku_timeseries import ResamplerParams
 from dku_timeseries import WindowAggregator, WindowAggregatorParams
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
+
 
 def get_input_output():
     if len(get_input_names_for_role('input_dataset')) == 0:
         raise ValueError('No input dataset.')
     input_dataset_name = get_input_names_for_role('input_dataset')[0]
     input_dataset = dataiku.Dataset(input_dataset_name)
+    if len(get_output_names_for_role('output_dataset')) == 0:
+        raise ValueError('No output dataset.')
     output_dataset_name = get_output_names_for_role('output_dataset')[0]
     output_dataset = dataiku.Dataset(output_dataset_name)
     return (input_dataset, output_dataset)
@@ -129,3 +137,10 @@ def get_extrema_extraction_params(recipe_config):
     params = ExtremaExtractorParams(window_aggregator=window_aggregator, extrema_type=extrema_type)
     params.check()
     return params
+
+
+def check_python_version():
+    if sys.version_info.major == 2:
+        logger.warning(
+            "You are using Python {}.{}. Python 2 is now deprecated for the Time Series preparation plugin. Please consider creating a new Python 3.6 "
+            "code environment for this plugin".format(sys.version_info.major, sys.version_info.minor))

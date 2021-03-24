@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 import logging
-from dataiku.customrecipe import *
+
+from dataiku.customrecipe import get_recipe_config
+
+from commons import check_python_version, get_input_output, get_interval_restriction_params
 from dku_timeseries import IntervalRestrictor
-from commons import *
 from recipe_config_loading import check_time_column_parameter, check_and_get_groupby_columns
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
+
+check_python_version()
 
 # --- Setup
 (input_dataset, output_dataset) = get_input_output()
