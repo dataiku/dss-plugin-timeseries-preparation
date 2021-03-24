@@ -127,12 +127,12 @@ def format_group_id(group_id, identifiers_number):
     return group_id
 
 
-def convert_to_rolling_compatible_time_unit(window_width, window_unit):
-    if window_unit == 'weeks' or window_unit.startswith("W"):
-        return 7 * window_width, 'days'
-    elif window_unit == 'months' or window_unit == "M":
-        return 30 * window_width, 'days'
-    elif window_unit == 'years' or window_unit.startswith("A"):
-        return 365 * window_width, 'days'
+def convert_to_rolling_compatible_time_unit(time_step, time_unit):
+    if time_unit == 'weeks' or time_unit.startswith("W"):
+        return 7 * time_step, 'days'
+    elif time_unit == 'months' or time_unit == "M":
+        return 30 * time_step, 'days'
+    elif time_unit == 'years' or time_unit.startswith("A"):
+        return 365 * time_step, 'days'
     else:
-        return window_width, window_unit
+        return time_step, time_unit
