@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, generic_check_compute_arguments
+from dku_timeseries.timeseries_helpers import get_date_offset
 
 logger = logging.getLogger(__name__)
 
@@ -98,13 +99,13 @@ class IntervalRestrictor:
 
         TODO: should take a dict of functions ? -> different conditions for each column for example
         """
-        new_df = df.copy()
+        new_df = self._initialize_edges(df)
         new_df['numerical_index'] = range(len(new_df))
 
         # find index of invalid values
         invalid_values_numerical_index = new_df[~filter_function(new_df[filter_column])]['numerical_index'].values
 
-        if len(invalid_values_numerical_index) == len(df):  # all data is artefact
+        if len(invalid_values_numerical_index) == len(new_df):  # all data is artefact
             return []
 
         artefact_index_list = []
@@ -151,7 +152,6 @@ class IntervalRestrictor:
             duration = group[1] - group[0]
             if duration >= self.params.min_valid_values_duration:
                 final_indexes.append(group)
-
         return final_indexes
 
     def _detect_segment(self, df, datetime_column, filter_column, filter_function, df_id=''):
@@ -186,3 +186,22 @@ class IntervalRestrictor:
             segment_df = pd.DataFrame(columns=df_copy.columns)
 
         return segment_df.rename_axis(datetime_column).reset_index()
+
+    def _initialize_edges(self, df):
+        """
+        Adds an empty row at the beginning and the end of the dataset to initialize the algorithm
+        """
+        df_copy = df.copy()
+        if len(df) > 0:
+            columns = df_copy.columns
+
+            first_date = df_copy.index[0] - get_date_offset("years", 1)
+            left_edge = pd.DataFrame(columns=columns, index=[first_date])
+            df_initialized = pd.concat([left_edge, df_copy], sort=True)
+
+            last_date = df_initialized.index[-1] + get_date_offset("years", 1)
+            right_edge = pd.DataFrame(columns=columns, index=[last_date])
+            df_initialized = pd.concat([df_initialized, right_edge], sort=True)
+            return df_initialized
+        else:
+            return df_copy
