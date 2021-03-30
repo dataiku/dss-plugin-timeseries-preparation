@@ -15,6 +15,15 @@ def monthly_df():
 
 
 @pytest.fixture
+def monthly_start_df():
+    co2 = [4, 9, 4, 2, 5, 1]
+    time_index = pd.date_range("1-1-2015", periods=6, freq="MS")
+    df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "Date": time_index})
+    return df
+
+
+@pytest.fixture
 def weekly_df():
     co2 = [4, 9, 4, 2, 5, 1, 2, 3, 4]
     time_index = pd.date_range("1-1-2015", periods=9, freq="2W-MON")
@@ -27,6 +36,15 @@ def weekly_df():
 def annual_df():
     co2 = [4, 9, 4, 2, 5, 1]
     time_index = pd.date_range("1-1-2015", periods=6, freq="Y")
+    df = pd.DataFrame.from_dict(
+        {"value1": co2, "Date": time_index})
+    return df
+
+
+@pytest.fixture
+def annual_start_df():
+    co2 = [4, 9, 4, 2, 5, 1]
+    time_index = pd.date_range("1-1-2015", periods=6, freq="YS")
     df = pd.DataFrame.from_dict(
         {"value1": co2, "Date": time_index})
     return df
@@ -115,7 +133,7 @@ class TestWindowFrequencies:
         datetime_column = recipe_config.get('datetime_column')
         output_df = window_aggregator.compute(annual_df, datetime_column)
         assert output_df.shape == (6, 4)
-        np.testing.assert_array_equal(output_df.value1_sum, np.array([np.nan,17,15, 11, 8 , np.nan]))
+        np.testing.assert_array_equal(output_df.value1_sum, np.array([np.nan, 17, 15, 11, 8, np.nan]))
 
     def test_annual_causal(self, annual_df, recipe_config):
         recipe_config["causal_window"] = True
@@ -150,3 +168,25 @@ class TestWindowFrequencies:
         output_df = window_aggregator.compute(annual_df, datetime_column)
         np.testing.assert_array_equal(output_df.value1_sum, np.nan * np.ones(6))
 
+    def test_month_start(self, monthly_start_df, recipe_config):
+        recipe_config["window_width"] = 1
+        recipe_config["aggregation_types"] = [u'average', 'retrieve']
+        params = get_params(recipe_config)
+        window_aggregator = WindowAggregator(params)
+        datetime_column = recipe_config.get('datetime_column')
+        output_df = window_aggregator.compute(monthly_start_df, datetime_column)
+        assert output_df.shape == (6, 5)
+        np.testing.assert_array_equal(output_df.Date.values, pd.DatetimeIndex(['2015-01-01T00:00:00.000000000', '2015-02-01T00:00:00.000000000',
+                                                                               '2015-03-01T00:00:00.000000000', '2015-04-01T00:00:00.000000000',
+                                                                               '2015-05-01T00:00:00.000000000', '2015-06-01T00:00:00.000000000']))
+
+    def test_year_start(self, annual_start_df, recipe_config):
+        recipe_config["window_unit"] = "years"
+        params = get_params(recipe_config)
+        window_aggregator = WindowAggregator(params)
+        datetime_column = recipe_config.get('datetime_column')
+        output_df = window_aggregator.compute(annual_start_df, datetime_column)
+        assert output_df.shape == (6, 4)
+        np.testing.assert_array_equal(output_df.Date.values, pd.DatetimeIndex(['2015-01-01T00:00:00.000000000', '2016-01-01T00:00:00.000000000',
+                                                                               '2017-01-01T00:00:00.000000000', '2018-01-01T00:00:00.000000000',
+                                                                               '2019-01-01T00:00:00.000000000', '2020-01-01T00:00:00.000000000']))
