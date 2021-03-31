@@ -74,7 +74,7 @@
       ],
       "columnRole": "input_dataset",
       "mandatory": false,
-      "visibilityCondition": "model.advanced_activated && (model.groupby_column.length == 0 || !model.groupby_column)"
+      "visibilityCondition": "model.advanced_activated"
     },
     {
       "name": "sep1",
