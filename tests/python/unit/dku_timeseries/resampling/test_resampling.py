@@ -3,7 +3,6 @@ import random
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from dku_timeseries.resampling import ResamplerParams, Resampler
 
@@ -48,16 +47,6 @@ def _make_resampling_params():
 def _make_resampler():
     params = _make_resampling_params()
     return Resampler(params)
-
-
-@pytest.fixture
-def categorical_df():
-    co2 = [315.58, 316.39, 316.79, 316.2]
-    categorical = ["first", "first", "second", "second"]
-    time_index = pd.date_range("1-1-1959", periods=4, freq="M")
-    categorical_df = pd.DataFrame.from_dict(
-        {"value1": co2, "value2": co2, "categorical": categorical, "time_col": time_index})
-    return categorical_df
 
 
 ### Test cases
@@ -287,14 +276,3 @@ class TestResampler:
                                                                                     '2021-04-03T22:00:00.000000000', '2021-04-10T22:00:00.000000000',
                                                                                     '2021-04-17T22:00:00.000000000', '2021-04-24T22:00:00.000000000',
                                                                                     '2021-05-01T22:00:00.000000000']))
-
-    def test_no_categorical_impute(self, categorical_df):
-        params_no_impute = ResamplerParams(time_unit="weeks", extrapolation_method='none')
-        resampler_no_impute = Resampler(params_no_impute)
-        no_impute_df = resampler_no_impute.transform(categorical_df, TIME_COL)
-        assert pd.isnull(no_impute_df["categorical"].values).all()
-
-        params_with_impute = ResamplerParams(time_unit="weeks", extrapolation_method='none', category_imputation_method="empty")
-        resampler_with_impute = Resampler(params_with_impute)
-        impute_df = resampler_with_impute.transform(categorical_df, TIME_COL)
-        assert pd.isnull(impute_df["categorical"].values).all()
