@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from dku_timeseries import IntervalRestrictorParams, IntervalRestrictor
+from dku_timeseries import IntervalRestrictor
+from recipe_config_loading import get_interval_restriction_params
 
 
 @pytest.fixture
@@ -91,19 +92,7 @@ def threshold_dict(recipe_config):
 
 @pytest.fixture
 def params(recipe_config):
-    def _p(param_name, default=None):
-        return recipe_config.get(param_name, default)
-
-    min_valid_values_duration_value = _p('min_valid_values_duration_value')
-    min_deviation_duration_value = _p('min_deviation_duration_value')
-    time_unit = _p('time_unit')
-
-    params = IntervalRestrictorParams(min_valid_values_duration_value=min_valid_values_duration_value,
-                                      max_deviation_duration_value=min_deviation_duration_value,
-                                      time_unit=time_unit)
-
-    params.check()
-    return params
+    return get_interval_restriction_params(recipe_config)
 
 
 class TestIntervalLongFormat:

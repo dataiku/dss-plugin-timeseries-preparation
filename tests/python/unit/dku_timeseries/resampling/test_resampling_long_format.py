@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from dku_timeseries import ResamplerParams, Resampler
+from dku_timeseries import Resampler
+from recipe_config_loading import get_resampling_params
 
 
 @pytest.fixture
@@ -84,21 +85,7 @@ def config():
 
 @pytest.fixture
 def params(config):
-    def _p(param_name, default=None):
-        return config.get(param_name, default)
-
-    interpolation_method = _p('interpolation_method')
-    extrapolation_method = _p('extrapolation_method')
-    constant_value = _p('constant_value')
-    time_step = _p('time_step')
-    time_unit = _p('time_unit')
-
-    params = ResamplerParams(interpolation_method=interpolation_method,
-                             extrapolation_method=extrapolation_method,
-                             constant_value=constant_value,
-                             time_step=time_step,
-                             time_unit=time_unit)
-    return params
+    return get_resampling_params(config)
 
 
 class TestResamplerLongFormat:

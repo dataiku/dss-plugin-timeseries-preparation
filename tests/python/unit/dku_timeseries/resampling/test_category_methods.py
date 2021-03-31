@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from dku_timeseries import ResamplerParams, Resampler
+from dku_timeseries import Resampler
+from recipe_config_loading import get_resampling_params
 
 
 @pytest.fixture
@@ -38,6 +39,7 @@ def df3():
         {"value1": co2, "value2": co2, "categorical": categorical, "Date": time_index})
     return df
 
+
 @pytest.fixture
 def missing_row_df():
     co2 = [315.58, 316.39, 316.79, 316.2]
@@ -58,11 +60,12 @@ def long_df():
         {"value1": co2, "value2": co2, "country": country, "categorical": categorical, "Date": time_index})
     return long_df
 
+
 @pytest.fixture
 def long_df_mode():
-    co2 = [315.58, 316.39,300, 316.79, 316.2, 390]
-    country = [0, 0,0, 1, 1,1]
-    categorical = ["first","first", "second", "third", "fourth", "fourth"]
+    co2 = [315.58, 316.39, 300, 316.79, 316.2, 390]
+    country = [0, 0, 0, 1, 1, 1]
+    categorical = ["first", "first", "second", "third", "fourth", "fourth"]
     time_index = pd.date_range("1-1-1959", periods=3, freq="M").append(pd.date_range("1-1-1959", periods=3, freq="M"))
     long_df = pd.DataFrame.from_dict(
         {"value1": co2, "value2": co2, "country": country, "categorical": categorical, "Date": time_index})
@@ -101,30 +104,9 @@ def config():
     return config
 
 
-def get_params(config):
-    def _p(param_name, default=None):
-        return config.get(param_name, default)
-
-    interpolation_method = _p('interpolation_method')
-    extrapolation_method = _p('extrapolation_method')
-    category_imputation_method = _p('category_imputation_method', 'empty')
-    category_constant_value = _p('category_constant_value', '')
-    constant_value = _p('constant_value')
-    time_step = _p('time_step')
-    time_unit = _p('time_unit')
-    params = ResamplerParams(interpolation_method=interpolation_method,
-                             extrapolation_method=extrapolation_method,
-                             constant_value=constant_value,
-                             category_imputation_method=category_imputation_method,
-                             category_constant_value=category_constant_value,
-                             time_step=time_step,
-                             time_unit=time_unit)
-    return params
-
-
 class TestCategoryMethods:
     def test_extrapolation(self, df, config):
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(df, datetime_column)
@@ -139,7 +121,7 @@ class TestCategoryMethods:
         assert math.isnan(output_df.loc[7, "categorical"])
 
         config["extrapolation_method"] = "none"
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(df, datetime_column)
@@ -148,7 +130,7 @@ class TestCategoryMethods:
         assert np.isnan(category_results).all()
 
         config["extrapolation_method"] = "interpolation"
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(df, datetime_column)
@@ -158,7 +140,7 @@ class TestCategoryMethods:
     def test_empty_filling(self, df2, config):
         config["time_unit"] = "hours"
         config["time_step"] = 12
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(df2, datetime_column)
@@ -173,7 +155,7 @@ class TestCategoryMethods:
         config["category_constant_value"] = "myvalue"
         config["time_unit"] = "hours"
         config["time_step"] = 12
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(df2, datetime_column)
@@ -183,11 +165,21 @@ class TestCategoryMethods:
         assert output_df.loc[6, "categorical"] == "second"
         assert output_df.loc[7, "categorical"] == "myvalue"
 
+    def test_missing_constant(self, df2, config):
+        config["category_imputation_method"] = "constant"
+        config["time_unit"] = "hours"
+        config["time_step"] = 12
+        params = get_resampling_params(config)
+        resampler = Resampler(params)
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(df2, datetime_column)
+        np.testing.assert_array_equal(output_df.categorical.values, np.array(['first', '', '', '', 'first', '', 'second', '', 'second', '', 'third']))
+
     def test_previous_filling(self, df2, config):
         config["category_imputation_method"] = "previous"
         config["time_unit"] = "hours"
         config["time_step"] = 12
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(df2, datetime_column)
@@ -198,7 +190,7 @@ class TestCategoryMethods:
         config["category_imputation_method"] = "next"
         config["time_unit"] = "hours"
         config["time_step"] = 12
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(df2, datetime_column)
@@ -210,7 +202,7 @@ class TestCategoryMethods:
 
     def test_no_category_values(self, df, config):
         config["category_imputation_method"] = "previous"
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df_first = resampler.transform(df, datetime_column)
@@ -218,7 +210,7 @@ class TestCategoryMethods:
                                       np.array(['first', 'first', 'first', 'first', 'first', 'second', 'second', 'second']))
 
         config["category_imputation_method"] = "empty"
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df_empty = resampler.transform(df, datetime_column)
@@ -228,7 +220,7 @@ class TestCategoryMethods:
         config["category_imputation_method"] = "previous"
         config["time_unit"] = "weeks"
         config["time_step"] = 1
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(long_df, datetime_column, groupby_columns=["country"])
@@ -245,7 +237,7 @@ class TestCategoryMethods:
         config["category_imputation_method"] = "next"
         config["time_unit"] = "weeks"
         config["time_step"] = 1
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(long_df, datetime_column, groupby_columns=["country"])
@@ -256,7 +248,7 @@ class TestCategoryMethods:
         config["category_imputation_method"] = "clip"
         config["time_unit"] = "weeks"
         config["time_step"] = 1
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(long_df, datetime_column, groupby_columns=["country"])
@@ -266,7 +258,7 @@ class TestCategoryMethods:
         config["category_imputation_method"] = "mode"
         config["time_unit"] = "weeks"
         config["time_step"] = 1
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(df3, datetime_column)
@@ -276,36 +268,36 @@ class TestCategoryMethods:
         config["category_imputation_method"] = "mode"
         config["time_unit"] = "weeks"
         config["time_step"] = 1
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(long_df_mode, datetime_column, groupby_columns=["country"])
-        assert np.all(output_df.loc[output_df.country == 0,"categorical"].values == "first")
+        assert np.all(output_df.loc[output_df.country == 0, "categorical"].values == "first")
         assert np.all(output_df.loc[output_df.country == 1, "categorical"].values == "fourth")
 
     def test_missing_categorical(self, missing_row_df, config):
         config["time_unit"] = "weeks"
         config["time_step"] = 12
         config["category_imputation_method"] = "clip"
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(missing_row_df, datetime_column)
         assert np.all(output_df.categorical.values == "second")
 
         config["category_imputation_method"] = "previous"
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(missing_row_df, datetime_column)
-        assert math.isnan(output_df.loc[0,"categorical"])
-        assert np.all(output_df.loc[1:,"categorical"].values == "second")
+        assert math.isnan(output_df.loc[0, "categorical"])
+        assert np.all(output_df.loc[1:, "categorical"].values == "second")
 
     def test_df_multiple_dates(self, df_multiple_dates, config):
         config["category_imputation_method"] = "previous"
         config["time_unit"] = "hours"
         config["time_step"] = 12
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(df_multiple_dates, datetime_column)
@@ -315,7 +307,7 @@ class TestCategoryMethods:
         config["category_imputation_method"] = "previous"
         config["time_unit"] = "hours"
         config["time_step"] = 12
-        params = get_params(config)
+        params = get_resampling_params(config)
         resampler = Resampler(params)
         datetime_column = config.get('datetime_column')
         output_df = resampler.transform(bool_df, datetime_column)

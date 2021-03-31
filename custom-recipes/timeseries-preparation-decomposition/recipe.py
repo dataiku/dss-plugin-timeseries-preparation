@@ -10,7 +10,7 @@ from time import perf_counter
 
 from dataiku.customrecipe import get_recipe_config
 
-from commons import get_input_output
+from io_utils import get_input_output
 from dku_timeseries.dku_decomposition.helpers import check_and_load_params
 from safe_logger import SafeLogger
 from timeseries_preparation.preparation import TimeseriesPreparator

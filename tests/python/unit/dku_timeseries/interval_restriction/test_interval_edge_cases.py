@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from dku_timeseries import IntervalRestrictorParams, IntervalRestrictor
+from dku_timeseries import IntervalRestrictor
+from recipe_config_loading import get_interval_restriction_params
 
 
 @pytest.fixture
@@ -19,22 +20,6 @@ def threshold_dict(config):
     value_column = config.get('value_column')
     threshold_dict = {value_column: (min_threshold, max_threshold)}
     return threshold_dict
-
-
-def get_params(config):
-    def _p(param_name, default=None):
-        return config.get(param_name, default)
-
-    min_valid_values_duration_value = _p('min_valid_values_duration_value')
-    min_deviation_duration_value = _p('min_deviation_duration_value')
-    time_unit = _p('time_unit')
-
-    params = IntervalRestrictorParams(min_valid_values_duration_value=min_valid_values_duration_value,
-                                      max_deviation_duration_value=min_deviation_duration_value,
-                                      time_unit=time_unit)
-
-    params.check()
-    return params
 
 
 @pytest.fixture
@@ -67,7 +52,7 @@ def edge_df_segment():
 class TestEdgeCases():
     def test_zero_deviation_edges(self, edge_df, config, threshold_dict):
         # [ch54733] - check if the recipe properly handles the first and the last rows
-        params = get_params(config)
+        params = get_interval_restriction_params(config)
         interval_restrictor = IntervalRestrictor(params)
         datetime_column = config.get('datetime_column')
         output_df = interval_restrictor.compute(edge_df, datetime_column, threshold_dict)
@@ -76,7 +61,7 @@ class TestEdgeCases():
         assert output_df.loc[6, "date"] == pd.Timestamp("2020-07-12")
 
     def test_zero_deviation_without_1st_row(self, edge_df_without_1st_row, config, threshold_dict):
-        params = get_params(config)
+        params = get_interval_restriction_params(config)
         interval_restrictor = IntervalRestrictor(params)
         datetime_column = config.get('datetime_column')
         output_df = interval_restrictor.compute(edge_df_without_1st_row, datetime_column, threshold_dict)
@@ -85,7 +70,7 @@ class TestEdgeCases():
         assert len(output_df.index) == 4
 
     def test_segment_beginning(self, edge_df_segment, config, threshold_dict):
-        params = get_params(config)
+        params = get_interval_restriction_params(config)
         interval_restrictor = IntervalRestrictor(params)
         datetime_column = config.get('datetime_column')
         output_df = interval_restrictor.compute(edge_df_segment, datetime_column, threshold_dict)

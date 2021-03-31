@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from dku_timeseries import WindowAggregatorParams, WindowAggregator
+from dku_timeseries import WindowAggregator
+from recipe_config_loading import get_windowing_params
 
 
 @pytest.fixture
@@ -83,70 +84,13 @@ def recipe_config():
 
 @pytest.fixture
 def params(recipe_config):
-    def _p(param_name, default=None):
-        return recipe_config.get(param_name, default)
-
-    causal_window = _p('causal_window')
-    window_unit = _p('window_unit')
-    window_width = int(_p('window_width'))
-    if _p('window_type') == 'none':
-        window_type = None
-    else:
-        window_type = _p('window_type')
-
-    if window_type == 'gaussian':
-        gaussian_std = _p('gaussian_std')
-    else:
-        gaussian_std = None
-
-    closed_option = _p('closed_option')
-    aggregation_types = _p('aggregation_types')
-
-    params = WindowAggregatorParams(window_unit=window_unit,
-                                    window_width=window_width,
-                                    window_type=window_type,
-                                    gaussian_std=gaussian_std,
-                                    closed_option=closed_option,
-                                    causal_window=causal_window,
-                                    aggregation_types=aggregation_types)
-
-    params.check()
-    return params
+    return get_windowing_params(recipe_config)
 
 
 @pytest.fixture
 def params_no_causal(recipe_config):
     recipe_config["causal_window"] = False
-
-    def _p(param_name, default=None):
-        return recipe_config.get(param_name, default)
-
-    causal_window = _p('causal_window')
-    window_unit = _p('window_unit')
-    window_width = int(_p('window_width'))
-    if _p('window_type') == 'none':
-        window_type = None
-    else:
-        window_type = _p('window_type')
-
-    if window_type == 'gaussian':
-        gaussian_std = _p('gaussian_std')
-    else:
-        gaussian_std = None
-
-    closed_option = _p('closed_option')
-    aggregation_types = _p('aggregation_types')
-
-    params = WindowAggregatorParams(window_unit=window_unit,
-                                    window_width=window_width,
-                                    window_type=window_type,
-                                    gaussian_std=gaussian_std,
-                                    closed_option=closed_option,
-                                    causal_window=causal_window,
-                                    aggregation_types=aggregation_types)
-
-    params.check()
-    return params
+    return get_windowing_params(recipe_config)
 
 
 class TestWindowingLongFormat:

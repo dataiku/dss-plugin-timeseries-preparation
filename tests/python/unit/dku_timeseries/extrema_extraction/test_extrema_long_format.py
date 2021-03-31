@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from dku_timeseries import WindowAggregator, ExtremaExtractorParams, WindowAggregatorParams, ExtremaExtractor
+from dku_timeseries import ExtremaExtractor
+from recipe_config_loading import get_extrema_extraction_params
 
 
 @pytest.fixture
@@ -65,6 +66,7 @@ def long_df_4():
         {"value1": co2, "value2": co2, "country": country, "item": country_2, "store": country_3, "Date": time_index})
     return df
 
+
 @pytest.fixture
 def long_df_numerical():
     co2 = [315.58, 316.39, 316.79, 316.2, 345, 234, 100, 299]
@@ -85,37 +87,7 @@ def recipe_config():
 
 @pytest.fixture
 def params(recipe_config):
-    def _p(param_name, default=None):
-        return recipe_config.get(param_name, default)
-
-    causal_window = _p('causal_window')
-    window_unit = _p('window_unit')
-    window_width = int(_p('window_width'))
-    if _p('window_type') == 'none':
-        window_type = None
-    else:
-        window_type = _p('window_type')
-
-    if window_type == 'gaussian':
-        gaussian_std = _p('gaussian_std')
-    else:
-        gaussian_std = None
-    closed_option = _p('closed_option')
-    extrema_type = _p('extrema_type')
-    aggregation_types = _p('aggregation_types') + ['retrieve']
-
-    window_params = WindowAggregatorParams(window_unit=window_unit,
-                                           window_width=window_width,
-                                           window_type=window_type,
-                                           gaussian_std=gaussian_std,
-                                           closed_option=closed_option,
-                                           causal_window=causal_window,
-                                           aggregation_types=aggregation_types)
-
-    window_aggregator = WindowAggregator(window_params)
-    params = ExtremaExtractorParams(window_aggregator=window_aggregator, extrema_type=extrema_type)
-    params.check()
-    return params
+    return get_extrema_extraction_params(recipe_config)
 
 
 class TestExtremaLongFormat:
@@ -187,4 +159,3 @@ class TestExtremaLongFormat:
         output_df = extrema_extractor.compute(long_df_numerical, datetime_column, extrema_column, groupby_columns=groupby_columns)
         np.testing.assert_array_equal(output_df.Date.values, pd.DatetimeIndex(['1959-01-03T00:00:00.000000000', '1959-01-01T00:00:00.000000000']))
         np.testing.assert_array_equal(output_df.country.values, np.array([1, 2]))
-

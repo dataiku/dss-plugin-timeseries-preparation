@@ -3,8 +3,9 @@ import random
 
 import numpy as np
 import pandas as pd
+import pytest
 
-from dku_timeseries.resampling.resampling import ResamplerParams, Resampler
+from dku_timeseries.resampling import ResamplerParams, Resampler
 
 JUST_BEFORE_SPRING_DST = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
 JUST_BEFORE_FALL_DST = pd.Timestamp('20191027 02:59:00').tz_localize('CET',
@@ -47,6 +48,16 @@ def _make_resampling_params():
 def _make_resampler():
     params = _make_resampling_params()
     return Resampler(params)
+
+
+@pytest.fixture
+def categorical_df():
+    co2 = [315.58, 316.39, 316.79, 316.2]
+    categorical = ["first", "first", "second", "second"]
+    time_index = pd.date_range("1-1-1959", periods=4, freq="M")
+    categorical_df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "categorical": categorical, "time_col": time_index})
+    return categorical_df
 
 
 ### Test cases
@@ -262,3 +273,28 @@ class TestResampler:
         resampler = Resampler(params)
         output_df = resampler.transform(df, TIME_COL)
         assert not math.isnan(output_df["data_col"].values[-1])
+
+    def test_no_end_of_week(self):
+        length = 10
+        data = [random.random() for _ in range(length)]
+        start_time = pd.Timestamp('20210301 00:00:00').tz_localize('CET')
+        df = _make_df_with_one_col(data, period=pd.DateOffset(weeks=1), start_time=start_time)
+        params = ResamplerParams(time_unit="weeks", extrapolation_method='none')
+        resampler = Resampler(params)
+        output_df = resampler.transform(df, TIME_COL)
+        np.testing.assert_array_equal(output_df[TIME_COL].values, pd.DatetimeIndex(['2021-03-06T23:00:00.000000000', '2021-03-13T23:00:00.000000000',
+                                                                                    '2021-03-20T23:00:00.000000000', '2021-03-27T23:00:00.000000000',
+                                                                                    '2021-04-03T22:00:00.000000000', '2021-04-10T22:00:00.000000000',
+                                                                                    '2021-04-17T22:00:00.000000000', '2021-04-24T22:00:00.000000000',
+                                                                                    '2021-05-01T22:00:00.000000000']))
+
+    def test_no_categorical_impute(self, categorical_df):
+        params_no_impute = ResamplerParams(time_unit="weeks", extrapolation_method='none')
+        resampler_no_impute = Resampler(params_no_impute)
+        no_impute_df = resampler_no_impute.transform(categorical_df, TIME_COL)
+        assert pd.isnull(no_impute_df["categorical"].values).all()
+
+        params_with_impute = ResamplerParams(time_unit="weeks", extrapolation_method='none', category_imputation_method="empty")
+        resampler_with_impute = Resampler(params_with_impute)
+        impute_df = resampler_with_impute.transform(categorical_df, TIME_COL)
+        assert pd.isnull(impute_df["categorical"].values).all()
