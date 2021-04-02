@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -71,7 +72,7 @@ def test_minutes_truncation(time_column_name, basic_config):
     assert dataframe_prepared[time_column_name][2] == pd.Timestamp("2021-01-01 12:45:00")
 
 
-def test_hour_truncation(time_column_name,timeseries_identifiers_names, basic_config):
+def test_hour_truncation(time_column_name, timeseries_identifiers_names, basic_config):
     df = pd.DataFrame(
         {
             "date": [
@@ -94,7 +95,7 @@ def test_hour_truncation(time_column_name,timeseries_identifiers_names, basic_co
     basic_config["long_format"] = True
     basic_config["timeseries_identifiers"] = timeseries_identifiers_names
     dku_config.add_parameters(basic_config, list(df.columns))
-    preparator = TimeseriesPreparator(dku_config,max_timeseries_length = 2)
+    preparator = TimeseriesPreparator(dku_config, max_timeseries_length=2)
     dataframe_prepared = preparator._truncate_dates(df)
     dataframe_prepared = preparator._sort(dataframe_prepared)
     preparator._check_regular_frequency(dataframe_prepared)
@@ -103,7 +104,7 @@ def test_hour_truncation(time_column_name,timeseries_identifiers_names, basic_co
     assert dataframe_prepared[time_column_name][3] == pd.Timestamp("2020-01-08 06:00:00")
 
 
-def test_day_truncation(time_column_name,timeseries_identifiers_names, basic_config):
+def test_day_truncation(time_column_name, timeseries_identifiers_names, basic_config):
     df = pd.DataFrame(
         {
             "date": [
@@ -130,7 +131,7 @@ def test_day_truncation(time_column_name,timeseries_identifiers_names, basic_con
     assert dataframe_prepared[time_column_name][2] == pd.Timestamp("2021-01-03")
 
 
-def test_business_day_truncation(time_column_name,timeseries_identifiers_names, basic_config):
+def test_business_day_truncation(time_column_name, timeseries_identifiers_names, basic_config):
     df = pd.DataFrame(
         {
             "date": [
@@ -157,7 +158,7 @@ def test_business_day_truncation(time_column_name,timeseries_identifiers_names, 
     assert dataframe_prepared[time_column_name][2] == pd.Timestamp("2021-01-06")
 
 
-def test_week_sunday_truncation(time_column_name,timeseries_identifiers_names, basic_config):
+def test_week_sunday_truncation(time_column_name, timeseries_identifiers_names, basic_config):
     df = pd.DataFrame(
         {
             "date": [
@@ -175,7 +176,7 @@ def test_week_sunday_truncation(time_column_name,timeseries_identifiers_names, b
     basic_config["long_format"] = True
     basic_config["timeseries_identifiers"] = timeseries_identifiers_names
     dku_config.add_parameters(basic_config, list(df.columns))
-    preparator = TimeseriesPreparator(dku_config,max_timeseries_length=2)
+    preparator = TimeseriesPreparator(dku_config, max_timeseries_length=2)
     df[time_column_name] = pd.to_datetime(df[time_column_name]).dt.tz_localize(tz=None)
     dataframe_prepared = preparator._truncate_dates(df)
     dataframe_prepared = preparator._sort(dataframe_prepared)
@@ -186,7 +187,7 @@ def test_week_sunday_truncation(time_column_name,timeseries_identifiers_names, b
     assert dataframe_prepared[time_column_name][1] == pd.Timestamp("2021-01-17")
 
 
-def test_quarter_truncation(time_column_name,timeseries_identifiers_names, basic_config):
+def test_quarter_truncation(time_column_name, timeseries_identifiers_names, basic_config):
     df = pd.DataFrame(
         {
             "date": [
@@ -213,7 +214,7 @@ def test_quarter_truncation(time_column_name,timeseries_identifiers_names, basic
     assert dataframe_prepared[time_column_name][2] == pd.Timestamp("2021-06-30")
 
 
-def test_semester_truncation(time_column_name,timeseries_identifiers_names, basic_config):
+def test_semester_truncation(time_column_name, timeseries_identifiers_names, basic_config):
     df = pd.DataFrame(
         {
             "date": [
@@ -241,7 +242,7 @@ def test_semester_truncation(time_column_name,timeseries_identifiers_names, basi
     assert dataframe_prepared[time_column_name][2] == pd.Timestamp("2021-12-31")
 
 
-def test_year_truncation(time_column_name,timeseries_identifiers_names, basic_config):
+def test_year_truncation(time_column_name, timeseries_identifiers_names, basic_config):
     df = pd.DataFrame(
         {
             "date": [
@@ -268,3 +269,40 @@ def test_year_truncation(time_column_name,timeseries_identifiers_names, basic_co
     assert dataframe_prepared[time_column_name][0] == pd.Timestamp("2020-12-31")
     assert dataframe_prepared[time_column_name][1] == pd.Timestamp("2021-12-31")
     assert dataframe_prepared[time_column_name][2] == pd.Timestamp("2022-12-31")
+
+
+def test_target_column_preparation(time_column_name, timeseries_identifiers_names, basic_config):
+    df = pd.DataFrame(
+        {
+            "date": [
+                "2020-12-31",
+                "2021-12-15",
+                "2022-12-01",
+            ],
+            "id": [1, 1, 1],
+            "target": [1, 2, 3],
+            "invalid_target": ["a", "b", "c"],
+            "missing_target": [1, np.nan, 2],
+            "unformatted_target": ["1", "2", "3"]
+        }
+    )
+    dku_config = STLConfig()
+    basic_config["target_columns"] = ["target"]
+    basic_config["frequency_unit"] = "12M"
+    basic_config["season_length_12M"] = 4
+    dku_config.add_parameters(basic_config, list(df.columns))
+    preparator = TimeseriesPreparator(dku_config)
+    df_prepared = preparator.prepare_timeseries_dataframe(df)
+    assert df_prepared.loc[0,"target"] == 1
+
+    dku_config = STLConfig()
+    basic_config["target_columns"] = ["unformatted_target"]
+    basic_config["frequency_unit"] = "12M"
+    basic_config["season_length_12M"] = 4
+    dku_config.add_parameters(basic_config, list(df.columns))
+    preparator = TimeseriesPreparator(dku_config)
+    df_prepared_unformatted = preparator.prepare_timeseries_dataframe(df)
+    assert df_prepared_unformatted.loc[0, "unformatted_target"] == 1
+
+
+
