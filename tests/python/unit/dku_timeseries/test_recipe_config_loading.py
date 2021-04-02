@@ -54,3 +54,16 @@ class TestRecipeConfigLoading:
         config["groupby_columns"] = ["country"]
         groupby_colums = check_and_get_groupby_columns(config, dataset_columns)
         assert groupby_colums == ["country"]
+
+    def test_no_groupby_columns(self,config,dataset_columns):
+        config["groupby_columns"] =[]
+        config["groupby_column"] = "country"
+        groupby_colums = check_and_get_groupby_columns(config, dataset_columns)
+        assert len(groupby_colums) == 1
+
+        config.pop("groupby_columns")
+        groupby_colums = check_and_get_groupby_columns(config, dataset_columns)
+        assert len(groupby_colums) == 1
+
+
+
