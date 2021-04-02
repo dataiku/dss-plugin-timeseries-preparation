@@ -45,6 +45,8 @@ class TimeseriesPreparator:
         except Exception:
             raise ValueError(f"Please parse the date column '{self.time_column_name}' in a Prepare recipe")
 
+        dataframe_prepared = self._cast_target_columns(dataframe_prepared)
+
         dataframe_prepared = self._truncate_dates(dataframe_prepared)
 
         dataframe_prepared = self._sort(dataframe_prepared)
@@ -63,6 +65,26 @@ class TimeseriesPreparator:
     def _check_data(self, df):
         self._check_timeseries_identifiers_columns_types(df)
         self._check_no_missing_values(df)
+
+    def _cast_target_columns(self, df):
+        """Cast target columns as float as the pandas inference is deactivated.
+        Args:
+            df (DataFrame)
+        Raises:
+            ValueError: If the column contains non numeric or empty data
+        Returns:
+            Sorted DataFrame with truncated dates.
+        """
+        invalid_target_columns = []
+        for target_column in self.target_columns_names:
+            try:
+                df[target_column] = df[target_column].astype("float")
+            except Exception:
+                invalid_target_columns.append(target_column)
+        if len(invalid_target_columns) > 0:
+            raise ValueError(f"Target columns must be numeric. Please parse the target column(s) '{','.join(invalid_target_columns)}' in a Prepare recipe")
+        else:
+            return df
 
     def _truncate_dates(self, df):
         """Truncate dates to selected frequency. For Week/Month/Year, truncate to end of Week/Month/Year.
