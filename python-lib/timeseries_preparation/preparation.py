@@ -82,7 +82,8 @@ class TimeseriesPreparator:
             except Exception:
                 invalid_target_columns.append(target_column)
         if len(invalid_target_columns) > 0:
-            raise ValueError(f"Target columns must be numeric. Please parse the target column(s) '{','.join(invalid_target_columns)}' in a Prepare recipe")
+            raise ValueError(f"Target columns must be numeric. Please check the validity of the target column(s) '{','.join(invalid_target_columns)}' in the "
+                             f"settings.")
         else:
             return df
 

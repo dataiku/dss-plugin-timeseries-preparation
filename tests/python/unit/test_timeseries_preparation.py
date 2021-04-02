@@ -304,5 +304,26 @@ def test_target_column_preparation(time_column_name, timeseries_identifiers_name
     df_prepared_unformatted = preparator.prepare_timeseries_dataframe(df)
     assert df_prepared_unformatted.loc[0, "unformatted_target"] == 1
 
+    dku_config = STLConfig()
+    basic_config["target_columns"] = ["invalid_target"]
+    basic_config["frequency_unit"] = "12M"
+    basic_config["season_length_12M"] = 4
+    dku_config.add_parameters(basic_config, list(df.columns))
+    preparator = TimeseriesPreparator(dku_config)
+    with pytest.raises(ValueError) as err:
+        _ = preparator.prepare_timeseries_dataframe(df)
+    assert "must be numeric" in str(err.value)
+
+    dku_config = STLConfig()
+    basic_config["target_columns"] = ["missing_target"]
+    basic_config["frequency_unit"] = "12M"
+    basic_config["season_length_12M"] = 4
+    dku_config.add_parameters(basic_config, list(df.columns))
+    preparator = TimeseriesPreparator(dku_config)
+    with pytest.raises(ValueError) as err:
+        _ = preparator.prepare_timeseries_dataframe(df)
+    assert "missing value" in str(err.value)
+
+
 
 
