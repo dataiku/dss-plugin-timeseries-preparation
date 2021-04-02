@@ -19,13 +19,16 @@ def check_and_get_groupby_columns(recipe_config, dataset_columns):
 
 
 def _format_groupby_columns(recipe_config):
-    if recipe_config.get('advanced_activated') and recipe_config.get('groupby_column') and recipe_config.get('groupby_columns') is None:
+    if recipe_config.get('advanced_activated') and recipe_config.get('groupby_column') and len(recipe_config.get('groupby_columns', [])) == 0:
         logger.warning(
             "The field `Column with identifier` is deprecated. It is now replaced with the field `Time series identifiers`, which allows for several "
             "identifiers. That is why you should preferably use the field 'Time series identifiers'. You can still use 'Column with identifier' if you "
             "have one identifier only")
         groupby_columns = [recipe_config.get('groupby_column')]
     elif recipe_config.get('advanced_activated') and recipe_config.get('groupby_columns'):
+        if recipe_config.get('groupby_column'):
+            logger.warning("The fields `Column with identifier` and `Time series identifiers` both contain a value. As `Column with identifiers`is deprecated, "
+                           "the recipe will only consider the value of `Time series identifiers`. ")
         groupby_columns = recipe_config.get('groupby_columns')
     else:
         groupby_columns = []
