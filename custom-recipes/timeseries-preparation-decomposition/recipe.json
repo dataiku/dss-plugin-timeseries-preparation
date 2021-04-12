@@ -153,7 +153,7 @@
       "label": "Season length",
       "description": "Length of the seasonal period",
       "type": "INT",
-      "defaultValue": 1,
+      "defaultValue": 60,
       "mandatory": false,
       "visibilityCondition": "model.frequency_unit == 'min'"
     },
@@ -225,7 +225,7 @@
       "label": "Season length",
       "description": "Length of the seasonal period (in years).",
       "type": "INT",
-      "defaultValue": 1,
+      "defaultValue": 4,
       "mandatory": false,
       "visibilityCondition": "model.frequency_unit == '12M'"
     },
