@@ -1,7 +1,7 @@
 {
   "meta": {
     "label": "Timeseries decomposition",
-    "description": "Decompose your timeseries into trend, seasonality and residuals.",
+    "description": "Decompose your timeseries into trend, seasonality and residuals. The recipe relies on STL, seasonal and trend decomposition using Loess.",
     "icon": "icon-calendar-empty",
     "displayOrderRank": 5
   },
@@ -272,37 +272,7 @@
     {
       "type": "SEPARATOR",
       "name": "separator_decomposition",
-      "label": "Decomposition parameters"
-    },
-    {
-      "name": "time_decomposition_method",
-      "label": "Select a decomposition method",
-      "type": "SELECT",
-      "selectChoices": [
-        {
-          "value": "STL",
-          "label": "STL"
-        },
-        {
-          "value": "classical",
-          "label": "Classical decomposition"
-        }
-      ],
-      "defaultValue": "STL"
-    },
-    {
-      "type": "SEPARATOR",
-      "name": "stl_parameters",
-      "label": "",
-      "description": "Seasonal-Trend decomposition using Loess",
-      "visibilityCondition": "model.time_decomposition_method == 'STL'"
-    },
-    {
-      "type": "SEPARATOR",
-      "name": "classical_parameters",
-      "label": "",
-      "description": "Seasonal-Trend decomposition using moving averages",
-      "visibilityCondition": "model.time_decomposition_method == 'classical'"
+      "label": "Decomposition parameter"
     },
     {
       "type": "SELECT",
@@ -336,10 +306,10 @@
       "name": "seasonal_stl",
       "label": "Seasonal smoother",
       "type": "INT",
-      "description": "Odd integer greater than 7. Number of consecutive timesteps (years, weeks..) to be used in estimating each value in the seasonal component. It controls how rapidly the seasonal component can change.",
+      "description": "Number of consecutive timesteps (years, weeks..) used when estimating each value of the seasonal component. It controls how rapidly the seasonal component can change. Odd integer greater than 7.",
       "defaultValue": 7,
       "minI": 7,
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
+      "visibilityCondition": "model.expert"
     },
     {
       "name": "robust_stl",
@@ -347,89 +317,17 @@
       "type": "BOOLEAN",
       "defaultValue": false,
       "mandatory": false,
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
+      "visibilityCondition": "model.expert",
       "description": "If selected, the estimation will re-weight data, allowing the model to tolerate larger errors."
     },
     {
-      "type": "SEPARATOR",
-      "name": "separator_degrees",
-      "label": " ",
-      "description": "Fitting method in Loess",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
-    },
-    {
-      "name": "stl_degree_kwargs",
+      "name": "advanced_params_STL",
       "type": "MAP",
-      "label": "Degree of Loess",
-      "description": "Keyword argument ⟶ value cf. https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
-      "mandatory": false,
-      "defaultValue": {
-        "seasonal_deg": "1",
-        "trend_deg": "1",
-        "low_pass_deg": "1"
-      }
-    },
-    {
-      "type": "SEPARATOR",
-      "name": "separator_speedup",
-      "label": " ",
-      "description": "Performance",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
-    },
-    {
-      "type": "SEPARATOR",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
-    },
-    {
-      "name": "stl_speed_jump_kwargs",
-      "type": "MAP",
-      "label": "Speed jump",
-      "description": "Keyword argument ⟶ value cf. https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
-      "mandatory": false,
-      "defaultValue": {
-        "seasonal_jump": "1",
-        "trend_jump": "1",
-        "low_pass_jump": "1"
-      }
-    },
-    {
-      "type": "SEPARATOR",
-      "name": "separator_smoothers",
-      "label": " ",
-      "description": "Additional smoothers",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
-    },
-    {
-      "type": "SEPARATOR",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
-    },
-    {
-      "name": "stl_smoothers_kwargs",
-      "type": "MAP",
-      "label": "Length of the smoothers",
-      "description": "Keyword argument ⟶ value cf. https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
-      "mandatory": false,
-      "defaultValue": {
-        "trend": "",
-        "low_pass": ""
-      }
-    },
-    {
-      "name": "advanced_params_classical",
-      "type": "MAP",
-      "label": " ",
-      "description": "Keyword argument ⟶ value https://www.statsmodels.org/stable/generated/statsmodels.tsa.seasonal.seasonal_decompose.html",
-      "visibilityCondition": "model.time_decomposition_method == 'classical' && model.expert",
-      "mandatory": false,
-      "defaultValue": {
-        "filt": "",
-        "two_sided": "True",
-        "extrapolate_trend": "0"
-      }
+      "label": "Additional parameters",
+      "description": "Parameter name ⟶ value. If you need extra parameters, go to Statsmodel's documentation to find their names : https://www.statsmodels.org/stable/generated/statsmodels.tsa.seasonal.STL.html. Then, map them to their values in the field below. Ex : seasonal_deg ⟶  1 ",
+      "visibilityCondition": "model.expert",
+      "mandatory": false
     }
-  ],
-  "resourceKeys": []
+  ]
 }
+

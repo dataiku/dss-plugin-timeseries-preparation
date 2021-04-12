@@ -1,5 +1,8 @@
+from dku_config.additional_degree import AdditionalDegree
+from dku_config.additional_smoother import AdditionalSmoother
+from dku_config.additional_speedup import AdditionalSpeedup
 from dku_config.decomposition_config import DecompositionConfig
-from dku_config.utils import are_keys_in, is_positive_int
+from dku_config.utils import are_keys_in
 
 
 class STLConfig(DecompositionConfig):
@@ -9,6 +12,7 @@ class STLConfig(DecompositionConfig):
         config(dict): Dict storing the DSSParameters
         minimum_period: Minimum period required by STL
     """
+
     def __init__(self):
         super().__init__()
         self.minimum_period = 2
@@ -21,7 +25,7 @@ class STLConfig(DecompositionConfig):
             checks=[
                 {
                     "type": "exists",
-                    "err_msg": "The seasonal smoother is required and must be an odd integer greater than 7."
+                    "err_msg": "The seasonal smoother of the expert mode is required and must be an odd integer greater than 7."
 
                 },
                 {
@@ -52,18 +56,11 @@ class STLConfig(DecompositionConfig):
             required=False
         )
 
-        degree_kwargs = config.get("stl_degree_kwargs")
-        if degree_kwargs:
-            are_degree_keys_valid = are_keys_in(["seasonal_deg", "trend_deg", "low_pass_deg"], degree_kwargs)
-            are_degree_values_valid = all(x in ["0", "1", ""] for x in degree_kwargs.values())
-
-            degrees_parsed = degree_kwargs
-            if are_degree_keys_valid and are_degree_values_valid:
-                degrees_parsed = parse_values_to_int(degree_kwargs)
-
+        advanced_params = config.get("advanced_params_STL", {})
+        if advanced_params:
             self.add_param(
-                name="loess_degrees",
-                value=degrees_parsed,
+                name="advanced_params_STL",
+                value=advanced_params,
                 checks=[
                     {
                         "type": "is_type",
@@ -71,97 +68,41 @@ class STLConfig(DecompositionConfig):
                     },
                     {
                         "type": "custom",
-                        "cond": are_degree_keys_valid,
-                        "err_msg": "This field is invalid. The keys should be in the following iterable: [seasonal_deg, trend_deg,low_pass_deg]."
-                    },
-                    {
-                        "type": "custom",
-                        "cond": are_degree_values_valid,
-                        "err_msg": "This field is invalid. The degrees used for Loess estimation must be equal to 0 or 1."
+                        "cond": are_keys_in(["trend", "low_pass", "seasonal_deg", "trend_deg", "low_pass_deg", "seasonal_jump", "trend_jump", "low_pass_jump"],
+                                            advanced_params),
+                        "err_msg": "This field is invalid. The keys should be in the following iterable: ['trend', 'low_pass', 'seasonal_deg', 'trend_deg', "
+                                   "'low_pass_deg', 'seasonal_jump', 'trend_jump', 'low_pass_jump']."
                     }
                 ],
                 required=False
             )
 
-        speed_up_kwargs = config.get("stl_speed_jump_kwargs")
-        if speed_up_kwargs:
-            are_speed_up_keys_valid = are_keys_in(["seasonal_jump", "trend_jump", "low_pass_jump"], speed_up_kwargs)
-            are_speed_up_values_valid = all((x == "") or (is_positive_int(x)) for x in speed_up_kwargs.values())
+            for parameter_name, value in advanced_params.items():
+                additional_parameter = get_advanced_param(parameter_name, value)
+                is_valid = additional_parameter.check(self)
+                if is_valid:
+                    value = additional_parameter.parse_value()
 
-            speed_up_parsed = speed_up_kwargs
-            if are_speed_up_keys_valid and are_speed_up_values_valid:
-                speed_up_parsed = parse_values_to_int(speed_up_kwargs)
-
-            self.add_param(
-                name="speed_jumps",
-                value=speed_up_parsed,
-                checks=[
-                    {
-                        "type": "is_type",
-                        "op": dict
-                    },
-                    {
-                        "type": "custom",
-                        "cond": are_speed_up_keys_valid,
-                        "err_msg": "This field is invalid. The keys should be in the following iterable: [seasonal_jump, trend_jump,low_pass_jump]."
-                    },
-                    {
-                        "type": "custom",
-                        "cond": are_speed_up_values_valid,
-                        "err_msg": "This field is invalid. The values should be positive integers."
-                    }
-                ],
-                required=False
-            )
-
-        additional_smoothers = config.get("stl_smoothers_kwargs")
-
-        if additional_smoothers:
-            are_smoothers_keys_valid = are_keys_in(["trend", "low_pass"], additional_smoothers)
-            minimum = max(self.period, 3)
-            are_smoothers_values_valid = all((x == "") or
-                                             ((is_odd(x) and float(x) > minimum)) for x in
-                                             additional_smoothers.values())
-
-            if are_smoothers_keys_valid and are_smoothers_values_valid:
-                smoothers_parsed = parse_values_to_int(additional_smoothers)
-            else:
-                smoothers_parsed = additional_smoothers
-
-            self.add_param(
-                name="additional_smoothers",
-                value=smoothers_parsed,
-                checks=[
-                    {
-                        "type": "is_type",
-                        "op": dict
-                    },
-                    {
-                        "type": "custom",
-                        "cond": are_smoothers_keys_valid,
-                        "err_msg": "This field is invalid. The keys should be in the following iterable: [trend, low_pass]."
-                    },
-                    {
-                        "type": "custom",
-                        "cond": are_smoothers_values_valid,
-                        "err_msg": f"This field is invalid. The values should be odd positive integers greater than 3 and the period (= {self.period})."
-                    }
-                ],
-                required=False
-            )
+                self.add_param(
+                    name=parameter_name,
+                    value=value,
+                    checks=[
+                        {
+                            "type": "custom",
+                            "cond": is_valid,
+                            "err_msg": additional_parameter.error_message
+                        }
+                    ],
+                    required=False
+                )
 
 
-def parse_values_to_int(map_parameter):
-    map_parameter_parsed = {}
-    for key, value in map_parameter.items():
-        if value:
-            map_parameter_parsed[key] = int(value)
-    return map_parameter_parsed
+def get_advanced_param(parameter_name, value):
+    if parameter_name in ["trend", "low_pass"]:
+        additional_parameter = AdditionalSmoother(parameter_name, value)
+    elif parameter_name in ["seasonal_jump", "trend_jump", "low_pass_jump"]:
+        additional_parameter = AdditionalSpeedup(parameter_name, value)
+    elif parameter_name in ["seasonal_deg", "trend_deg", "low_pass_deg"]:
+        additional_parameter = AdditionalDegree(parameter_name, value)
+    return additional_parameter
 
-
-def is_odd(x):
-    if is_positive_int(x):
-        numeric_value = int(x)
-    else:
-        numeric_value = None
-    return numeric_value and numeric_value % 2 == 1

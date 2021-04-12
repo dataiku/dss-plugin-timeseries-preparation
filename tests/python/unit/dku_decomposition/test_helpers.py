@@ -19,11 +19,4 @@ def columns():
 class TestHelpers:
     def test_check_and_load_params(self, config, columns):
         (dku_config, input_validator, decomposition) = check_and_load_params(config, columns)
-        assert dku_config.time_decomposition_method == "STL"
         assert input_validator.dku_config == dku_config == decomposition.dku_config
-
-    def test_invalid_method(self, config, columns):
-        config["time_decomposition_method"] = "invalid_method_name"
-        with pytest.raises(ValueError) as err:
-            check_and_load_params(config, columns)
-        assert "not a valid DecompositionMethod" in str(err.value)

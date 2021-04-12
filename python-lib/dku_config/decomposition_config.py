@@ -151,12 +151,6 @@ class DecompositionConfig(DkuConfig):
         Args:
             config(dict):  map of the recipe parameters
         """
-        self.add_param(
-            name="time_decomposition_method",
-            value=config.get("time_decomposition_method"),
-            required=True
-        )
-
         model = config.get("decomposition_model", "additive")
 
         self.add_param(

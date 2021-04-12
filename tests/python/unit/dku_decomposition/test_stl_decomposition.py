@@ -24,27 +24,20 @@ def input_df(data):
 
 
 @pytest.fixture
-def dku_config():
-    config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
-              "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["value1"],
-              "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": True, "stl_degree_kwargs": {},
-              "stl_speed_jump_kwargs": {},
-              "stl_smoothers_kwargs": {}}
-    input_dataset_columns = ["value1", "value2", "country", "date"]
-    dku_config = STLConfig()
-    dku_config.add_parameters(config, input_dataset_columns)
-    return dku_config
+def config():
+    config = {"frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["value1"],
+              "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": True, "advanced_params_STL": {
+            "seasonal_deg": "1", "trend_deg": "1", "low_pass_deg": "1"}}
+    return config
 
 
 @pytest.fixture
-def advanced_dku_config():
-    config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
-              "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["value1"],
-              "long_format": False, "decomposition_model": "additive", "seasonal_stl": 13, "expert": True,
-              "stl_degree_kwargs": {"seasonal_deg": "1", "trend_deg": "0", "low_pass_deg": "1"},
-              "stl_speed_jump_kwargs": {"seasonal_jump": '', "trend_jump": "12", "low_pass_jump": ''},
-              "stl_smoothers_kwargs": {"trend": "13", "low_pass": ''}}
-    input_dataset_columns = ["value1", "value2", "country", "date"]
+def input_dataset_columns():
+    return ["value1", "value2", "country", "date"]
+
+
+@pytest.fixture
+def dku_config(config, input_dataset_columns):
     dku_config = STLConfig()
     dku_config.add_parameters(config, input_dataset_columns)
     return dku_config
@@ -123,17 +116,6 @@ class TestSTLDecomposition:
         rounded_results = np.round(results["value1_trend"].values, 8)
         np.testing.assert_equal(rounded_results, expected_array)
 
-    def test_advanced_STL(self, advanced_dku_config, input_df):
-        timeseries_preparator = TimeseriesPreparator(advanced_dku_config)
-        df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
-        decomposition = STLDecomposition(advanced_dku_config)
-        results = decomposition.fit(df_prepared)
-        expected_array = np.array([507693, 502152, 496611, 491070, 485529, 479988, 474447, 468906, 463365,
-                                   457824, 452283, 446742, 441201, 445989, 450777, 455565, 460353, 465141,
-                                   469928, 474716, 479504, 484292, 489080, 493868, 498655, 499737])
-        rounded_results = np.round(results["value1_trend"].values)
-        np.testing.assert_equal(rounded_results, expected_array)
-
     def test_several_frequencies(self, expected_dates):
         results_df = get_result_df("3M")
         assert results_df.shape == (7, 5)
@@ -171,6 +153,57 @@ class TestSTLDecomposition:
         assert results_df.shape == (7, 5)
         np.testing.assert_equal(results_df["date"].values, expected_dates["D"])
 
+    def test_advanced_smoothers(self, config, input_df, input_dataset_columns):
+        config["advanced_params_STL"] = {"trend": "35", "low_pass": "31"}
+        dku_config = STLConfig()
+        dku_config.add_parameters(config, input_dataset_columns)
+        timeseries_preparator = TimeseriesPreparator(dku_config)
+        df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
+        decomposition = STLDecomposition(dku_config)
+        result_df = decomposition.fit(df_prepared)
+        assert result_df.shape == (26, 6)
+        np.testing.assert_array_equal(np.round(result_df.value1_seasonal.values, 8), np.array([1.87080328, 1.94864198, 1.97546651, 1.47349625, 0.74672304,
+                                                                                               0.6552587, 0.5000725, 0.46825876, 0.49417933, 0.86890043,
+                                                                                               1.16434155,
+                                                                                               1.63725892, 2.17084151, 2.106642, 1.95377386, 1.32400823,
+                                                                                               0.92620183,
+                                                                                               0.51855162, 0.44493062, 0.35877353, 0.47054681, 0.94481716,
+                                                                                               1.30967762,
+                                                                                               1.88240591, 2.51946737, 2.28270725]))
+        config["advanced_params_STL"] = {"trend": "299999999999993", "low_pass": "13"}
+        dku_config = STLConfig()
+        dku_config.add_parameters(config, input_dataset_columns)
+        timeseries_preparator = TimeseriesPreparator(dku_config)
+        df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
+        decomposition = STLDecomposition(dku_config)
+        result_df = decomposition.fit(df_prepared)
+        assert result_df.shape == (26, 6)
+
+    def test_advanced_degrees(self, config, input_df, input_dataset_columns):
+        config["advanced_params_STL"] = {"seasonal_deg": "1", "trend_deg": "1", "low_pass_deg": "1"}
+        dku_config = STLConfig()
+        dku_config.add_parameters(config, input_dataset_columns)
+        timeseries_preparator = TimeseriesPreparator(dku_config)
+        df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
+        decomposition = STLDecomposition(dku_config)
+        result_df = decomposition.fit(df_prepared)
+        assert result_df.shape == (26, 6)
+        np.testing.assert_array_equal(np.round(result_df.value1_seasonal.values, 2),
+                                      np.array([1.87, 1.95, 1.98, 1.47, 0.75, 0.66, 0.5, 0.47, 0.49, 0.87, 1.16, 1.64, 2.17, 2.11,
+                                                1.95, 1.32, 0.93, 0.52, 0.44, 0.36, 0.47, 0.94, 1.31, 1.88, 2.52, 2.28]))
+
+        config["advanced_params_STL"] = {"seasonal_deg": "1", "trend_deg": "0"}
+        dku_config = STLConfig()
+        dku_config.add_parameters(config, input_dataset_columns)
+        timeseries_preparator = TimeseriesPreparator(dku_config)
+        df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
+        decomposition = STLDecomposition(dku_config)
+        result_df = decomposition.fit(df_prepared)
+        assert result_df.shape == (26, 6)
+        np.testing.assert_array_equal(np.round(result_df.value1_seasonal.values, 2),
+                                      np.array([1.87, 1.95, 1.98, 1.47, 0.75, 0.66, 0.5, 0.47, 0.49, 0.87, 1.16, 1.64, 2.17, 2.11,
+                                                1.95, 1.32, 0.93, 0.52, 0.44, 0.36, 0.47, 0.94, 1.31, 1.88, 2.52, 2.28]))
+
 
 def df_from_freq(dku_config):
     data = [315.58, 316.39, 316.79, 312.09, 321.08, 450.08, 298.79]
@@ -185,7 +218,7 @@ def df_from_freq(dku_config):
 def config_from_freq(freq, frequency_end_of_week=None, frequency_step_hours=None, frequency_step_minutes=None):
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
               "frequency_unit": freq, "time_column": "date", "target_columns": ["value1"],
-              "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": True}
+              "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": True, "advanced_params_STL": {}}
     if frequency_end_of_week:
         config["frequency_end_of_week"] = frequency_end_of_week
     elif frequency_step_hours:

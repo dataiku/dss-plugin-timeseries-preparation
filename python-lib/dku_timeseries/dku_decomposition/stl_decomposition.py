@@ -40,15 +40,9 @@ def format_parameters(dku_config):
     if dku_config.advanced:
         parameters["seasonal"] = dku_config.seasonal
         parameters["robust"] = dku_config.robust_stl
-        if dku_config.get_param("loess_degrees"):
-            parameters["seasonal_deg"] = dku_config.loess_degrees.get("seasonal_deg", 1)
-            parameters["trend_deg"] = dku_config.loess_degrees.get("trend_deg", 1)
-            parameters["low_pass_deg"] = dku_config.loess_degrees.get("low_pass_deg", 1)
-        if dku_config.get_param("speed_jumps"):
-            parameters["seasonal_jump"] = dku_config.speed_jumps.get("seasonal_jump", 1)
-            parameters["trend_jump"] = dku_config.speed_jumps.get("trend_jump", 1)
-            parameters["low_pass_jump"] = dku_config.speed_jumps.get("low_pass_jump", 1)
-        if dku_config.get_param("additional_smoothers"):
-            parameters["trend"] = dku_config.additional_smoothers.get("trend")
-            parameters["low_pass"] = dku_config.additional_smoothers.get("low_pass")
+        advanced_parameters = dku_config.get_param("advanced_parameters_STL")
+        if advanced_parameters:
+            for parameter_name in advanced_parameters.keys():
+                if dku_config.advanced_params_STL.get(parameter_name):
+                    parameters[parameter_name] = dku_config.get_param(parameter_name).value
     return parameters
