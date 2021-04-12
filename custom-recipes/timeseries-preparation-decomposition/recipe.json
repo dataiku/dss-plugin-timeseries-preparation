@@ -319,7 +319,7 @@
         }
       ],
       "defaultValue": "additive",
-      "description": " If the magnitude of the seasonality varies over time, then the series is multiplicative. Otherwise, the series is additive."
+      "description": " If the magnitude of the seasonality varies over the average of the time series, then the series is multiplicative. Otherwise, the series is additive."
     },
     {
       "type": "SEPARATOR",

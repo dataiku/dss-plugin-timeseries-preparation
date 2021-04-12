@@ -56,7 +56,7 @@
       "type": "COLUMN",
       "columnRole": "input_dataset",
       "mandatory": false,
-      "description": "⚠️  Deprecated. Use the field 'Time series with identifiers' instead",
+      "description": "⚠️  Deprecated. Use the field 'Time series identifiers' instead",
       "visibilityCondition": "model.advanced_activated && (model.groupby_column.length > 0)"
     },
     {
@@ -74,7 +74,7 @@
       ],
       "columnRole": "input_dataset",
       "mandatory": false,
-      "visibilityCondition": "model.advanced_activated && (model.groupby_column.length == 0 || !model.groupby_column)"
+      "visibilityCondition": "model.advanced_activated"
     },
     {
       "name": "sep",
