@@ -2,7 +2,7 @@
 import logging
 
 import dataiku
-from dataiku.customrecipe import *
+from dataiku.customrecipe import get_input_names_for_role, get_output_names_for_role
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')
