@@ -102,6 +102,40 @@ class TestDecompositionConfig:
         min_config_30 = config_from_freq("min", frequency_step_minutes=30)
         assert min_config_30.period == 1
 
+    def test_frequencies_with_season_lengths(self):
+        annual_config = config_with_period_from_freq("12M")
+        assert annual_config.period == 5
+
+        quarterly_config = config_with_period_from_freq("3M")
+        assert quarterly_config.period == 5
+
+        semiannual_config = config_with_period_from_freq("6M")
+        assert semiannual_config.period == 5
+
+        monthly_config = config_with_period_from_freq("M")
+        assert monthly_config.period == 5
+
+        weekly_config = config_with_period_from_freq("W", frequency_end_of_week="WED")
+        assert weekly_config.period == 5
+
+        b_weekly_config = config_with_period_from_freq("B")
+        assert b_weekly_config.period == 5
+
+        hourly_config = config_with_period_from_freq("H")
+        assert hourly_config.period == 5
+
+        hourly_config_3 = config_with_period_from_freq("H", frequency_step_hours=3)
+        assert hourly_config_3.period == 5
+
+        daily_config = config_with_period_from_freq("D")
+        assert daily_config.period == 5
+
+        min_config = config_with_period_from_freq("min")
+        assert min_config.period == 5
+
+        min_config_30 = config_with_period_from_freq("min", frequency_step_minutes=30)
+        assert min_config_30.period == 5
+
 
 def config_from_freq(freq, frequency_end_of_week=None, frequency_step_hours=None, frequency_step_minutes=None):
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
@@ -114,6 +148,23 @@ def config_from_freq(freq, frequency_end_of_week=None, frequency_step_hours=None
     elif frequency_step_minutes:
         config["frequency_step_minutes"] = frequency_step_minutes
     input_dataset_columns = ["value1", "value2", "country", "date"]
+    dku_config = DecompositionConfig()
+    dku_config.add_parameters(config, input_dataset_columns)
+    return dku_config
+
+
+def config_with_period_from_freq(freq, frequency_end_of_week=None, frequency_step_hours=None, frequency_step_minutes=None):
+    config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
+              "frequency_unit": freq, "time_column": "date", "target_columns": ["value1"],
+              "long_format": False, "decomposition_model": "multiplicative", "expert": False}
+    if frequency_end_of_week:
+        config["frequency_end_of_week"] = frequency_end_of_week
+    elif frequency_step_hours:
+        config["frequency_step_hours"] = frequency_step_hours
+    elif frequency_step_minutes:
+        config["frequency_step_minutes"] = frequency_step_minutes
+    input_dataset_columns = ["value1", "value2", "country", "date"]
+    config[f"season_length_{freq}"] = 5
     dku_config = DecompositionConfig()
     dku_config.add_parameters(config, input_dataset_columns)
     return dku_config

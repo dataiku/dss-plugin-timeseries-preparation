@@ -23,7 +23,7 @@ input_dataset_columns = [column["name"] for column in input_dataset.read_schema(
 (dku_config, input_validator, decomposition) = check_and_load_params(config, input_dataset_columns)
 
 timeseries_preparator = TimeseriesPreparator(dku_config)
-input_df = input_dataset.get_dataframe()
+input_df = input_dataset.get_dataframe(infer_with_pandas=False)
 df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
 input_validator.check(df_prepared)
 
