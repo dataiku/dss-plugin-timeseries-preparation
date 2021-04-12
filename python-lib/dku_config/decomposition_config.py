@@ -84,16 +84,7 @@ class DecompositionConfig(DkuConfig):
         )
 
         if frequency_value:
-            if frequency_value == "min" or frequency_value == "12M" or frequency_value.endswith("min"):
-                period_value = config.get(f"season_length_{frequency_unit}", 1)
-            elif frequency_value == "6M":
-                period_value = config.get(f"season_length_{frequency_unit}", 2)
-            elif frequency_value == "3M":
-                period_value = config.get(f"season_length_{frequency_unit}", 4)
-            else:
-                period_value = config.get(f"season_length_{frequency_unit}", freq_to_period(frequency_value))
-                if not config.get(f"season_length_{frequency_value}"):
-                    logger.warning(f"The recipe relies on the default period = {period_value} for a frequency = {frequency_value}.")
+            period_value = config.get(f"season_length_{frequency_unit}")
 
             self.add_param(
                 name="period",
