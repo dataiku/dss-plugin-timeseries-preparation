@@ -2,7 +2,7 @@ class AdditionalParameter:
     def __init__(self, name, value):
         self.name = name
         self.value = value
-        self.error_message = f"The field {name} is invalid. "
+        self.error_message = ""
 
     def check(self, dku_config):
         pass

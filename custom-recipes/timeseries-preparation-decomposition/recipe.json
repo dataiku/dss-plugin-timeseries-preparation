@@ -328,6 +328,7 @@
       "visibilityCondition": "model.expert",
       "mandatory": false
     }
-  ]
+  ],
+    "resourceKeys": []
 }
 

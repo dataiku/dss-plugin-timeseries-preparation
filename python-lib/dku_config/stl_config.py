@@ -1,4 +1,5 @@
 from dku_config.additional_degree import AdditionalDegree
+from dku_config.additional_parameter import AdditionalParameter
 from dku_config.additional_smoother import AdditionalSmoother
 from dku_config.additional_speedup import AdditionalSpeedup
 from dku_config.decomposition_config import DecompositionConfig
@@ -57,10 +58,11 @@ class STLConfig(DecompositionConfig):
         )
 
         advanced_params = config.get("advanced_params_STL", {})
-        if advanced_params:
+        clean_advanced_params = filter_empty_values(advanced_params)
+        if clean_advanced_params:
             self.add_param(
                 name="advanced_params_STL",
-                value=advanced_params,
+                value=clean_advanced_params,
                 checks=[
                     {
                         "type": "is_type",
@@ -69,7 +71,7 @@ class STLConfig(DecompositionConfig):
                     {
                         "type": "custom",
                         "cond": are_keys_in(["trend", "low_pass", "seasonal_deg", "trend_deg", "low_pass_deg", "seasonal_jump", "trend_jump", "low_pass_jump"],
-                                            advanced_params),
+                                            clean_advanced_params),
                         "err_msg": "This field is invalid. The keys should be in the following iterable: ['trend', 'low_pass', 'seasonal_deg', 'trend_deg', "
                                    "'low_pass_deg', 'seasonal_jump', 'trend_jump', 'low_pass_jump']."
                     }
@@ -77,7 +79,7 @@ class STLConfig(DecompositionConfig):
                 required=False
             )
 
-            for parameter_name, value in advanced_params.items():
+            for parameter_name, value in clean_advanced_params.items():
                 additional_parameter = get_advanced_param(parameter_name, value)
                 is_valid = additional_parameter.check(self)
                 if is_valid:
@@ -97,6 +99,14 @@ class STLConfig(DecompositionConfig):
                 )
 
 
+def filter_empty_values(map_parameter):
+    clean_map_parameter = map_parameter.copy()
+    for parameter_name, value in map_parameter.items():
+        if not value:
+            clean_map_parameter.pop(parameter_name)
+    return clean_map_parameter
+
+
 def get_advanced_param(parameter_name, value):
     if parameter_name in ["trend", "low_pass"]:
         additional_parameter = AdditionalSmoother(parameter_name, value)
@@ -104,5 +114,6 @@ def get_advanced_param(parameter_name, value):
         additional_parameter = AdditionalSpeedup(parameter_name, value)
     elif parameter_name in ["seasonal_deg", "trend_deg", "low_pass_deg"]:
         additional_parameter = AdditionalDegree(parameter_name, value)
+    else:
+        additional_parameter = AdditionalParameter(parameter_name, value)
     return additional_parameter
-

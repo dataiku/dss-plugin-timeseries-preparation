@@ -1,6 +1,6 @@
 import pytest
 
-from recipe_config_loading import check_and_get_groupby_columns
+from recipe_config_loading import check_and_get_groupby_columns, get_decomposition_params
 
 
 @pytest.fixture
@@ -15,6 +15,14 @@ def config():
 @pytest.fixture
 def dataset_columns():
     return ["value1", "country", "old"]
+
+
+@pytest.fixture
+def decomposition_config():
+    config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
+              "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["value1", "value2"],
+              "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": False}
+    return config
 
 
 class TestRecipeConfigLoading:
@@ -55,8 +63,8 @@ class TestRecipeConfigLoading:
         groupby_colums = check_and_get_groupby_columns(config, dataset_columns)
         assert groupby_colums == ["country"]
 
-    def test_no_groupby_columns(self,config,dataset_columns):
-        config["groupby_columns"] =[]
+    def test_no_groupby_columns(self, config, dataset_columns):
+        config["groupby_columns"] = []
         config["groupby_column"] = "country"
         groupby_colums = check_and_get_groupby_columns(config, dataset_columns)
         assert len(groupby_colums) == 1
@@ -65,5 +73,7 @@ class TestRecipeConfigLoading:
         groupby_colums = check_and_get_groupby_columns(config, dataset_columns)
         assert len(groupby_colums) == 1
 
-
-
+    def test_get_decomposition_params(self, decomposition_config):
+        columns = ["value1", "value2", "value3", "date"]
+        (dku_config, input_validator, decomposition) = get_decomposition_params(decomposition_config, columns)
+        assert input_validator.dku_config == dku_config == decomposition.dku_config

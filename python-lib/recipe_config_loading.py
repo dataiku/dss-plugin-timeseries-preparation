@@ -1,6 +1,17 @@
+from dku_config.stl_config import STLConfig
+from dku_input_validator.decomposition_input_validator import DecompositionInputValidator
+from dku_timeseries.dku_decomposition.stl_decomposition import STLDecomposition
 from safe_logger import SafeLogger
 
 logger = SafeLogger("Time series preparation plugin")
+
+
+def get_decomposition_params(config, input_dataset_columns):
+    dku_config = STLConfig()
+    dku_config.add_parameters(config, input_dataset_columns)
+    input_validator = DecompositionInputValidator(dku_config)
+    decomposition = STLDecomposition(dku_config)
+    return dku_config, input_validator, decomposition
 
 
 def check_time_column_parameter(recipe_config, dataset_columns):
