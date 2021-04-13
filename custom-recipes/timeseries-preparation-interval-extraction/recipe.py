@@ -3,9 +3,9 @@ import logging
 
 from dataiku.customrecipe import get_recipe_config
 
-from commons import check_python_version, get_input_output, get_interval_restriction_params
 from dku_timeseries import IntervalRestrictor
-from recipe_config_loading import check_time_column_parameter, check_and_get_groupby_columns
+from io_utils import get_input_output
+from recipe_config_loading import check_time_column_parameter, check_and_get_groupby_columns, check_python_version, get_interval_restriction_params
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='timeseries-preparation plugin %(levelname)s - %(message)s')

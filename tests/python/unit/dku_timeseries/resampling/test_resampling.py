@@ -4,7 +4,7 @@ import random
 import numpy as np
 import pandas as pd
 
-from dku_timeseries.resampling.resampling import ResamplerParams, Resampler
+from dku_timeseries.resampling import ResamplerParams, Resampler
 
 JUST_BEFORE_SPRING_DST = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
 JUST_BEFORE_FALL_DST = pd.Timestamp('20191027 02:59:00').tz_localize('CET',
@@ -262,3 +262,17 @@ class TestResampler:
         resampler = Resampler(params)
         output_df = resampler.transform(df, TIME_COL)
         assert not math.isnan(output_df["data_col"].values[-1])
+
+    def test_no_end_of_week(self):
+        length = 10
+        data = [random.random() for _ in range(length)]
+        start_time = pd.Timestamp('20210301 00:00:00').tz_localize('CET')
+        df = _make_df_with_one_col(data, period=pd.DateOffset(weeks=1), start_time=start_time)
+        params = ResamplerParams(time_unit="weeks", extrapolation_method='none')
+        resampler = Resampler(params)
+        output_df = resampler.transform(df, TIME_COL)
+        np.testing.assert_array_equal(output_df[TIME_COL].values, pd.DatetimeIndex(['2021-03-06T23:00:00.000000000', '2021-03-13T23:00:00.000000000',
+                                                                                    '2021-03-20T23:00:00.000000000', '2021-03-27T23:00:00.000000000',
+                                                                                    '2021-04-03T22:00:00.000000000', '2021-04-10T22:00:00.000000000',
+                                                                                    '2021-04-17T22:00:00.000000000', '2021-04-24T22:00:00.000000000',
+                                                                                    '2021-05-01T22:00:00.000000000']))

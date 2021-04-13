@@ -2,9 +2,9 @@
 
 from dataiku.customrecipe import get_recipe_config
 
-from commons import check_python_version, get_input_output, get_resampling_params
 from dku_timeseries import Resampler
-from recipe_config_loading import check_and_get_groupby_columns, check_time_column_parameter
+from io_utils import get_input_output
+from recipe_config_loading import check_and_get_groupby_columns, check_time_column_parameter, check_python_version, get_resampling_params
 
 check_python_version()
 
