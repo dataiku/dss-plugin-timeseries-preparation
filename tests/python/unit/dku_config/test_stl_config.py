@@ -87,7 +87,7 @@ class TestSTLConfig:
         with pytest.raises(DSSParameterError) as min_err:
             _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
         assert "greater" in str(min_err.value)
-        assert "period (= 7)" in str(min_err.value)
+        assert "season_length (= 7)" in str(min_err.value)
 
         advanced_config["stl_smoothers_kwargs"]["trend"] = "3"
         advanced_config["stl_degree_kwargs"]["seasonal_deg"] = "2"
@@ -111,37 +111,37 @@ class TestSTLConfig:
 
     def test_frequencies_with_default_season_lengths(self):
         annual_config = config_with_default_periods("12M")
-        assert annual_config.period == 4
+        assert annual_config.season_length == 4
 
         quarterly_config = config_with_default_periods("3M")
-        assert quarterly_config.period == 4
+        assert quarterly_config.season_length == 4
 
         semiannual_config = config_with_default_periods("6M")
-        assert semiannual_config.period == 2
+        assert semiannual_config.season_length == 2
 
         monthly_config = config_with_default_periods("M")
-        assert monthly_config.period == 12
+        assert monthly_config.season_length == 12
 
         weekly_config = config_with_default_periods("W", frequency_end_of_week="WED")
-        assert weekly_config.period == 52
+        assert weekly_config.season_length == 52
 
         b_weekly_config = config_with_default_periods("B")
-        assert b_weekly_config.period == 5
+        assert b_weekly_config.season_length == 5
 
         hourly_config = config_with_default_periods("H")
-        assert hourly_config.period == 24
+        assert hourly_config.season_length == 24
 
         hourly_config_3 = config_with_default_periods("H", frequency_step_hours=3)
-        assert hourly_config_3.period == 24
+        assert hourly_config_3.season_length == 24
 
         daily_config = config_with_default_periods("D")
-        assert daily_config.period == 7
+        assert daily_config.season_length == 7
 
         min_config = config_with_default_periods("min")
-        assert min_config.period == 60
+        assert min_config.season_length == 60
 
         min_config_30 = config_with_default_periods("min", frequency_step_minutes=30)
-        assert min_config_30.period == 60
+        assert min_config_30.season_length == 60
 
 
 def config_with_default_periods(freq, frequency_end_of_week=None, frequency_step_hours=None, frequency_step_minutes=None):

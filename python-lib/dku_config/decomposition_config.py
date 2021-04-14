@@ -16,7 +16,7 @@ class DecompositionConfig(DkuConfig):
 
     def __init__(self):
         super().__init__()
-        self.minimum_period = 1
+        self.minimum_season_length = 1
 
     def add_parameters(self, config, input_dataset_columns):
         """Adds the recipe parameters to dku_config
@@ -84,18 +84,18 @@ class DecompositionConfig(DkuConfig):
         )
 
         if frequency_value:
-            period_value = config.get(f"season_length_{frequency_unit}")
+            season_length_value = config.get(f"season_length_{frequency_unit}")
 
             self.add_param(
-                name="period",
-                value=period_value,
+                name="season_length",
+                value=season_length_value,
                 checks=[
                     {"type": "is_type",
                      "op": int
                      },
                     {
                         "type": "sup_eq",
-                        "op": self.minimum_period
+                        "op": self.minimum_season_length
                     }
                 ],
                 required=True
