@@ -40,9 +40,7 @@ def format_parameters(dku_config):
     if dku_config.advanced:
         parameters["seasonal"] = dku_config.seasonal
         parameters["robust"] = dku_config.robust_stl
-        advanced_parameters = dku_config.get_param("advanced_parameters_STL")
-        if advanced_parameters:
-            for parameter_name in advanced_parameters.keys():
-                if dku_config.advanced_params_STL.get(parameter_name):
-                    parameters[parameter_name] = dku_config.get_param(parameter_name).value
+        additional_parameters = dku_config.get_param("additional_parameters_STL")
+        if additional_parameters:
+            parameters.update(dku_config.additional_parameters_STL)
     return parameters

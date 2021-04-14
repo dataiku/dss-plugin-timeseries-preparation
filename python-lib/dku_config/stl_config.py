@@ -3,7 +3,7 @@ from dku_config.additional_parameter import AdditionalParameter
 from dku_config.additional_smoother import AdditionalSmoother
 from dku_config.additional_speedup import AdditionalSpeedup
 from dku_config.decomposition_config import DecompositionConfig
-from dku_config.utils import are_keys_in
+from dku_config.utils import are_keys_in, cast_kwargs
 
 
 class STLConfig(DecompositionConfig):
@@ -57,12 +57,12 @@ class STLConfig(DecompositionConfig):
             required=False
         )
 
-        advanced_params = config.get("advanced_params_STL", {})
-        clean_advanced_params = filter_empty_values(advanced_params)
-        if clean_advanced_params:
+        additional_parameters = config.get("additional_parameters_STL", {})
+        if additional_parameters:
+            additional_parameters = cast_kwargs(additional_parameters)
             self.add_param(
-                name="advanced_params_STL",
-                value=clean_advanced_params,
+                name="additional_parameters_STL",
+                value=additional_parameters,
                 checks=[
                     {
                         "type": "is_type",
@@ -70,44 +70,25 @@ class STLConfig(DecompositionConfig):
                     },
                     {
                         "type": "custom",
-                        "cond": are_keys_in(["trend", "low_pass", "seasonal_deg", "trend_deg", "low_pass_deg", "seasonal_jump", "trend_jump", "low_pass_jump"],
-                                            clean_advanced_params),
-                        "err_msg": "This field is invalid. The keys should be in the following iterable: ['trend', 'low_pass', 'seasonal_deg', 'trend_deg', "
-                                   "'low_pass_deg', 'seasonal_jump', 'trend_jump', 'low_pass_jump']."
+                        "cond": are_keys_in(
+                            ["trend", "low_pass", "seasonal_deg", "trend_deg", "low_pass_deg", "seasonal_jump", "trend_jump", "low_pass_jump"],
+                            additional_parameters),
+                        "err_msg": "The keys should be in the following iterable: ['trend', 'low_pass', 'seasonal_deg', "
+                                   "'trend_deg','low_pass_deg', 'seasonal_jump', 'trend_jump', 'low_pass_jump']."
                     }
                 ],
                 required=False
             )
+            self._check_additional_parameters(additional_parameters)
 
-            for parameter_name, value in clean_advanced_params.items():
-                additional_parameter = get_advanced_param(parameter_name, value)
-                is_valid = additional_parameter.check(self)
-                if is_valid:
-                    value = additional_parameter.parse_value()
-
-                self.add_param(
-                    name=parameter_name,
-                    value=value,
-                    checks=[
-                        {
-                            "type": "custom",
-                            "cond": is_valid,
-                            "err_msg": additional_parameter.error_message
-                        }
-                    ],
-                    required=False
-                )
+    def _check_additional_parameters(self, advanced_params):
+        for parameter_name, value in advanced_params.items():
+            additional_parameter = get_additional_parameter(parameter_name, value)
+            if not additional_parameter.is_valid(self):
+                raise ValueError(additional_parameter.get_full_error_message())
 
 
-def filter_empty_values(map_parameter):
-    clean_map_parameter = map_parameter.copy()
-    for parameter_name, value in map_parameter.items():
-        if not value:
-            clean_map_parameter.pop(parameter_name)
-    return clean_map_parameter
-
-
-def get_advanced_param(parameter_name, value):
+def get_additional_parameter(parameter_name, value):
     if parameter_name in ["trend", "low_pass"]:
         additional_parameter = AdditionalSmoother(parameter_name, value)
     elif parameter_name in ["seasonal_jump", "trend_jump", "low_pass_jump"]:

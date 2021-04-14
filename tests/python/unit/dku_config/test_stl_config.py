@@ -16,7 +16,7 @@ def advanced_config():
     config = {"time_column": "date", "target_columns": ["target"],
               "frequency_unit": "D", "season_length_D": 7,
               "decomposition_model": "additive", "seasonal_stl": 7, "expert": True, "robust_stl": True,
-              "seasonal_degree_stl": "1", "advanced_params_STL": {}}
+              "seasonal_degree_stl": "1", "additional_parameters_STL": {}}
     return config
 
 
@@ -74,92 +74,100 @@ class TestSTLConfig:
 
     def test_additional_parameters(self, advanced_config, input_dataset_columns):
         dku_config = STLConfig()
-        advanced_config["advanced_params_STL"] = {"invalid_key": ""}
-        dku_config.add_parameters(advanced_config, input_dataset_columns)
-        assert dku_config.get_param("advanced_params_STL") is None
-        assert dku_config.get_param("invalid_key") is None
-
-        dku_config = STLConfig()
-        advanced_config["advanced_params_STL"] = {"invalid_key": "5"}
+        advanced_config["additional_parameters_STL"] = {"invalid_key": ""}
         with pytest.raises(DSSParameterError) as str_err:
             _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
         assert "keys" in str(str_err.value)
 
         dku_config = STLConfig()
-        advanced_config["advanced_params_STL"] = {"seasonal_deg": "1", "trend_deg": "1", "low_pass_deg": ""}
-        dku_config.add_parameters(advanced_config, input_dataset_columns)
-        assert dku_config.advanced_params_STL == {"seasonal_deg": "1", "trend_deg": "1"}
-        assert dku_config.get_param("low_pass_deg") is None
-
-        dku_config = STLConfig()
-        advanced_config["advanced_params_STL"] = {"seasonal_deg": "1", "trend_deg": "1", "invalid_key": ""}
-        dku_config.add_parameters(advanced_config, input_dataset_columns)
-        assert dku_config.advanced_params_STL == {"seasonal_deg": "1", "trend_deg": "1"}
-        assert dku_config.get_param("invalid_key") is None
+        advanced_config["additional_parameters_STL"] = {"invalid_key": "5"}
+        with pytest.raises(DSSParameterError) as str_err:
+            _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert "keys" in str(str_err.value)
 
     def test_advanced_degrees(self, advanced_config, input_dataset_columns):
         dku_config = STLConfig()
-        advanced_config["advanced_params_STL"] = {"seasonal_deg": "1", "trend_deg": "1", "low_pass_deg": "1"}
+        advanced_config["additional_parameters_STL"] = {"seasonal_deg": "1", "trend_deg": "1", "low_pass_deg": "1"}
         dku_config.add_parameters(advanced_config, input_dataset_columns)
-        assert dku_config.advanced_params_STL == {"seasonal_deg": "1", "trend_deg": "1", "low_pass_deg": "1"}
-        assert dku_config.seasonal_deg == 1
-        assert dku_config.trend_deg == 1
-        assert dku_config.low_pass_deg == 1
+        assert dku_config.additional_parameters_STL == {"seasonal_deg": 1, "trend_deg": 1, "low_pass_deg": 1}
 
         dku_config = STLConfig()
-        advanced_config["advanced_params_STL"] = {"seasonal_deg": "1000"}
-        with pytest.raises(DSSParameterError):
+        advanced_config["additional_parameters_STL"] = {"seasonal_deg": "1000"}
+        with pytest.raises(ValueError) as str_err:
             _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert "must be equal to 0 or 1" in str(str_err.value)
 
         dku_config = STLConfig()
-        advanced_config["advanced_params_STL"] = {"seasonal_deg": "string"}
-        with pytest.raises(DSSParameterError):
+        advanced_config["additional_parameters_STL"] = {"seasonal_deg": "string"}
+        with pytest.raises(ValueError) as str_err:
             _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert "must be equal to 0 or 1" in str(str_err.value)
+
+        dku_config = STLConfig()
+        advanced_config["additional_parameters_STL"] = {"low_pass_deg": ""}
+        with pytest.raises(ValueError) as str_err:
+            _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert "must be equal to 0 or 1" in str(str_err.value)
 
     def test_advanced_speed_jumps(self, advanced_config, input_dataset_columns):
         dku_config = STLConfig()
-        advanced_config["advanced_params_STL"] = {"seasonal_jump": "2", "trend_jump": "3", "low_pass_jump": "4"}
+        advanced_config["additional_parameters_STL"] = {"seasonal_jump": "2", "trend_jump": "3", "low_pass_jump": "4"}
         dku_config.add_parameters(advanced_config, input_dataset_columns)
-        assert dku_config.advanced_params_STL == {"seasonal_jump": "2", "trend_jump": "3", "low_pass_jump": "4"}
-        assert dku_config.seasonal_jump == 2
-        assert dku_config.trend_jump == 3
-        assert dku_config.low_pass_jump == 4
+        assert dku_config.additional_parameters_STL == {"seasonal_jump": 2, "trend_jump": 3, "low_pass_jump": 4}
 
         dku_config = STLConfig()
-        advanced_config["advanced_params_STL"] = {"seasonal_jump": "-1000"}
-        with pytest.raises(DSSParameterError) as str_err:
+        advanced_config["additional_parameters_STL"] = {"seasonal_jump": "-1000"}
+        with pytest.raises(ValueError) as str_err:
             _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
         assert "positive integer" in str(str_err.value)
 
         dku_config = STLConfig()
-        advanced_config["advanced_params_STL"] = {"seasonal_jump": "string"}
-        with pytest.raises(DSSParameterError):
+        advanced_config["additional_parameters_STL"] = {"seasonal_jump": "string"}
+        with pytest.raises(ValueError):
             _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert "positive integer" in str(str_err.value)
+
+        dku_config = STLConfig()
+        advanced_config["additional_parameters_STL"] = {"seasonal_jump": ""}
+        with pytest.raises(ValueError):
+            _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert "positive integer" in str(str_err.value)
 
     def test_advanced_smoothers(self, advanced_config, input_dataset_columns):
         dku_config = STLConfig()
-        advanced_config["advanced_params_STL"] = {"trend": "23", "low_pass": "31"}
+        advanced_config["additional_parameters_STL"] = {"trend": "23", "low_pass": "31"}
         dku_config.add_parameters(advanced_config, input_dataset_columns)
-        assert dku_config.advanced_params_STL == {"trend": "23", "low_pass": "31"}
-        assert dku_config.trend == 23
-        assert dku_config.low_pass == 31
+        assert dku_config.additional_parameters_STL == {"trend": 23, "low_pass": 31}
 
         dku_config = STLConfig()
-        advanced_config["advanced_params_STL"] = {"trend": "2"}
-        with pytest.raises(DSSParameterError) as str_err:
+        advanced_config["additional_parameters_STL"] = {"trend": "None", "low_pass": "31"}
+        dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert dku_config.additional_parameters_STL == {"trend": None, "low_pass": 31}
+
+        dku_config = STLConfig()
+        advanced_config["additional_parameters_STL"] = {"trend": "2"}
+        with pytest.raises(ValueError) as str_err:
             _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
         assert "odd" in str(str_err.value)
 
-        advanced_config["advanced_params_STL"] = {"trend": "-2"}
-        with pytest.raises(DSSParameterError):
+        advanced_config["additional_parameters_STL"] = {"trend": "-2"}
+        with pytest.raises(ValueError):
             _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert "positive" in str(str_err.value)
 
         dku_config = STLConfig()
-        advanced_config["advanced_params_STL"] = {"trend": "5"}
-        with pytest.raises(DSSParameterError):
+        advanced_config["additional_parameters_STL"] = {"trend": "5"}
+        with pytest.raises(ValueError):
             _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert "greater" in str(str_err.value)
 
         dku_config = STLConfig()
-        advanced_config["advanced_params_STL"] = {"trend": "string"}
-        with pytest.raises(DSSParameterError):
+        advanced_config["additional_parameters_STL"] = {"trend": "string"}
+        with pytest.raises(ValueError):
             _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert "integer" in str(str_err.value)
+
+        advanced_config["additional_parameters_STL"] = {"trend": ""}
+        with pytest.raises(ValueError):
+            _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert "integer" in str(str_err.value)

@@ -321,7 +321,7 @@
       "description": "If selected, the estimation will re-weight data, allowing the model to tolerate larger errors."
     },
     {
-      "name": "advanced_params_STL",
+      "name": "additional_parameters_STL",
       "type": "MAP",
       "label": "Additional parameters",
       "description": "Parameter name ⟶ value. If you need extra parameters, go to Statsmodel's documentation to find their names : https://www.statsmodels.org/stable/generated/statsmodels.tsa.seasonal.STL.html. Then, map them to their values in the field below. Ex : seasonal_deg ⟶  1 ",
