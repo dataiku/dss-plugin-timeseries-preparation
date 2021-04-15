@@ -29,8 +29,8 @@ unit-tests:
 		rm -rf ./env/; \
 		python3 -m venv env/; \
 		source env/bin/activate; \
-		pip install --upgrade pip; \
-		pip install --no-cache-dir -r tests/python/requirements.txt; \
+		pip install --upgrade pip;\
+		pip install --no-cache-dir -r tests/python/unit/requirements.txt; \
 		pip install --no-cache-dir -r code-env/python/spec/requirements.txt; \
 		export PYTHONPATH="$(PYTHONPATH):$(PWD)/python-lib"; \
 		pytest tests/python/unit --alluredir=tests/allure_report || ret=$$?; exit $$ret \
@@ -38,7 +38,6 @@ unit-tests:
 
 integration-tests:
 	@echo "Running integration tests..."
-	# TODO add integration tests
 
 tests: unit-tests integration-tests
 
