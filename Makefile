@@ -30,7 +30,7 @@ unit-tests:
 		pip install --no-cache-dir -r tests/python/requirements.txt; \
 		pip install --no-cache-dir -r code-env/python/spec/requirements.txt; \
 		export PYTHONPATH="$(PYTHONPATH):$(PWD)/python-lib"; \
-		pytest -o junit_family=xunit2 --junitxml=unit.xml tests/python/unit || true; \
+		pytest tests/python/unit --alluredir=tests/allure_report || ret=$$?; exit $$ret \
 	)
 	@echo "[SUCCESS] Running unit tests: Done!"
 
