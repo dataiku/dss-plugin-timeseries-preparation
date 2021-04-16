@@ -2,13 +2,12 @@
 # pytest automatically runs all the function starting with "test_"
 # see https://docs.pytest.org for more information
 
-import pandas as pd
-import numpy as np
 import math
-import sys
 import os
-import random
-from datetime import datetime
+import sys
+
+import numpy as np
+import pandas as pd
 
 ## Add stuff to the path to enable exec outside of DSS
 plugin_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -17,7 +16,9 @@ sys.path.append(os.path.join(plugin_root, 'python-lib'))
 import dku_timeseries
 
 JUST_BEFORE_SPRING_DST = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
-JUST_BEFORE_FALL_DST = pd.Timestamp('20191027 02:59:00').tz_localize('CET', ambiguous=True)  # It's ambiguous because there are 2 instants with these dates! We select the first
+JUST_BEFORE_FALL_DST = pd.Timestamp('20191027 02:59:00').tz_localize('CET',
+                                                                     ambiguous=True)  # It's ambiguous because there are 2 instants with these dates! We
+# select the first
 
 TIME_COL = 'time_col'
 DATA_COL = 'data_col'
@@ -53,14 +54,12 @@ class TestWindowing:
         output_df = window_aggregator.compute(df, TIME_COL)
         assert output_df.shape == (0, 2)
 
-
     def test_single_row_df(self):
         df = _make_df_with_one_col([33])
         window_aggregator = _make_window_aggregator()
         output_df = window_aggregator.compute(df, TIME_COL)
         assert output_df.shape == (1, 2)
         assert output_df[DATA_COL][0] == df[DATA_COL][0]
-
 
     def test_two_rows_df(self):
         length = 2
@@ -69,7 +68,6 @@ class TestWindowing:
         window_aggregator = _make_window_aggregator()
         output_df = window_aggregator.compute(df, TIME_COL)
         assert output_df[DATA_COL + '_min'][1] == 0
-
 
     def test_incremental_df_left_closed(self):
         length = 100
@@ -84,7 +82,6 @@ class TestWindowing:
         for x, y in zip(output_df[DATA_COL + '_min'][1:], ground_truth[1:]):
             assert output_df[DATA_COL][x] == y
 
-
     def test_incremental_df_right_closed(self):
         length = 100
         data = [x for x in range(length)]
@@ -96,7 +93,6 @@ class TestWindowing:
         ground_truth = [0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8]
         for x, y in zip(output_df[DATA_COL + '_min'][1:], ground_truth[1:]):
             assert output_df[DATA_COL][x] == y
-
 
     def test_group_window_time_unit(self):
         start_time_1 = pd.Timestamp('20190131 01:59:00').tz_localize('CET')

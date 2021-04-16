@@ -54,7 +54,7 @@ def reformat_time_value(time_value, time_unit):
 
 def format_resampling_step(time_unit, time_step, time_unit_end_of_week):
     frequency = FREQUENCY_STRINGS.get(time_unit, '')
-    if frequency == "W":
+    if frequency == "W" and time_unit_end_of_week:
         frequency = "W-{}".format(time_unit_end_of_week)
     return str(time_step) + frequency
 
