@@ -1,9 +1,12 @@
 import sys
 
+from dku_config.stl_config import STLConfig
+from dku_input_validator.decomposition_input_validator import DecompositionInputValidator
 from dku_timeseries import ExtremaExtractorParams
 from dku_timeseries import IntervalRestrictorParams
 from dku_timeseries import ResamplerParams
 from dku_timeseries import WindowAggregator, WindowAggregatorParams
+from dku_timeseries.dku_decomposition.stl_decomposition import STLDecomposition
 from safe_logger import SafeLogger
 
 logger = SafeLogger("Time series preparation plugin")
@@ -120,6 +123,14 @@ def get_extrema_extraction_params(recipe_config):
     params = ExtremaExtractorParams(window_aggregator=window_aggregator, extrema_type=extrema_type)
     params.check()
     return params
+
+
+def get_decomposition_params(config, input_dataset_columns):
+    dku_config = STLConfig()
+    dku_config.add_parameters(config, input_dataset_columns)
+    input_validator = DecompositionInputValidator(dku_config)
+    decomposition = STLDecomposition(dku_config)
+    return dku_config, input_validator, decomposition
 
 
 def check_python_version():

@@ -1,7 +1,6 @@
 import pandas as pd
 import pytest
 
-from dku_input_validator.classical_input_validator import ClassicalInputValidator
 from dku_input_validator.decomposition_input_validator import DecompositionInputValidator
 from dku_config.decomposition_config import DecompositionConfig
 from timeseries_preparation.preparation import TimeseriesPreparator
@@ -12,16 +11,6 @@ def basic_dku_config():
     input_dataset_columns = ["value1","value2","date"]
     dku_config = DecompositionConfig()
     config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
-              "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["value1", "value2"],
-              "long_format": False, "decomposition_model": "multiplicative", "expert": False}
-    dku_config.add_parameters(config, input_dataset_columns)
-    return dku_config
-
-@pytest.fixture
-def classical_dku_config():
-    input_dataset_columns = ["value1","value2","date"]
-    dku_config = DecompositionConfig()
-    config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "classical",
               "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["value1", "value2"],
               "long_format": False, "decomposition_model": "multiplicative", "expert": False}
     dku_config.add_parameters(config, input_dataset_columns)
@@ -84,17 +73,6 @@ class TestInputValidator:
         assert "country" in str(err.value)
         assert "item" in str(err.value)
         assert "[1 1 1 1]" in str(err.value)
-
-
-    def test_classical_validator(self, classical_dku_config, input_df):
-        timeseries_preparator = TimeseriesPreparator(classical_dku_config)
-        df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
-
-        input_validator = ClassicalInputValidator(classical_dku_config)
-        with pytest.raises(ValueError) as err:
-            _ = input_validator.check(df_prepared)
-        assert "must have at least 24 observations" in str(err.value)
-
 
 
 
