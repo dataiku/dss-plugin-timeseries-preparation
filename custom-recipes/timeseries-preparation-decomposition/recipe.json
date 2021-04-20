@@ -83,7 +83,7 @@
         },
         {
           "value": "6M",
-          "label": "Semester (semi-annual)"
+          "label": "Semi-annual"
         },
         {
           "value": "12M",
@@ -151,7 +151,7 @@
     {
       "name": "season_length_min",
       "label": "Season length",
-      "description": "Length of the seasonal period",
+      "description": "Length of the seasonal period (in minutes).",
       "type": "INT",
       "defaultValue": 60,
       "mandatory": false,
@@ -160,7 +160,7 @@
     {
       "name": "season_length_H",
       "label": "Season length",
-      "description": "Length of the seasonal period.",
+      "description": "Length of the seasonal period (in hours).",
       "type": "INT",
       "defaultValue": 24,
       "mandatory": false,
