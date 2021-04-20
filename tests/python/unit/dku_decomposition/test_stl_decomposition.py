@@ -87,7 +87,15 @@ def expected_dates():
                 "D": np.array(['1959-01-01T00:00:00.000000000', '1959-01-02T00:00:00.000000000',
                                '1959-01-03T00:00:00.000000000', '1959-01-04T00:00:00.000000000',
                                '1959-01-05T00:00:00.000000000', '1959-01-06T00:00:00.000000000',
-                               '1959-01-07T00:00:00.000000000'], dtype='datetime64[ns]')
+                               '1959-01-07T00:00:00.000000000'], dtype='datetime64[ns]'),
+                "min": np.array(['1959-01-01T00:00:00.000000000', '1959-01-01T00:01:00.000000000',
+                                 '1959-01-01T00:02:00.000000000', '1959-01-01T00:03:00.000000000',
+                                 '1959-01-01T00:04:00.000000000', '1959-01-01T00:05:00.000000000',
+                                 '1959-01-01T00:06:00.000000000'], dtype='datetime64[ns]'),
+                "12M": np.array(['1959-01-31T00:00:00.000000000', '1960-01-31T00:00:00.000000000',
+                                 '1961-01-31T00:00:00.000000000', '1962-01-31T00:00:00.000000000',
+                                 '1963-01-31T00:00:00.000000000', '1964-01-31T00:00:00.000000000',
+                                 '1965-01-31T00:00:00.000000000'], dtype='datetime64[ns]')
                 }
     return expected
 
@@ -171,6 +179,14 @@ class TestSTLDecomposition:
         assert results_df.shape == (7, 5)
         np.testing.assert_equal(results_df["date"].values, expected_dates["D"])
 
+        results_df = get_result_df("min")
+        assert results_df.shape == (7, 5)
+        np.testing.assert_equal(results_df["date"].values, expected_dates["min"])
+
+        results_df = get_result_df("12M")
+        assert results_df.shape == (7, 5)
+        np.testing.assert_equal(results_df["date"].values, expected_dates["12M"])
+
 
 def df_from_freq(dku_config):
     data = [315.58, 316.39, 316.79, 312.09, 321.08, 450.08, 298.79]
@@ -183,9 +199,10 @@ def df_from_freq(dku_config):
 
 
 def config_from_freq(freq, frequency_end_of_week=None, frequency_step_hours=None, frequency_step_minutes=None):
-    config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
-              "frequency_unit": freq, "time_column": "date", "target_columns": ["value1"],
-              "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": True}
+    default_season_length = {"12M": 4, "6M": 2, "3M": 4, "M": 12, "W": 52, "D": 7, "B": 5, "H": 24, "min": 60}
+    config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL", "frequency_unit": freq, "time_column": "date",
+              "target_columns": ["value1"], "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": True,
+              "season_length_{}".format(freq): default_season_length[freq]}
     if frequency_end_of_week:
         config["frequency_end_of_week"] = frequency_end_of_week
     elif frequency_step_hours:

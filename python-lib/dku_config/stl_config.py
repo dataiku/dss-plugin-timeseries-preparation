@@ -11,7 +11,7 @@ class STLConfig(DecompositionConfig):
     """
     def __init__(self):
         super().__init__()
-        self.minimum_period = 2
+        self.minimum_season_length = 2
 
     def _load_advanced_parameters(self, config):
         seasonal = config.get("seasonal_stl")
@@ -118,7 +118,7 @@ class STLConfig(DecompositionConfig):
 
         if additional_smoothers:
             are_smoothers_keys_valid = are_keys_in(["trend", "low_pass"], additional_smoothers)
-            minimum = max(self.period, 3)
+            minimum = max(self.season_length, 3)
             are_smoothers_values_valid = all((x == "") or
                                              ((is_odd(x) and float(x) > minimum)) for x in
                                              additional_smoothers.values())
@@ -144,7 +144,7 @@ class STLConfig(DecompositionConfig):
                     {
                         "type": "custom",
                         "cond": are_smoothers_values_valid,
-                        "err_msg": f"This field is invalid. The values should be odd positive integers greater than 3 and the period (= {self.period})."
+                        "err_msg": f"This field is invalid. The values should be odd positive integers greater than 3 and the season_length (= {self.season_length})."
                     }
                 ],
                 required=False
