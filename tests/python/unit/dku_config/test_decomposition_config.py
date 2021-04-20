@@ -6,7 +6,7 @@ from dku_config.dss_parameter import DSSParameterError
 
 @pytest.fixture
 def basic_config():
-    config = {"time_decomposition_method": "STL", "frequency_unit": "M", "season_length_M": 12, "time_column": "date",
+    config = {"frequency_unit": "M", "season_length_M": 12, "time_column": "date",
               "target_columns": ["value1", "value2"],
               "long_format": False, "decomposition_model": "multiplicative", "expert": False}
     return config

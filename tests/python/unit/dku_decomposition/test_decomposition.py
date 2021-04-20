@@ -57,8 +57,8 @@ def long_df():
 def basic_dku_config():
     input_dataset_columns = ["value1", "value2", "country", "date"]
     dku_config = DecompositionConfig()
-    config = {"transformation_type": "seasonal_decomposition", "time_decomposition_method": "STL",
-              "frequency_unit": "M", "season_length_M": 12, "time_column": "date", "target_columns": ["value1", "value2"],
+    config = {"transformation_type": "seasonal_decomposition", "frequency_unit": "M", "season_length_M": 12, "time_column": "date",
+              "target_columns": ["value1", "value2"],
               "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": False}
     dku_config.add_parameters(config, input_dataset_columns)
     return dku_config
