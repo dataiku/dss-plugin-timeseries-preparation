@@ -79,7 +79,15 @@ def expected_dates():
                 "D": np.array(['1959-01-01T00:00:00.000000000', '1959-01-02T00:00:00.000000000',
                                '1959-01-03T00:00:00.000000000', '1959-01-04T00:00:00.000000000',
                                '1959-01-05T00:00:00.000000000', '1959-01-06T00:00:00.000000000',
-                               '1959-01-07T00:00:00.000000000'], dtype='datetime64[ns]')
+                               '1959-01-07T00:00:00.000000000'], dtype='datetime64[ns]'),
+                "min": np.array(['1959-01-01T00:00:00.000000000', '1959-01-01T00:01:00.000000000',
+                                 '1959-01-01T00:02:00.000000000', '1959-01-01T00:03:00.000000000',
+                                 '1959-01-01T00:04:00.000000000', '1959-01-01T00:05:00.000000000',
+                                 '1959-01-01T00:06:00.000000000'], dtype='datetime64[ns]'),
+                "12M": np.array(['1959-01-31T00:00:00.000000000', '1960-01-31T00:00:00.000000000',
+                                 '1961-01-31T00:00:00.000000000', '1962-01-31T00:00:00.000000000',
+                                 '1963-01-31T00:00:00.000000000', '1964-01-31T00:00:00.000000000',
+                                 '1965-01-31T00:00:00.000000000'], dtype='datetime64[ns]')
                 }
     return expected
 
@@ -197,6 +205,22 @@ class TestSTLDecomposition:
         assert np.mean(results_df["value1_trend"]) == 332.97142857142853
         assert np.mean(results_df["value1_seasonal"]) == -1.0150610510858574e-15
         assert np.mean(results_df["value1_residuals"]) == -1.6240976817373718e-14
+
+    def test_min_frequencies(self, expected_dates):
+        results_df = get_additive_result_df("min")
+        assert results_df.shape == (7, 5)
+        np.testing.assert_equal(results_df["date"].values, expected_dates["min"])
+        assert np.mean(results_df["value1_trend"]) == 157.55837817644036
+        assert np.mean(results_df["value1_seasonal"]) == 175.4130503949882
+        assert np.mean(results_df["value1_residuals"]) == 4.0602442043434294e-15
+
+    def test_year_frequencies(self, expected_dates):
+        results_df = get_additive_result_df("12M")
+        assert results_df.shape == (7, 5)
+        np.testing.assert_equal(results_df["date"].values, expected_dates["12M"])
+        assert np.mean(results_df["value1_trend"]) == 331.8299999999998
+        assert np.mean(results_df["value1_seasonal"]) == 1.141428571428658
+        assert np.mean(results_df["value1_residuals"]) == 9.74458609042423e-14
 
     def test_advanced_smoothers(self, config, input_df, input_dataset_columns):
         config["decomposition_model"] = "additive"

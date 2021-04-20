@@ -8,5 +8,5 @@ class AdditionalSmoother(AdditionalParameter):
         self.error_message += "It must be an odd positive integer greater than 3 and the season length."
 
     def is_valid(self, dku_config):
-        minimum = max(dku_config.period, 3)
+        minimum = max(dku_config.season_length, 3)
         return (self.value is None) or (is_odd(self.value) and self.value > minimum)
