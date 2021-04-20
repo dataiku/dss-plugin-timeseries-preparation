@@ -247,7 +247,7 @@
     {
       "name": "long_format",
       "label": "Long format",
-      "description": "If multiple time series are stored in the same column",
+      "description": "If multiple time series are stored in the same column. See https://doc.dataiku.com/dss/latest/time-series/data-formatting.html#long-format",
       "type": "BOOLEAN",
       "defaultValue": false,
       "mandatory": true
