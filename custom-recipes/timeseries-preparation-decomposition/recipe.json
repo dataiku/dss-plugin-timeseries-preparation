@@ -1,7 +1,7 @@
 {
   "meta": {
-    "label": "Timeseries decomposition",
-    "description": "Decompose your timeseries into trend, seasonality and residuals. The recipe relies on STL, seasonal and trend decomposition using Loess.",
+    "label": "Time series decomposition",
+    "description": "Decompose your time series into trend, seasonality and residuals. The recipe relies on STL, seasonal and trend decomposition using Loess.",
     "icon": "icon-calendar-empty",
     "displayOrderRank": 5
   },
@@ -151,7 +151,7 @@
     {
       "name": "season_length_min",
       "label": "Season length",
-      "description": "Length of the seasonal period (in minutes).",
+      "description": "Length of the seasonal period (in minutes)",
       "type": "INT",
       "defaultValue": 60,
       "mandatory": false,
@@ -160,7 +160,7 @@
     {
       "name": "season_length_H",
       "label": "Season length",
-      "description": "Length of the seasonal period (in hours).",
+      "description": "Length of the seasonal period (in hours)",
       "type": "INT",
       "defaultValue": 24,
       "mandatory": false,
@@ -169,7 +169,7 @@
     {
       "name": "season_length_D",
       "label": "Season length",
-      "description": "Length of the seasonal period (in days).",
+      "description": "Length of the seasonal period (in days)",
       "type": "INT",
       "defaultValue": 7,
       "mandatory": false,
@@ -178,7 +178,7 @@
     {
       "name": "season_length_B",
       "label": "Season length",
-      "description": "Length of the seasonal period (in business days).",
+      "description": "Length of the seasonal period (in business days)",
       "type": "INT",
       "defaultValue": 5,
       "mandatory": false,
@@ -187,7 +187,7 @@
     {
       "name": "season_length_W",
       "label": "Season length",
-      "description": "Length of the seasonal period (in weeks).",
+      "description": "Length of the seasonal period (in weeks)",
       "type": "INT",
       "defaultValue": 52,
       "mandatory": false,
@@ -196,7 +196,7 @@
     {
       "name": "season_length_M",
       "label": "Season length",
-      "description": "Length of the seasonal period (in months).",
+      "description": "Length of the seasonal period (in months)",
       "type": "INT",
       "defaultValue": 12,
       "mandatory": false,
@@ -205,7 +205,7 @@
     {
       "name": "season_length_3M",
       "label": "Season length",
-      "description": "Length of the seasonal period (in quarters).",
+      "description": "Length of the seasonal period (in quarters)",
       "type": "INT",
       "defaultValue": 4,
       "mandatory": false,
@@ -214,7 +214,7 @@
     {
       "name": "season_length_6M",
       "label": "Season length",
-      "description": "Length of the seasonal period (in semesters).",
+      "description": "Length of the seasonal period (in semesters)",
       "type": "INT",
       "defaultValue": 2,
       "mandatory": false,
@@ -223,7 +223,7 @@
     {
       "name": "season_length_12M",
       "label": "Season length",
-      "description": "Length of the seasonal period (in years).",
+      "description": "Length of the seasonal period (in years)",
       "type": "INT",
       "defaultValue": 4,
       "mandatory": false,
@@ -247,7 +247,7 @@
     {
       "name": "long_format",
       "label": "Long format",
-      "description": "If multiple time series are stored in the same column. See https://doc.dataiku.com/dss/latest/time-series/data-formatting.html#long-format",
+      "description": "If multiple time series are stored in the same column, see https://doc.dataiku.com/dss/latest/time-series/data-formatting.html#long-format",
       "type": "BOOLEAN",
       "defaultValue": false,
       "mandatory": true
@@ -306,7 +306,7 @@
       "name": "seasonal_stl",
       "label": "Seasonal smoother",
       "type": "INT",
-      "description": "Number of consecutive timesteps (years, weeks..) used when estimating each value of the seasonal component. It controls how rapidly the seasonal component can change. Odd integer greater than 7.",
+      "description": "The window size used to estimate the seasonal component in STL decompositions. It controls how rapidly the seasonal component can change. Odd integer greater than 7",
       "defaultValue": 7,
       "minI": 7,
       "visibilityCondition": "model.expert"
