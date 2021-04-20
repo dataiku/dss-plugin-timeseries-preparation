@@ -1,7 +1,4 @@
-from dku_config.additional_degree import AdditionalDegree
-from dku_config.additional_parameter import AdditionalParameter
-from dku_config.additional_smoother import AdditionalSmoother
-from dku_config.additional_speedup import AdditionalSpeedup
+from dku_config.additional_parameter import AdditionalParameter, AdditionalSmoother, AdditionalSpeedup, AdditionalDegree
 from dku_config.decomposition_config import DecompositionConfig
 from dku_config.utils import are_keys_in, cast_kwargs
 
@@ -83,18 +80,18 @@ class STLConfig(DecompositionConfig):
 
     def _check_additional_parameters(self, advanced_params):
         for parameter_name, value in advanced_params.items():
-            additional_parameter = get_additional_parameter(parameter_name, value)
+            additional_parameter = self._get_additional_parameter(parameter_name, value)
             if not additional_parameter.is_valid(self):
                 raise ValueError(additional_parameter.get_full_error_message())
 
-
-def get_additional_parameter(parameter_name, value):
-    if parameter_name in ["trend", "low_pass"]:
-        additional_parameter = AdditionalSmoother(parameter_name, value)
-    elif parameter_name in ["seasonal_jump", "trend_jump", "low_pass_jump"]:
-        additional_parameter = AdditionalSpeedup(parameter_name, value)
-    elif parameter_name in ["seasonal_deg", "trend_deg", "low_pass_deg"]:
-        additional_parameter = AdditionalDegree(parameter_name, value)
-    else:
-        additional_parameter = AdditionalParameter(parameter_name, value)
-    return additional_parameter
+    @staticmethod
+    def _get_additional_parameter(parameter_name, value):
+        if parameter_name in ["trend", "low_pass"]:
+            additional_parameter = AdditionalSmoother(parameter_name, value)
+        elif parameter_name in ["seasonal_jump", "trend_jump", "low_pass_jump"]:
+            additional_parameter = AdditionalSpeedup(parameter_name, value)
+        elif parameter_name in ["seasonal_deg", "trend_deg", "low_pass_deg"]:
+            additional_parameter = AdditionalDegree(parameter_name, value)
+        else:
+            additional_parameter = AdditionalParameter(parameter_name, value)
+        return additional_parameter
