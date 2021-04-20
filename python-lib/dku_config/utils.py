@@ -5,9 +5,7 @@ class PluginCodeEnvError(Exception):
 
 
 def are_keys_in(expected_keys, map_parameter):
-    valid_keys = expected_keys.copy()
-    valid_keys.append("")
-    return all(x in valid_keys for x in map_parameter.keys())
+    return all(x in expected_keys for x in map_parameter.keys())
 
 
 def cast_kwargs(kwargs):
