@@ -247,8 +247,7 @@ def assert_time_column_valid(dataframe, time_column_name, frequency, start_date=
 
     if not np.array_equal(dataframe[time_column_name].values, date_range_values):
         error_message = f"Time column '{time_column_name}' has missing values with frequency '{frequency}'."
-        error_message += " Please check the Frequency parameter."
-        error_message += " You can use the resampling recipe from the time series preparation plugin to prepare your time series."
+        error_message += " Please check the Frequency parameter or use the resampling recipe from the time series preparation plugin."
         raise ValueError(error_message)
 
 
