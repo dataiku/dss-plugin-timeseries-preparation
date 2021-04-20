@@ -144,6 +144,10 @@ class TestSTLConfig:
         dku_config.add_parameters(advanced_config, input_dataset_columns)
         assert dku_config.additional_parameters_STL == {"trend": None, "low_pass": 31}
 
+        advanced_config["additional_parameters_STL"] = {"trend": ""}
+        dku_config.add_parameters(advanced_config, input_dataset_columns)
+        assert dku_config.additional_parameters_STL == {"trend": None}
+
         dku_config = STLConfig()
         advanced_config["additional_parameters_STL"] = {"trend": "2"}
         with pytest.raises(ValueError) as str_err:
@@ -163,11 +167,6 @@ class TestSTLConfig:
 
         dku_config = STLConfig()
         advanced_config["additional_parameters_STL"] = {"trend": "string"}
-        with pytest.raises(ValueError):
-            _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
-        assert "integer" in str(str_err.value)
-
-        advanced_config["additional_parameters_STL"] = {"trend": ""}
         with pytest.raises(ValueError):
             _ = dku_config.add_parameters(advanced_config, input_dataset_columns)
         assert "integer" in str(str_err.value)

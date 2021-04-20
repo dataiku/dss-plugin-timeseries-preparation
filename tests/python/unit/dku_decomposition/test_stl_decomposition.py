@@ -252,6 +252,30 @@ class TestSTLDecomposition:
         assert np.mean(result_df["value1_seasonal"]) == 43303.82955718398
         assert np.mean(result_df["value1_residuals"]) == -3.134258664571322e-11
 
+        config["additional_parameters_STL"] = {"trend": ""}
+        dku_config = STLConfig()
+        dku_config.add_parameters(config, input_dataset_columns)
+        timeseries_preparator = TimeseriesPreparator(dku_config)
+        df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
+        decomposition = STLDecomposition(dku_config)
+        result_df = decomposition.fit(df_prepared)
+        assert result_df.shape == (26, 6)
+        assert np.mean(result_df["value1_trend"]) == 492101.0195351211
+        assert np.mean(result_df["value1_seasonal"]) == 32625.652227975654
+        assert np.mean(result_df["value1_residuals"]) == -5345.248686173698
+
+        config["additional_parameters_STL"] = {"trend": "None"}
+        dku_config = STLConfig()
+        dku_config.add_parameters(config, input_dataset_columns)
+        timeseries_preparator = TimeseriesPreparator(dku_config)
+        df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
+        decomposition = STLDecomposition(dku_config)
+        result_df = decomposition.fit(df_prepared)
+        assert result_df.shape == (26, 6)
+        assert np.mean(result_df["value1_trend"]) == 492101.0195351211
+        assert np.mean(result_df["value1_seasonal"]) == 32625.652227975654
+        assert np.mean(result_df["value1_residuals"]) == -5345.248686173698
+
     def test_advanced_degrees(self, config, input_df, input_dataset_columns):
         config["additional_parameters_STL"] = {"seasonal_deg": "1", "trend_deg": "1", "low_pass_deg": "1"}
         dku_config = STLConfig()

@@ -23,7 +23,7 @@ def cast_string(s):
         return True
     elif s == "False":
         return False
-    elif s == "None":
+    elif s == "None" or s == "":
         return None
     elif is_int(s):
         return int(s)
