@@ -206,7 +206,8 @@ class TimeseriesPreparator:
             if df[column_name].isnull().values.any():
                 invalid_columns += [column_name]
         if len(invalid_columns) > 0:
-            raise ValueError(f"Column(s) '{invalid_columns}' have missing values. You can use the Time Series Preparation plugin to resample your time series.")
+            raise ValueError(f"Column(s) '{invalid_columns}' have missing values. You can use the resampling recipe from the time series preparation plugin "
+                             f"to prepare your time series. ")
 
     def _log_timeseries_lengths(self, df, log_message_prefix=None):
         """Log the number and sizes of time series and whether it's after sampling or not"""
@@ -246,7 +247,7 @@ def assert_time_column_valid(dataframe, time_column_name, frequency, start_date=
 
     if not np.array_equal(dataframe[time_column_name].values, date_range_values):
         error_message = f"Time column '{time_column_name}' has missing values with frequency '{frequency}'."
-        error_message += " You can use the Time Series Preparation plugin to resample your time column."
+        error_message += " Please check the Frequency parameter or use the resampling recipe from the time series preparation plugin."
         raise ValueError(error_message)
 
 

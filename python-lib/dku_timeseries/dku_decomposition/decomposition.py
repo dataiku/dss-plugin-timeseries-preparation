@@ -19,6 +19,7 @@ class TimeseriesDecomposition(ABC):
     def __init__(self, dku_config):
         self.dku_config = dku_config
         self.parameters = {}
+        self.columns_descriptions = {}
 
     def fit(self, df):
         """Adds season, trend and residuals components to the input dataframe while managing long format time series
@@ -55,8 +56,10 @@ class TimeseriesDecomposition(ABC):
             target_values = timeseries_df[target_column].values
             ts = self._prepare_ts(target_values, time_index)
             decomposition = self._decompose(ts)
-            decomposition_columns = self._write_decomposition_columns(decomposition, timeseries_df, target_column)
+            new_column_names = get_component_names(target_column, timeseries_df.columns)
+            decomposition_columns = self._write_decomposition_columns(decomposition, timeseries_df, new_column_names)
             decomposed_df = pd.concat([decomposed_df, decomposition_columns], axis=1)
+            self._compute_columns_descriptions(new_column_names)
             logger.info(f"Decomposing time series:     Done for the target column: {target_column}")
         return decomposed_df
 
@@ -81,7 +84,7 @@ class TimeseriesDecomposition(ABC):
         """
         pass
 
-    def _write_decomposition_columns(self, decomposition, timeseries_df, target_column):
+    def _write_decomposition_columns(self, decomposition, timeseries_df, new_column_names):
         """Writes the trend, seasonal, residuals decomposition in a 3-column dataframe
 
         :param decomposition: trend/season decomposition
@@ -93,12 +96,19 @@ class TimeseriesDecomposition(ABC):
         :return: a dataframe with one column for each component
         :rtype: pd.DataFrame
         """
-        new_column_names = get_component_names(target_column, timeseries_df.columns)
         decomposition_columns = pd.DataFrame(index=timeseries_df.index)
         decomposition_columns.loc[:, new_column_names["trend"]] = decomposition.trend
         decomposition_columns.loc[:, new_column_names["seasonal"]] = decomposition.seasonal
         decomposition_columns.loc[:, new_column_names["residuals"]] = decomposition.residuals
         return decomposition_columns
+
+    def _compute_columns_descriptions(self, decomposition_columns):
+        if decomposition_columns["trend"] not in self.columns_descriptions:
+            self.columns_descriptions[decomposition_columns["trend"]] = f"Long term variations"
+        if decomposition_columns["seasonal"] not in self.columns_descriptions:
+            self.columns_descriptions[decomposition_columns["seasonal"]] = f"Periodic changes"
+        if decomposition_columns["residuals"] not in self.columns_descriptions:
+            self.columns_descriptions[decomposition_columns["residuals"]] = f"Random influences"
 
 
 class _DecompositionResults:
