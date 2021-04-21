@@ -10,7 +10,7 @@ from time import perf_counter
 
 from dataiku.customrecipe import get_recipe_config
 
-from io_utils import get_input_output
+from io_utils import get_input_output, set_column_description
 from recipe_config_loading import get_decomposition_params
 from safe_logger import SafeLogger
 from timeseries_preparation.preparation import TimeseriesPreparator
@@ -31,5 +31,5 @@ start = perf_counter()
 logger.info("Decomposing time series...")
 transformed_df = decomposition.fit(df_prepared)
 logger.info("Decomposing time series: Done in {:.2f} seconds".format(perf_counter() - start))
-
 transformation_df = output_dataset.write_with_schema(transformed_df)
+set_column_description(output_dataset, decomposition.columns_descriptions, input_dataset)
