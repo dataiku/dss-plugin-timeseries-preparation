@@ -2,7 +2,7 @@
   "meta": {
     "label": "Timeseries decomposition",
     "description": "Decompose your timeseries into trend, seasonality and residuals.",
-    "icon": "icon-dku-timeseries-decomposition icon-DKU_timeseries_decomposition",
+    "icon": "icon-dku-timeseries-decomposition icon-calendar-empty",
     "displayOrderRank": 5
   },
   "kind": "PYTHON",
