@@ -1,7 +1,7 @@
 {
   "meta": {
-    "label": "Timeseries decomposition",
-    "description": "Decompose your timeseries into trend, seasonality and residuals.",
+    "label": "Time series decomposition",
+    "description": "Decompose your time series into trend, seasonality and residuals. The recipe relies on STL, seasonal and trend decomposition using Loess.",
     "icon": "icon-dku-timeseries-decomposition icon-calendar-empty",
     "displayOrderRank": 5
   },
@@ -83,7 +83,7 @@
         },
         {
           "value": "6M",
-          "label": "Semester (semi-annual)"
+          "label": "Semi-annual"
         },
         {
           "value": "12M",
@@ -151,16 +151,16 @@
     {
       "name": "season_length_min",
       "label": "Season length",
-      "description": "Length of the seasonal period",
+      "description": "Length of the seasonal period (in minutes)",
       "type": "INT",
-      "defaultValue": 1,
+      "defaultValue": 60,
       "mandatory": false,
       "visibilityCondition": "model.frequency_unit == 'min'"
     },
     {
       "name": "season_length_H",
       "label": "Season length",
-      "description": "Length of the seasonal period.",
+      "description": "Length of the seasonal period (in hours)",
       "type": "INT",
       "defaultValue": 24,
       "mandatory": false,
@@ -169,7 +169,7 @@
     {
       "name": "season_length_D",
       "label": "Season length",
-      "description": "Length of the seasonal period (in days).",
+      "description": "Length of the seasonal period (in days)",
       "type": "INT",
       "defaultValue": 7,
       "mandatory": false,
@@ -178,7 +178,7 @@
     {
       "name": "season_length_B",
       "label": "Season length",
-      "description": "Length of the seasonal period (in business days).",
+      "description": "Length of the seasonal period (in business days)",
       "type": "INT",
       "defaultValue": 5,
       "mandatory": false,
@@ -187,7 +187,7 @@
     {
       "name": "season_length_W",
       "label": "Season length",
-      "description": "Length of the seasonal period (in weeks).",
+      "description": "Length of the seasonal period (in weeks)",
       "type": "INT",
       "defaultValue": 52,
       "mandatory": false,
@@ -196,7 +196,7 @@
     {
       "name": "season_length_M",
       "label": "Season length",
-      "description": "Length of the seasonal period (in months).",
+      "description": "Length of the seasonal period (in months)",
       "type": "INT",
       "defaultValue": 12,
       "mandatory": false,
@@ -205,7 +205,7 @@
     {
       "name": "season_length_3M",
       "label": "Season length",
-      "description": "Length of the seasonal period (in quarters).",
+      "description": "Length of the seasonal period (in quarters)",
       "type": "INT",
       "defaultValue": 4,
       "mandatory": false,
@@ -214,7 +214,7 @@
     {
       "name": "season_length_6M",
       "label": "Season length",
-      "description": "Length of the seasonal period (in semesters).",
+      "description": "Length of the seasonal period (in semesters)",
       "type": "INT",
       "defaultValue": 2,
       "mandatory": false,
@@ -223,9 +223,9 @@
     {
       "name": "season_length_12M",
       "label": "Season length",
-      "description": "Length of the seasonal period (in years).",
+      "description": "Length of the seasonal period (in years)",
       "type": "INT",
-      "defaultValue": 1,
+      "defaultValue": 4,
       "mandatory": false,
       "visibilityCondition": "model.frequency_unit == '12M'"
     },
@@ -247,7 +247,7 @@
     {
       "name": "long_format",
       "label": "Long format",
-      "description": "If multiple time series are stored in the same column",
+      "description": "If multiple time series are stored in the same column, see https://doc.dataiku.com/dss/latest/time-series/data-formatting.html#long-format",
       "type": "BOOLEAN",
       "defaultValue": false,
       "mandatory": true
@@ -272,37 +272,7 @@
     {
       "type": "SEPARATOR",
       "name": "separator_decomposition",
-      "label": "Decomposition parameters"
-    },
-    {
-      "name": "time_decomposition_method",
-      "label": "Select a decomposition method",
-      "type": "SELECT",
-      "selectChoices": [
-        {
-          "value": "STL",
-          "label": "STL"
-        },
-        {
-          "value": "classical",
-          "label": "Classical decomposition"
-        }
-      ],
-      "defaultValue": "STL"
-    },
-    {
-      "type": "SEPARATOR",
-      "name": "stl_parameters",
-      "label": "",
-      "description": "Seasonal-Trend decomposition using Loess",
-      "visibilityCondition": "model.time_decomposition_method == 'STL'"
-    },
-    {
-      "type": "SEPARATOR",
-      "name": "classical_parameters",
-      "label": "",
-      "description": "Seasonal-Trend decomposition using moving averages",
-      "visibilityCondition": "model.time_decomposition_method == 'classical'"
+      "label": "Decomposition parameter"
     },
     {
       "type": "SELECT",
@@ -336,10 +306,10 @@
       "name": "seasonal_stl",
       "label": "Seasonal smoother",
       "type": "INT",
-      "description": "Odd integer greater than 7. Number of consecutive timesteps (years, weeks..) to be used in estimating each value in the seasonal component. It controls how rapidly the seasonal component can change.",
+      "description": "The window size used to estimate the seasonal component in STL decompositions. It controls how rapidly the seasonal component can change. Must be an odd integer greater than 7",
       "defaultValue": 7,
       "minI": 7,
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
+      "visibilityCondition": "model.expert"
     },
     {
       "name": "robust_stl",
@@ -347,89 +317,18 @@
       "type": "BOOLEAN",
       "defaultValue": false,
       "mandatory": false,
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
+      "visibilityCondition": "model.expert",
       "description": "If selected, the estimation will re-weight data, allowing the model to tolerate larger errors."
     },
     {
-      "type": "SEPARATOR",
-      "name": "separator_degrees",
-      "label": " ",
-      "description": "Fitting method in Loess",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
-    },
-    {
-      "name": "stl_degree_kwargs",
+      "name": "additional_parameters_STL",
       "type": "MAP",
-      "label": "Degree of Loess",
-      "description": "Keyword argument ⟶ value cf. https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
-      "mandatory": false,
-      "defaultValue": {
-        "seasonal_deg": "1",
-        "trend_deg": "1",
-        "low_pass_deg": "1"
-      }
-    },
-    {
-      "type": "SEPARATOR",
-      "name": "separator_speedup",
-      "label": " ",
-      "description": "Performance",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
-    },
-    {
-      "type": "SEPARATOR",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
-    },
-    {
-      "name": "stl_speed_jump_kwargs",
-      "type": "MAP",
-      "label": "Speed jump",
-      "description": "Keyword argument ⟶ value cf. https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
-      "mandatory": false,
-      "defaultValue": {
-        "seasonal_jump": "1",
-        "trend_jump": "1",
-        "low_pass_jump": "1"
-      }
-    },
-    {
-      "type": "SEPARATOR",
-      "name": "separator_smoothers",
-      "label": " ",
-      "description": "Additional smoothers",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
-    },
-    {
-      "type": "SEPARATOR",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert"
-    },
-    {
-      "name": "stl_smoothers_kwargs",
-      "type": "MAP",
-      "label": "Length of the smoothers",
-      "description": "Keyword argument ⟶ value cf. https://www.statsmodels.org/devel/generated/statsmodels.tsa.seasonal.STL.html",
-      "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert",
-      "mandatory": false,
-      "defaultValue": {
-        "trend": "",
-        "low_pass": ""
-      }
-    },
-    {
-      "name": "advanced_params_classical",
-      "type": "MAP",
-      "label": " ",
-      "description": "Keyword argument ⟶ value https://www.statsmodels.org/stable/generated/statsmodels.tsa.seasonal.seasonal_decompose.html",
-      "visibilityCondition": "model.time_decomposition_method == 'classical' && model.expert",
-      "mandatory": false,
-      "defaultValue": {
-        "filt": "",
-        "two_sided": "True",
-        "extrapolate_trend": "0"
-      }
+      "label": "Additional parameters",
+      "description": "Parameter name ⟶ value. If you need extra parameters, go to Statsmodel's documentation to find their names : https://www.statsmodels.org/stable/generated/statsmodels.tsa.seasonal.STL.html. Then, map them to their values in the field below. Ex : seasonal_deg ⟶  1 ",
+      "visibilityCondition": "model.expert",
+      "mandatory": false
     }
   ],
-  "resourceKeys": []
+    "resourceKeys": []
 }
+
