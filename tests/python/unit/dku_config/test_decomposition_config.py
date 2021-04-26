@@ -1,4 +1,10 @@
+import os
+import sys
+
 import pytest
+
+plugin_root = os.path.dirname(os.path.dirname(os.path.dirname((os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))))
+sys.path.append(os.path.join(plugin_root, 'python-lib'))
 
 from dku_config.decomposition_config import DecompositionConfig
 from dku_config.dss_parameter import DSSParameterError
@@ -17,6 +23,7 @@ def input_dataset_columns():
     return ["value1", "value2", "date"]
 
 
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
 class TestDecompositionConfig:
     def test_input_parameters(self, basic_config, input_dataset_columns):
         dku_config = DecompositionConfig()

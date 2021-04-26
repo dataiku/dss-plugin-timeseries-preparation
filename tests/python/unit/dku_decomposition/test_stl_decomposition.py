@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -92,6 +94,7 @@ def expected_dates():
     return expected
 
 
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
 class TestSTLDecomposition:
     def test_STL_multiplicative(self, dku_config, input_df):
         dku_config.model = "multiplicative"

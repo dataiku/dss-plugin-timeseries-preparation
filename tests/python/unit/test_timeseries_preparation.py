@@ -1,9 +1,12 @@
+import sys
+
 import numpy as np
 import pandas as pd
 import pytest
 
-from dku_config.stl_config import STLConfig
-from timeseries_preparation.preparation import TimeseriesPreparator
+if sys.version_info >= (3, 0):
+    from dku_config.stl_config import STLConfig
+    from timeseries_preparation.preparation import TimeseriesPreparator
 
 
 @pytest.fixture
@@ -23,8 +26,10 @@ def basic_config(time_column_name):
               "long_format": False, "decomposition_model": "multiplicative", "expert": False}
     return config
 
+
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
 class TestTimeseriesPreparation:
-    def test_duplicate_dates(self,time_column_name, timeseries_identifiers_names, basic_config):
+    def test_duplicate_dates(self, time_column_name, timeseries_identifiers_names, basic_config):
         df = pd.DataFrame(
             {
                 "date": [
@@ -44,8 +49,7 @@ class TestTimeseriesPreparation:
         with pytest.raises(ValueError):
             _ = preparator._truncate_dates(df)
 
-
-    def test_minutes_truncation(self,time_column_name, basic_config):
+    def test_minutes_truncation(self, time_column_name, basic_config):
         df = pd.DataFrame(
             {
                 "date": [
@@ -71,8 +75,7 @@ class TestTimeseriesPreparation:
         assert dataframe_prepared[time_column_name][0] == pd.Timestamp("2021-01-01  12:15:00")
         assert dataframe_prepared[time_column_name][2] == pd.Timestamp("2021-01-01 12:45:00")
 
-
-    def test_hour_truncation(self,time_column_name, timeseries_identifiers_names, basic_config):
+    def test_hour_truncation(self, time_column_name, timeseries_identifiers_names, basic_config):
         df = pd.DataFrame(
             {
                 "date": [
@@ -104,8 +107,7 @@ class TestTimeseriesPreparation:
         assert dataframe_prepared[time_column_name][0] == pd.Timestamp("2020-01-07 16:00:00")
         assert dataframe_prepared[time_column_name][3] == pd.Timestamp("2020-01-08 06:00:00")
 
-
-    def test_day_truncation(self,time_column_name, timeseries_identifiers_names, basic_config):
+    def test_day_truncation(self, time_column_name, timeseries_identifiers_names, basic_config):
         df = pd.DataFrame(
             {
                 "date": [
@@ -132,8 +134,7 @@ class TestTimeseriesPreparation:
         assert dataframe_prepared[time_column_name][0] == pd.Timestamp("2021-01-01")
         assert dataframe_prepared[time_column_name][2] == pd.Timestamp("2021-01-03")
 
-
-    def test_business_day_truncation(self,time_column_name, timeseries_identifiers_names, basic_config):
+    def test_business_day_truncation(self, time_column_name, timeseries_identifiers_names, basic_config):
         df = pd.DataFrame(
             {
                 "date": [
@@ -160,8 +161,7 @@ class TestTimeseriesPreparation:
         assert dataframe_prepared[time_column_name][0] == pd.Timestamp("2021-01-04")
         assert dataframe_prepared[time_column_name][2] == pd.Timestamp("2021-01-06")
 
-
-    def test_week_sunday_truncation(self,time_column_name, timeseries_identifiers_names, basic_config):
+    def test_week_sunday_truncation(self, time_column_name, timeseries_identifiers_names, basic_config):
         df = pd.DataFrame(
             {
                 "date": [
@@ -190,8 +190,7 @@ class TestTimeseriesPreparation:
         assert dataframe_prepared[time_column_name][0] == pd.Timestamp("2021-01-10")
         assert dataframe_prepared[time_column_name][1] == pd.Timestamp("2021-01-17")
 
-
-    def test_quarter_truncation(self,time_column_name, timeseries_identifiers_names, basic_config):
+    def test_quarter_truncation(self, time_column_name, timeseries_identifiers_names, basic_config):
         df = pd.DataFrame(
             {
                 "date": [
@@ -218,8 +217,7 @@ class TestTimeseriesPreparation:
         assert dataframe_prepared[time_column_name][0] == pd.Timestamp("2020-12-31")
         assert dataframe_prepared[time_column_name][2] == pd.Timestamp("2021-06-30")
 
-
-    def test_semester_truncation(self,time_column_name, timeseries_identifiers_names, basic_config):
+    def test_semester_truncation(self, time_column_name, timeseries_identifiers_names, basic_config):
         df = pd.DataFrame(
             {
                 "date": [
@@ -247,8 +245,7 @@ class TestTimeseriesPreparation:
         assert dataframe_prepared[time_column_name][1] == pd.Timestamp("2021-06-30")
         assert dataframe_prepared[time_column_name][2] == pd.Timestamp("2021-12-31")
 
-
-    def test_year_truncation(self,time_column_name, timeseries_identifiers_names, basic_config):
+    def test_year_truncation(self, time_column_name, timeseries_identifiers_names, basic_config):
         df = pd.DataFrame(
             {
                 "date": [
@@ -277,8 +274,7 @@ class TestTimeseriesPreparation:
         assert dataframe_prepared[time_column_name][1] == pd.Timestamp("2021-12-31")
         assert dataframe_prepared[time_column_name][2] == pd.Timestamp("2022-12-31")
 
-
-    def test_target_column_preparation(self,time_column_name, timeseries_identifiers_names, basic_config):
+    def test_target_column_preparation(self, time_column_name, timeseries_identifiers_names, basic_config):
         df = pd.DataFrame(
             {
                 "date": [
@@ -300,7 +296,7 @@ class TestTimeseriesPreparation:
         dku_config.add_parameters(basic_config, list(df.columns))
         preparator = TimeseriesPreparator(dku_config)
         df_prepared = preparator.prepare_timeseries_dataframe(df)
-        assert df_prepared.loc[0,"target"] == 1
+        assert df_prepared.loc[0, "target"] == 1
 
         dku_config = STLConfig()
         basic_config["target_columns"] = ["unformatted_target"]
@@ -330,7 +326,3 @@ class TestTimeseriesPreparation:
         with pytest.raises(ValueError) as err:
             _ = preparator.prepare_timeseries_dataframe(df)
         assert "missing value" in str(err.value)
-
-
-
-

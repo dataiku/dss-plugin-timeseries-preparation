@@ -1,4 +1,10 @@
+import os
+import sys
+
 import pytest
+
+plugin_root = os.path.dirname(os.path.dirname((os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
+sys.path.append(os.path.join(plugin_root, 'python-lib'))
 
 from recipe_config_loading import check_and_get_groupby_columns, get_decomposition_params
 
@@ -73,6 +79,7 @@ class TestRecipeConfigLoading:
         groupby_colums = check_and_get_groupby_columns(config, dataset_columns)
         assert len(groupby_colums) == 1
 
+    @pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
     def test_get_decomposition_params(self, decomposition_config):
         columns = ["value1", "value2", "value3", "date"]
         (dku_config, input_validator, decomposition) = get_decomposition_params(decomposition_config, columns)

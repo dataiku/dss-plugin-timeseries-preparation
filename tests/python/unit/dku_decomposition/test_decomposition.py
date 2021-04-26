@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -63,7 +65,7 @@ def basic_dku_config():
     dku_config.add_parameters(config, input_dataset_columns)
     return dku_config
 
-
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
 class TestDecomposition:
     def test_single_target(self, basic_dku_config, input_df):
         basic_dku_config.target_columns = ["value1"]
