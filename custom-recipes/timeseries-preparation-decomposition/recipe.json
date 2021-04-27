@@ -306,7 +306,7 @@
       "name": "seasonal_stl",
       "label": "Seasonal smoother",
       "type": "INT",
-      "description": "The window size used to estimate the seasonal component in STL decompositions. It controls how rapidly the seasonal component can change. Must be an odd integer greater than 7",
+      "description": "The window size used to estimate the seasonal component in STL decompositions. Must be an odd integer greater than 7",
       "defaultValue": 7,
       "minI": 7,
       "visibilityCondition": "model.expert"
