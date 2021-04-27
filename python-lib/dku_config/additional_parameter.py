@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from dku_config.utils import is_positive_int, is_odd
 
 

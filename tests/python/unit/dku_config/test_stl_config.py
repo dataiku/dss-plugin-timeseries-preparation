@@ -5,9 +5,9 @@ import pytest
 
 plugin_root = os.path.dirname(os.path.dirname(os.path.dirname((os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))))
 sys.path.append(os.path.join(plugin_root, 'python-lib'))
-
-from dku_config.dss_parameter import DSSParameterError
-from dku_config.stl_config import STLConfig
+if sys.version_info >= (3, 0):
+    from dku_config.dss_parameter import DSSParameterError
+    from dku_config.stl_config import STLConfig
 
 
 @pytest.fixture
@@ -29,6 +29,7 @@ def advanced_config():
 @pytest.fixture
 def input_dataset_columns():
     return ["target", "date", "something"]
+
 
 @pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
 class TestSTLConfig:
@@ -223,7 +224,7 @@ def config_with_default_periods(freq, frequency_end_of_week=None, frequency_step
     elif frequency_step_minutes:
         config["frequency_step_minutes"] = frequency_step_minutes
     input_dataset_columns = ["value1", "value2", "country", "date"]
-    config[f"season_length_{freq}"] = default_season_length[freq]
+    config["season_length_{}".format(freq)] = default_season_length[freq]
     dku_config = STLConfig()
     dku_config.add_parameters(config, input_dataset_columns)
     return dku_config

@@ -4,37 +4,38 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from dku_config.decomposition_config import DecompositionConfig
-from dku_timeseries.dku_decomposition.decomposition import TimeseriesDecomposition, _DecompositionResults
-from timeseries_preparation.preparation import TimeseriesPreparator
+if sys.version_info >= (3, 0):
+    from dku_config.decomposition_config import DecompositionConfig
+    from dku_timeseries.dku_decomposition.decomposition import TimeseriesDecomposition, _DecompositionResults
+    from timeseries_preparation.preparation import TimeseriesPreparator
 
 
-class MockStatsmodelResults(object):
-    def __init__(self, size, counter=1):
-        time_index = pd.date_range("1-1-1959", periods=size, freq="M")
-        self.trend = pd.Series(np.ones(size) * counter, index=time_index)
-        self.seasonal = pd.Series(2 * np.ones(size) * counter, index=time_index)
-        self.resid = pd.Series(3 * np.ones(size) * counter, index=time_index)
+    class MockStatsmodelResults(object):
+        def __init__(self, size, counter=1):
+            time_index = pd.date_range("1-1-1959", periods=size, freq="M")
+            self.trend = pd.Series(np.ones(size) * counter, index=time_index)
+            self.seasonal = pd.Series(2 * np.ones(size) * counter, index=time_index)
+            self.resid = pd.Series(3 * np.ones(size) * counter, index=time_index)
 
 
-class MockDecomposition(TimeseriesDecomposition):
-    def __init__(self, dku_config):
-        super().__init__(dku_config)
-        self.counter = 1
+    class MockDecomposition(TimeseriesDecomposition):
+        def __init__(self, dku_config):
+            super(MockDecomposition, self).__init__(dku_config)
+            self.counter = 1
 
-    def _decompose(self, ts):
-        size = ts.shape[0]
-        if self.dku_config.long_format:
-            statsmodel_results = MockStatsmodelResults(size, self.counter)
-            decomposition = _DecompositionResults()
-            decomposition.load(statsmodel_results)
-            self.counter += 1
-            return decomposition
-        else:
-            statsmodel_results = MockStatsmodelResults(size)
-            decomposition = _DecompositionResults()
-            decomposition.load(statsmodel_results)
-            return decomposition
+        def _decompose(self, ts):
+            size = ts.shape[0]
+            if self.dku_config.long_format:
+                statsmodel_results = MockStatsmodelResults(size, self.counter)
+                decomposition = _DecompositionResults()
+                decomposition.load(statsmodel_results)
+                self.counter += 1
+                return decomposition
+            else:
+                statsmodel_results = MockStatsmodelResults(size)
+                decomposition = _DecompositionResults()
+                decomposition.load(statsmodel_results)
+                return decomposition
 
 
 @pytest.fixture
@@ -64,6 +65,7 @@ def basic_dku_config():
               "long_format": False, "decomposition_model": "multiplicative", "seasonal_stl": 13, "expert": False}
     dku_config.add_parameters(config, input_dataset_columns)
     return dku_config
+
 
 @pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
 class TestDecomposition:

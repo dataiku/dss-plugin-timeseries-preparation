@@ -3,9 +3,10 @@ import sys
 import pandas as pd
 import pytest
 
-from dku_config.decomposition_config import DecompositionConfig
-from dku_input_validator.decomposition_input_validator import DecompositionInputValidator
-from timeseries_preparation.preparation import TimeseriesPreparator
+if sys.version_info >= (3, 0):
+    from dku_config.decomposition_config import DecompositionConfig
+    from dku_input_validator.decomposition_input_validator import DecompositionInputValidator
+    from timeseries_preparation.preparation import TimeseriesPreparator
 
 
 @pytest.fixture

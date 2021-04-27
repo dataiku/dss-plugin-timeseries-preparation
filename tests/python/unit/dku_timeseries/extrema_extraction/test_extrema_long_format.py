@@ -7,7 +7,6 @@ import pytest
 
 plugin_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname((os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))))
 sys.path.append(os.path.join(plugin_root, 'python-lib'))
-print(plugin_root,"*******")
 
 from dku_timeseries import ExtremaExtractor
 from recipe_config_loading import get_extrema_extraction_params

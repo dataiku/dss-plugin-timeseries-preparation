@@ -21,10 +21,10 @@ class DecompositionInputValidator(object):
         :param df: Input dataframe
         :type df: pd.DataFrame
         """
-        logger.info(f"Checking input values:...")
+        logger.info("Checking input values:...")
         self._check_model_compatibility(df)
         self._check_size(df)
-        logger.info(f"Checking input values: the recipe parameters are consistent with the input dataset ")
+        logger.info("Checking input values: the recipe parameters are consistent with the input dataset ")
 
     def _check_model_compatibility(self, df):
         """Checks if the input dataframe is compatible with the decomposition model
@@ -35,8 +35,8 @@ class DecompositionInputValidator(object):
         columns_with_invalid_values = self._get_columns_with_invalid_values(df)
         if len(columns_with_invalid_values) > 0:
             raise ValueError(
-                f" The column(s) {', '.join(columns_with_invalid_values)} contain(s) negative values. Yet, a multiplicative model only works with positive "
-                f"time series. You may choose an additive model instead. ")
+                " The column(s) {} contain(s) negative values. Yet, a multiplicative model only works with positive "
+                "time series. You may choose an additive model instead. ".format(', '.join(columns_with_invalid_values)))
 
     def _check_size(self, df):
         """Checks if the input dataframe contains enough observations
@@ -53,13 +53,14 @@ class DecompositionInputValidator(object):
                 else:
                     invalid_identifiers = identifiers_sizes.index.names
                 raise ValueError(
-                    f"The time series with the identifiers {invalid_identifiers} need at least {self.minimum_observations} observations. The "
-                    f"current sizes of the long format time series are {identifiers_sizes.values}")
+                    "The time series with the identifiers {} need at least {} observations. The "
+                    "current sizes of the long format time series are {}".format(invalid_identifiers, self.minimum_observations, identifiers_sizes.values))
         else:
             size = len(df.index)
             if size < self.minimum_observations:
                 raise ValueError(
-                    f"This model must have at least {self.minimum_observations} observations. The input time series contains only {size} observations")
+                    "This model must have at least {} observations. The input time series contains only {} observations".format(
+                        self.minimum_observations, size))
 
     def _get_columns_with_invalid_values(self, df):
         """Gets target columns with inconsistent values

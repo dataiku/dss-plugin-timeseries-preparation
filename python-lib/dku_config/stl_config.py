@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from dku_config.additional_parameter import AdditionalParameter, AdditionalSmoother, AdditionalSpeedup, AdditionalDegree
 from dku_config.decomposition_config import DecompositionConfig
 from dku_config.utils import are_keys_in, cast_kwargs
