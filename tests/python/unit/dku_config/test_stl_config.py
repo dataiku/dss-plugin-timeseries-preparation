@@ -21,8 +21,7 @@ def basic_config():
 def advanced_config():
     config = {"time_column": "date", "target_columns": ["target"],
               "frequency_unit": "D", "season_length_D": 7,
-              "decomposition_model": "additive", "seasonal_stl": 7, "expert": True, "robust_stl": True,
-              "seasonal_degree_stl": "1", "additional_parameters_STL": {}}
+              "decomposition_model": "additive", "seasonal_stl": 7, "expert": True, "robust_stl": True, "additional_parameters_STL": {}}
     return config
 
 
