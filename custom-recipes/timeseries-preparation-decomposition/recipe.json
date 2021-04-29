@@ -1,7 +1,7 @@
 {
   "meta": {
     "label": "Time series decomposition",
-    "description": "Decompose your time series into trend, seasonality and residuals. The recipe relies on STL, seasonal and trend decomposition using Loess.",
+    "description": "Decompose your time series into trend, seasonality and residuals. The recipe relies on STL, seasonal and trend decomposition using Loess. For more information, see <a href='https://www.statsmodels.org/stable/generated/statsmodels.tsa.seasonal.STL.html'> Statsmodel's documentation </a>",
     "icon": "icon-dku-timeseries-decomposition icon-calendar-empty",
     "displayOrderRank": 5
   },
@@ -329,6 +329,6 @@
       "mandatory": false
     }
   ],
-    "resourceKeys": []
+  "resourceKeys": []
 }
 
