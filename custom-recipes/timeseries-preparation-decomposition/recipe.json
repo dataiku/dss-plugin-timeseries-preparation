@@ -1,7 +1,7 @@
 {
   "meta": {
     "label": "Time series decomposition",
-    "description": "Decompose your time series into trend, seasonality and residuals. The recipe relies on STL, seasonal and trend decomposition using Loess.",
+    "description": "Decompose your time series into trend, seasonality and residuals. The recipe relies on STL, seasonal and trend decomposition using Loess. For more information, see <a href='https://www.statsmodels.org/stable/generated/statsmodels.tsa.seasonal.STL.html'> Statsmodel's documentation </a>",
     "icon": "icon-dku-timeseries-decomposition icon-calendar-empty",
     "displayOrderRank": 5
   },
@@ -306,7 +306,7 @@
       "name": "seasonal_stl",
       "label": "Seasonal smoother",
       "type": "INT",
-      "description": "The window size used to estimate the seasonal component in STL decompositions. It controls how rapidly the seasonal component can change. Must be an odd integer greater than 7",
+      "description": "The window size used to estimate the seasonal component in STL decompositions. Must be an odd integer greater than 7",
       "defaultValue": 7,
       "minI": 7,
       "visibilityCondition": "model.expert"
@@ -329,6 +329,6 @@
       "mandatory": false
     }
   ],
-    "resourceKeys": []
+  "resourceKeys": []
 }
 
