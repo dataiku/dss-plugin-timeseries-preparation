@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 if sys.version_info >= (3, 0):
-    from dku_config.stl_config import STLConfig
+    from dku_config.stl_config import DecompositionConfig
     from timeseries_preparation.preparation import TimeseriesPreparator
 
 
@@ -26,6 +26,12 @@ def basic_config(time_column_name):
               "long_format": False, "decomposition_model": "multiplicative", "expert": False}
     return config
 
+@pytest.fixture
+def dku_config(basic_config,time_column_name):
+    dku_config = DecompositionConfig()
+    dku_config.add_parameters(basic_config, [time_column_name, "target", 'value1'])
+    return dku_config
+
 
 @pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
 class TestTimeseriesPreparation:
@@ -41,7 +47,7 @@ class TestTimeseriesPreparation:
                 "target": [1, 2, 3]
             }
         )
-        dku_config = STLConfig()
+        dku_config = DecompositionConfig()
         basic_config["frequency"] = "D"
         dku_config.add_parameters(basic_config, list(df.columns))
         df[time_column_name] = pd.to_datetime(df[time_column_name]).dt.tz_localize(tz=None)
@@ -61,7 +67,7 @@ class TestTimeseriesPreparation:
                 "target": [1, 2, 3]
             }
         )
-        dku_config = STLConfig()
+        dku_config = DecompositionConfig()
         basic_config["frequency_step_minutes"] = "15"
         basic_config["frequency_unit"] = "min"
         basic_config["season_length_min"] = 4
@@ -92,7 +98,7 @@ class TestTimeseriesPreparation:
             }
         )
         df[time_column_name] = pd.to_datetime(df[time_column_name]).dt.tz_localize(tz=None)
-        dku_config = STLConfig()
+        dku_config = DecompositionConfig()
         basic_config["frequency_step_hours"] = "2"
         basic_config["frequency_unit"] = "H"
         basic_config["season_length_H"] = 12
@@ -119,7 +125,7 @@ class TestTimeseriesPreparation:
                 "target": [1, 2, 3]
             }
         )
-        dku_config = STLConfig()
+        dku_config = DecompositionConfig()
         basic_config["frequency_unit"] = "D"
         basic_config["season_length_D"] = 12
         basic_config["long_format"] = True
@@ -146,7 +152,7 @@ class TestTimeseriesPreparation:
                 "target": [1, 2, 3]
             }
         )
-        dku_config = STLConfig()
+        dku_config = DecompositionConfig()
         basic_config["frequency_unit"] = "B"
         basic_config["season_length_B"] = 5
         basic_config["long_format"] = True
@@ -173,7 +179,7 @@ class TestTimeseriesPreparation:
                 "target": [1, 2, 3]
             }
         )
-        dku_config = STLConfig()
+        dku_config = DecompositionConfig()
         basic_config["frequency_unit"] = "W"
         basic_config["frequency_end_of_week"] = "SUN"
         basic_config["season_length_W"] = 7
@@ -202,7 +208,7 @@ class TestTimeseriesPreparation:
                 "target": [1, 2, 3]
             }
         )
-        dku_config = STLConfig()
+        dku_config = DecompositionConfig()
         basic_config["frequency_unit"] = "3M"
         basic_config["season_length_3M"] = 4
         basic_config["long_format"] = True
@@ -229,7 +235,7 @@ class TestTimeseriesPreparation:
                 "target": [1, 2, 3]
             }
         )
-        dku_config = STLConfig()
+        dku_config = DecompositionConfig()
         basic_config["frequency_unit"] = "6M"
         basic_config["long_format"] = True
         basic_config["season_length_6M"] = 2
@@ -257,7 +263,7 @@ class TestTimeseriesPreparation:
                 "target": [1, 2, 3]
             }
         )
-        dku_config = STLConfig()
+        dku_config = DecompositionConfig()
         basic_config["frequency_unit"] = "12M"
         basic_config["season_length_12M"] = 4
         basic_config["long_format"] = True
@@ -289,7 +295,7 @@ class TestTimeseriesPreparation:
                 "unformatted_target": ["1", "2", "3"]
             }
         )
-        dku_config = STLConfig()
+        dku_config = DecompositionConfig()
         basic_config["target_columns"] = ["target"]
         basic_config["frequency_unit"] = "12M"
         basic_config["season_length_12M"] = 4
@@ -298,7 +304,7 @@ class TestTimeseriesPreparation:
         df_prepared = preparator.prepare_timeseries_dataframe(df)
         assert df_prepared.loc[0, "target"] == 1
 
-        dku_config = STLConfig()
+        dku_config = DecompositionConfig()
         basic_config["target_columns"] = ["unformatted_target"]
         basic_config["frequency_unit"] = "12M"
         basic_config["season_length_12M"] = 4
@@ -307,7 +313,7 @@ class TestTimeseriesPreparation:
         df_prepared_unformatted = preparator.prepare_timeseries_dataframe(df)
         assert df_prepared_unformatted.loc[0, "unformatted_target"] == 1
 
-        dku_config = STLConfig()
+        dku_config = DecompositionConfig()
         basic_config["target_columns"] = ["invalid_target"]
         basic_config["frequency_unit"] = "12M"
         basic_config["season_length_12M"] = 4
@@ -317,7 +323,7 @@ class TestTimeseriesPreparation:
             _ = preparator.prepare_timeseries_dataframe(df)
         assert "must be numeric" in str(err.value)
 
-        dku_config = STLConfig()
+        dku_config = DecompositionConfig()
         basic_config["target_columns"] = ["missing_target"]
         basic_config["frequency_unit"] = "12M"
         basic_config["season_length_12M"] = 4
@@ -326,3 +332,10 @@ class TestTimeseriesPreparation:
         with pytest.raises(ValueError) as err:
             _ = preparator.prepare_timeseries_dataframe(df)
         assert "missing value" in str(err.value)
+
+    def test_empty_input_dataset(self, dku_config, time_column_name):
+        empty_df = pd.DataFrame(columns=["value1", "target", time_column_name])
+        timeseries_preparator = TimeseriesPreparator(dku_config)
+        with pytest.raises(ValueError) as err:
+            _ = timeseries_preparator.prepare_timeseries_dataframe(empty_df)
+        assert "empty" in str(err.value)
