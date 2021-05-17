@@ -150,12 +150,42 @@ class TestResamplingFrequencies:
         resampler = Resampler(params)
         df_DST = get_df_DST("min", columns)
         output_df = resampler.transform(df_DST, columns.date)
-        print(output_df[columns.date].values)
         assert np.mean(output_df[columns.data]) == 316.28999999999996
         expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000', '2019-01-31T00:59:30.000000000',
                                            '2019-01-31T01:00:00.000000000', '2019-01-31T01:00:30.000000000',
                                            '2019-01-31T01:01:00.000000000', '2019-01-31T01:01:30.000000000',
                                            '2019-01-31T01:02:00.000000000'])
+        np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
+
+    def test_milliseconds(self, config, columns):
+        config["time_unit"] = "milliseconds"
+        config["time_step"] = 3
+        params = get_resampling_params(config)
+        resampler = Resampler(params)
+        df_DST = get_df_DST("L", columns)
+        output_df = resampler.transform(df_DST, columns.date)
+        print(output_df[columns.date].values)
+        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000','2019-01-31T00:59:00.003000000'])
+        np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
+
+    def test_microseconds(self, config, columns):
+        config["time_unit"] = "microseconds"
+        config["time_step"] = 3
+        params = get_resampling_params(config)
+        resampler = Resampler(params)
+        df_DST = get_df_DST("U", columns)
+        output_df = resampler.transform(df_DST, columns.date)
+        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000','2019-01-31T00:59:00.000003000'])
+        np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
+
+    def test_nanoseconds(self, config, columns):
+        config["time_unit"] = "microseconds"
+        config["time_step"] = 3
+        params = get_resampling_params(config)
+        resampler = Resampler(params)
+        df_DST = get_df_DST("U", columns)
+        output_df = resampler.transform(df_DST, columns.date)
+        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000','2019-01-31T00:59:00.000003000'])
         np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
 
 
