@@ -38,6 +38,14 @@ unit-tests:
 
 integration-tests:
 	@echo "Running integration tests..."
+	@( \
+		rm -rf ./env/; \
+		python3 -m venv env/; \
+		source env/bin/activate; \
+		pip3 install --upgrade pip;\
+		pip install --no-cache-dir -r tests/python/integration/requirements.txt; \
+		pytest tests/python/integration --alluredir=tests/allure_report || ret=$$?; exit $$ret \
+	)
 
 tests: unit-tests integration-tests
 
