@@ -3,8 +3,9 @@ import sys
 from dku_config.utils import PluginCodeEnvError
 
 if sys.version_info.major == 2:
-    raise PluginCodeEnvError("This custom recipe requires a Python 3.6 code env. You are using Python {}.{}. Please create a new Python 3.6 code "
-                             "environment for this plugin if you want to use the decomposition recipe".format(sys.version_info.major, sys.version_info.minor))
+    raise PluginCodeEnvError("This custom recipe requires a Python 3 code env. You are using Python {}.{}. Please ask an administrator to delete the "
+                             "existing Python 2 code environment and create a new Python 3 code environment if you want to use the decomposition "
+                             "recipe".format(sys.version_info.major, sys.version_info.minor))
 
 from time import perf_counter
 

@@ -1,10 +1,13 @@
+import sys
+
 import numpy as np
 import pandas as pd
 import pytest
 
-from dku_config.stl_config import STLConfig
-from dku_timeseries.dku_decomposition.stl_decomposition import STLDecomposition
-from timeseries_preparation.preparation import TimeseriesPreparator
+if sys.version_info >= (3, 0):
+    from dku_config.stl_config import STLConfig
+    from dku_timeseries.dku_decomposition.stl_decomposition import STLDecomposition
+    from timeseries_preparation.preparation import TimeseriesPreparator
 
 
 @pytest.fixture
@@ -92,6 +95,7 @@ def expected_dates():
     return expected
 
 
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
 class TestSTLDecomposition:
     def test_STL_multiplicative(self, dku_config, input_df):
         dku_config.model = "multiplicative"

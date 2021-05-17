@@ -1,7 +1,13 @@
+import os
+import sys
+
 import pytest
 
-from dku_config.dss_parameter import DSSParameterError
-from dku_config.stl_config import STLConfig
+plugin_root = os.path.dirname(os.path.dirname(os.path.dirname((os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))))
+sys.path.append(os.path.join(plugin_root, 'python-lib'))
+if sys.version_info >= (3, 0):
+    from dku_config.dss_parameter import DSSParameterError
+    from dku_config.stl_config import STLConfig
 
 
 @pytest.fixture
@@ -15,8 +21,7 @@ def basic_config():
 def advanced_config():
     config = {"time_column": "date", "target_columns": ["target"],
               "frequency_unit": "D", "season_length_D": 7,
-              "decomposition_model": "additive", "seasonal_stl": 7, "expert": True, "robust_stl": True,
-              "seasonal_degree_stl": "1", "additional_parameters_STL": {}}
+              "decomposition_model": "additive", "seasonal_stl": 7, "expert": True, "robust_stl": True, "additional_parameters_STL": {}}
     return config
 
 
@@ -25,6 +30,7 @@ def input_dataset_columns():
     return ["target", "date", "something"]
 
 
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
 class TestSTLConfig:
     def test_add_parameters(self, basic_config, input_dataset_columns):
         dku_config = STLConfig()
@@ -209,7 +215,7 @@ class TestSTLConfig:
 def config_with_default_periods(freq, frequency_end_of_week=None, frequency_step_hours=None, frequency_step_minutes=None):
     config = {"frequency_unit": freq, "time_column": "date", "target_columns": ["value1"],
               "long_format": False, "decomposition_model": "multiplicative", "expert": False}
-    default_season_length = {"12M": 4, "6M":2, "3M": 4, "M": 12, "W": 52, "D": 7, "B": 5, "H": 24, "min": 60}
+    default_season_length = {"12M": 4, "6M": 2, "3M": 4, "M": 12, "W": 52, "D": 7, "B": 5, "H": 24, "min": 60}
     if frequency_end_of_week:
         config["frequency_end_of_week"] = frequency_end_of_week
     elif frequency_step_hours:
@@ -217,7 +223,7 @@ def config_with_default_periods(freq, frequency_end_of_week=None, frequency_step
     elif frequency_step_minutes:
         config["frequency_step_minutes"] = frequency_step_minutes
     input_dataset_columns = ["value1", "value2", "country", "date"]
-    config[f"season_length_{freq}"] = default_season_length[freq]
+    config["season_length_{}".format(freq)] = default_season_length[freq]
     dku_config = STLConfig()
     dku_config.add_parameters(config, input_dataset_columns)
     return dku_config

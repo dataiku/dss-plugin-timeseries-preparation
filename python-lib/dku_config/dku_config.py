@@ -1,6 +1,11 @@
+import sys
+
+if sys.version_info >= (3, 0):
+    from collections.abc import MutableMapping
+else:
+    from collections import MutableMapping
+
 from .dss_parameter import DSSParameter
-from collections.abc import MutableMapping
-from typing import Any, AnyStr
 
 
 class DkuConfig(MutableMapping):
@@ -13,7 +18,8 @@ class DkuConfig(MutableMapping):
     Attributes:
         config(dict): Dict storing the DSSParameters
     """
-    def __init__(self, local_vars: dict = None, local_prefix: AnyStr = '', **kwargs):
+
+    def __init__(self, local_vars=None, local_prefix='', **kwargs):
         """Initialization method for the DkuConfig class
 
         Args:
@@ -34,7 +40,7 @@ class DkuConfig(MutableMapping):
                 val = v.pop('value')
                 self.add_param(name=k, value=val, **v)
 
-    def add_param(self, name: AnyStr, value: Any = None, **kwargs):
+    def add_param(self, name, value=None, **kwargs):
         """Add a new DSSParameter to the config
 
         Args:
@@ -46,7 +52,7 @@ class DkuConfig(MutableMapping):
             value = value or self._get_local_var(name)
         self.config[name] = DSSParameter(name=name, value=value, **kwargs)
 
-    def get_param(self, name: AnyStr) -> DSSParameter:
+    def get_param(self, name):
         """Returns the DSSParameter of given name
 
         Args:
@@ -57,7 +63,7 @@ class DkuConfig(MutableMapping):
         """
         return self.config.get(name)
 
-    def _get_local_var(self, var_name: AnyStr) -> Any:
+    def _get_local_var(self, var_name):
         """Returns the value of the local variable related to var_name.
 
         Args:

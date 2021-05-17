@@ -6,8 +6,9 @@ from dku_timeseries import ExtremaExtractorParams
 from dku_timeseries import IntervalRestrictorParams
 from dku_timeseries import ResamplerParams
 from dku_timeseries import WindowAggregator, WindowAggregatorParams
-from dku_timeseries.dku_decomposition.stl_decomposition import STLDecomposition
 from safe_logger import SafeLogger
+if sys.version_info >= (3, 0):
+    from dku_timeseries.dku_decomposition.stl_decomposition import STLDecomposition
 
 logger = SafeLogger("Time series preparation plugin")
 
@@ -136,8 +137,8 @@ def get_decomposition_params(config, input_dataset_columns):
 def check_python_version():
     if sys.version_info.major == 2:
         logger.warning(
-            "You are using Python {}.{}. Python 2 is now deprecated for the Time Series preparation plugin. Please consider creating a new Python 3.6 "
-            "code environment for this plugin".format(sys.version_info.major, sys.version_info.minor))
+            "You are using Python {}.{}. Python 2 is now deprecated for the Time Series preparation plugin. Please consider asking an administrator "
+            "to delete the existing Python 2 code env and create a new Python 3 code environment".format(sys.version_info.major, sys.version_info.minor))
 
 
 def check_time_column_parameter(recipe_config, dataset_columns):

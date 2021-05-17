@@ -1,4 +1,4 @@
-from statsmodels.tsa.tsatools import freq_to_period
+from __future__ import absolute_import
 
 from dku_config.dku_config import DkuConfig
 from safe_logger import SafeLogger
@@ -10,8 +10,7 @@ class DecompositionConfig(DkuConfig):
     """Mapping structure containing the parameters of the time series decomposition
 
     Attributes:
-        config(dict): Dict storing the DSSParameters
-        minimum_period: Minimum period required by the decomposition method
+        minimum_season_length: Minimum period required by the decomposition method
     """
 
     def __init__(self):
@@ -45,7 +44,7 @@ class DecompositionConfig(DkuConfig):
                      },
                     {"type": "in",
                      "op": input_dataset_columns,
-                     "err_msg": f"Invalid time column selection: {config.get('time_column')}."
+                     "err_msg": "Invalid time column selection: {}.".format(config.get('time_column'))
                      }],
             required=True
         )
@@ -57,17 +56,17 @@ class DecompositionConfig(DkuConfig):
                      },
                     {"type": "in",
                      "op": input_dataset_columns,
-                     "err_msg": f"Invalid target column(s) selection: {config.get('target_columns')}."
+                     "err_msg": "Invalid target column(s) selection: {}.".format(config.get('target_columns'))
                      }],
             required=True
         )
         frequency_unit = config.get("frequency_unit")
         if frequency_unit == "W":
-            frequency_value = f"W-{config.get('frequency_end_of_week', 'SUN')}"
+            frequency_value = "W-{}".format(config.get('frequency_end_of_week', 'SUN'))
         elif frequency_unit == "H":
-            frequency_value = f"{config.get('frequency_step_hours', 1)}H"
+            frequency_value = "{}H".format(config.get('frequency_step_hours', 1))
         elif frequency_unit == "min":
-            frequency_value = f"{config.get('frequency_step_minutes', 1)}min"
+            frequency_value = "{}min".format(config.get('frequency_step_minutes', 1))
         else:
             frequency_value = frequency_unit
 
@@ -84,7 +83,7 @@ class DecompositionConfig(DkuConfig):
         )
 
         if frequency_value:
-            season_length_value = config.get(f"season_length_{frequency_unit}")
+            season_length_value = config.get("season_length_{}".format(frequency_unit))
 
             self.add_param(
                 name="season_length",
@@ -126,7 +125,7 @@ class DecompositionConfig(DkuConfig):
                          },
                         {"type": "in",
                          "op": input_dataset_columns,
-                         "err_msg": f"Invalid time series identifiers selection: {timeseries_identifiers}."
+                         "err_msg": "Invalid time series identifiers selection: {}.".format(timeseries_identifiers)
                          }],
                 required=True
             )
