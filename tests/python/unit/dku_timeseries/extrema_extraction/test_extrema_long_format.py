@@ -1,6 +1,12 @@
+import os
+import sys
+
 import numpy as np
 import pandas as pd
 import pytest
+
+plugin_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname((os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))))
+sys.path.append(os.path.join(plugin_root, 'python-lib'))
 
 from dku_timeseries import ExtremaExtractor
 from recipe_config_loading import get_extrema_extraction_params
@@ -11,6 +17,7 @@ def columns():
     class COLUMNS:
         date = "Date"
         extrema = "value1"
+
     return COLUMNS
 
 
@@ -119,7 +126,7 @@ class TestExtremaLongFormat:
         extrema_extractor = ExtremaExtractor(params)
         output_df = extrema_extractor.compute(long_df_2, columns.date, columns.extrema, groupby_columns=groupby_columns)
         np.testing.assert_array_equal(output_df[columns.date].values, pd.DatetimeIndex(['1959-02-28T00:00:00.000000000', '1959-01-31T00:00:00.000000000',
-                                                                               '1959-02-28T00:00:00.000000000']))
+                                                                                        '1959-02-28T00:00:00.000000000']))
         extrema_column = "half_nan"
         output_df = extrema_extractor.compute(long_df_2, columns.date, extrema_column, groupby_columns=groupby_columns)
         np.testing.assert_array_equal(output_df.half_nan.values, np.array([np.nan, 7., 2.]))
@@ -130,15 +137,15 @@ class TestExtremaLongFormat:
         extrema_extractor = ExtremaExtractor(params)
         output_df = extrema_extractor.compute(long_df_3, columns.date, columns.extrema, groupby_columns=groupby_columns)
         np.testing.assert_array_equal(output_df[columns.date].values, pd.DatetimeIndex(['1959-02-28T00:00:00.000000000', '1959-02-28T00:00:00.000000000',
-                                                                               '1959-01-31T00:00:00.000000000', '1959-02-28T00:00:00.000000000']))
+                                                                                        '1959-01-31T00:00:00.000000000', '1959-02-28T00:00:00.000000000']))
 
     def test_mix_identifiers(self, long_df_4, params, recipe_config, columns):
         groupby_columns = ["country", "item", "store"]
         extrema_extractor = ExtremaExtractor(params)
         output_df = extrema_extractor.compute(long_df_4, columns.date, columns.extrema, groupby_columns=groupby_columns)
         np.testing.assert_array_equal(output_df[columns.date].values, pd.DatetimeIndex(['2020-02-29T00:00:00.000000000', '2020-02-29T00:00:00.000000000',
-                                                                               '2020-01-31T00:00:00.000000000', '2020-01-31T00:00:00.000000000',
-                                                                               '2020-02-29T00:00:00.000000000']))
+                                                                                        '2020-01-31T00:00:00.000000000', '2020-01-31T00:00:00.000000000',
+                                                                                        '2020-02-29T00:00:00.000000000']))
 
     def test_empty_identifiers(self, df, params, recipe_config, columns):
         extrema_extractor = ExtremaExtractor(params)

@@ -1,5 +1,4 @@
 import logging
-from typing import Any
 import re
 
 logger = logging.getLogger(__name__)
@@ -35,10 +34,11 @@ class CustomCheck:
         cond (bool, optional): Only necessary for type "custom". Must be true for check to pass
         err_msg (str, optional): Custom message to display if check fails. Default is a generic message
     """
+
     def __init__(self, type,
-                 op: Any = None,
-                 cond: Any = bool,
-                 err_msg: str = ''):
+                 op=None,
+                 cond=bool,
+                 err_msg=''):
         """Initialization method for the CustomCheck class
 
         Args:
@@ -55,7 +55,7 @@ class CustomCheck:
         self.cond = cond
         self.err_msg = err_msg or self.get_default_err_msg()
 
-    def run(self, value: Any = None):
+    def run(self, value=None):
         """Runs the check on a value
 
         Args:
@@ -65,7 +65,7 @@ class CustomCheck:
         result = getattr(self, func_name)(value)
         self.handle_return(result, value)
 
-    def handle_return(self, result: bool, value: Any):
+    def handle_return(self, result, value):
         """Checks whether the check has failed or pass
 
         Args:
@@ -80,7 +80,7 @@ class CustomCheck:
         except AssertionError:
             raise CustomCheckError(self.format_err_msg(value))
 
-    def get_default_err_msg(self) -> str:
+    def get_default_err_msg(self):
         """Returns the default message related to check's type
 
         Returns:
@@ -88,7 +88,7 @@ class CustomCheck:
         """
         return DEFAULT_ERROR_MESSAGES.get(self.type, 'custom')
 
-    def format_err_msg(self, value: Any) -> str:
+    def format_err_msg(self, value):
         """Format the error message with the value that has failed the test
 
         Args:
@@ -98,9 +98,9 @@ class CustomCheck:
             str: Error messages formatted
         """
         formatted_err_msg = self.err_msg.format(value=value, op=self.op)
-        return f'{formatted_err_msg}'
+        return formatted_err_msg
 
-    def _exists(self, value: Any) -> bool:
+    def _exists(self, value):
         """Checks whether the value is None
 
         Args:
@@ -112,7 +112,7 @@ class CustomCheck:
         EMPTY_ENTRIES = [[], "", None]
         return value not in EMPTY_ENTRIES
 
-    def _in(self, value: Any) -> bool:
+    def _in(self, value):
         """Checks whether the value is in the iterable given in "op" attribute. If the value and the operator are lists,
         it checks if the value is a subset of the operator.
 
@@ -127,7 +127,7 @@ class CustomCheck:
         else:
             return value in self.op
 
-    def _not_in(self, value: Any) -> bool:
+    def _not_in(self, value):
         """Checks whether the value is not in the iterable given in "op" attribute
 
         Args:
@@ -138,7 +138,7 @@ class CustomCheck:
         """
         return value not in self.op
 
-    def _eq(self, value: Any) -> bool:
+    def _eq(self, value):
         """Checks whether the value is equal to "op" attribute
 
         Args:
@@ -149,7 +149,7 @@ class CustomCheck:
         """
         return value == self.op
 
-    def _sup(self, value: Any) -> bool:
+    def _sup(self, value):
         """Checks whether the value is superior to "op" attribute
 
         Args:
@@ -160,7 +160,7 @@ class CustomCheck:
         """
         return value > float(self.op)
 
-    def _inf(self, value: Any) -> bool:
+    def _inf(self, value):
         """Checks whether the value is inferior to "op" attribute
 
         Args:
@@ -171,7 +171,7 @@ class CustomCheck:
         """
         return value < float(self.op)
 
-    def _sup_eq(self, value: Any) -> bool:
+    def _sup_eq(self, value):
         """Checks whether the value is superior or equal to "op" attribute
 
         Args:
@@ -182,7 +182,7 @@ class CustomCheck:
         """
         return value >= float(self.op)
 
-    def _inf_eq(self, value: Any) -> bool:
+    def _inf_eq(self, value):
         """Checks whether the value is inferior or equal to "op" attribute
 
         Args:
@@ -193,7 +193,7 @@ class CustomCheck:
         """
         return value <= float(self.op)
 
-    def _between(self, value: Any) -> bool:
+    def _between(self, value):
         """Checks whether the value is between the first and second member of "op" attribute
 
         Args:
@@ -204,7 +204,7 @@ class CustomCheck:
         """
         return float(self.op[0]) <= value <= float(self.op[1])
 
-    def _between_strict(self, value: Any) -> bool:
+    def _between_strict(self, value):
         """Checks whether the value is strictly between the first and second member of "op" attribute
 
         Args:
@@ -215,7 +215,7 @@ class CustomCheck:
         """
         return float(self.op[0]) < value < float(self.op[1])
 
-    def _is_type(self, value: Any) -> bool:
+    def _is_type(self, value):
         """Checks whether the value has the type given in "op" attribute
 
         Args:
@@ -226,7 +226,7 @@ class CustomCheck:
         """
         return isinstance(value, self.op)
 
-    def _custom(self, _) -> bool:
+    def _custom(self, _):
         """Checks whether "cond" attribute is true or false
 
         Returns:
@@ -234,7 +234,7 @@ class CustomCheck:
         """
         return self.cond
 
-    def _match(self, value) -> bool:
+    def _match(self, value):
         """Checks whether "cond" matches the regex provided in "op" attribute
 
         Returns:

@@ -63,6 +63,7 @@ class TimeseriesPreparator:
         return dataframe_prepared
 
     def _check_data(self, df):
+        self._check_dataset_not_empty(df)
         self._check_timeseries_identifiers_columns_types(df)
         self._check_no_missing_values(df)
 
@@ -189,6 +190,10 @@ class TimeseriesPreparator:
     def _count_duplicate_dates(self, df):
         """Return total number of duplicates dates within all timeseries """
         return df.duplicated(subset=self.timeseries_identifiers_names + [self.time_column_name], keep=False).sum()
+
+    def _check_dataset_not_empty(self, df):
+        if len(df.index) == 0:
+            raise ValueError("The input dataset is empty.")
 
     def _check_timeseries_identifiers_columns_types(self, df):
         """ Raises ValueError if a timeseries identifiers column is not numerical or string """

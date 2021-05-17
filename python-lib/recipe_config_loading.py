@@ -6,8 +6,9 @@ from dku_timeseries import ExtremaExtractorParams
 from dku_timeseries import IntervalRestrictorParams
 from dku_timeseries import ResamplerParams
 from dku_timeseries import WindowAggregator, WindowAggregatorParams
-from dku_timeseries.dku_decomposition.stl_decomposition import STLDecomposition
 from safe_logger import SafeLogger
+if sys.version_info >= (3, 0):
+    from dku_timeseries.dku_decomposition.stl_decomposition import STLDecomposition
 
 logger = SafeLogger("Time series preparation plugin")
 

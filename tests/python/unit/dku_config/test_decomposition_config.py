@@ -1,7 +1,14 @@
+import os
+import sys
+
 import pytest
 
-from dku_config.decomposition_config import DecompositionConfig
-from dku_config.dss_parameter import DSSParameterError
+plugin_root = os.path.dirname(os.path.dirname(os.path.dirname((os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))))
+sys.path.append(os.path.join(plugin_root, 'python-lib'))
+
+if sys.version_info >= (3, 0):
+    from dku_config.decomposition_config import DecompositionConfig
+    from dku_config.dss_parameter import DSSParameterError
 
 
 @pytest.fixture
@@ -17,6 +24,7 @@ def input_dataset_columns():
     return ["value1", "value2", "date"]
 
 
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
 class TestDecompositionConfig:
     def test_input_parameters(self, basic_config, input_dataset_columns):
         dku_config = DecompositionConfig()
@@ -241,7 +249,7 @@ def config_with_constant_season_length(freq, frequency_end_of_week=None, frequen
     elif frequency_step_minutes:
         config["frequency_step_minutes"] = frequency_step_minutes
     input_dataset_columns = ["value1", "value2", "country", "date"]
-    config[f"season_length_{freq}"] = 5
+    config["season_length_{}".format(freq)] = 5
     dku_config = DecompositionConfig()
     dku_config.add_parameters(config, input_dataset_columns)
     return dku_config
@@ -259,7 +267,7 @@ def config_with_default_season_length(freq, frequency_end_of_week=None, frequenc
     elif frequency_step_minutes:
         config["frequency_step_minutes"] = frequency_step_minutes
     input_dataset_columns = ["value1", "value2", "country", "date"]
-    config[f"season_length_{freq}"] = default_season_length[freq]
+    config["season_length_{}".format(freq)] = default_season_length[freq]
     dku_config = DecompositionConfig()
     dku_config.add_parameters(config, input_dataset_columns)
     return dku_config

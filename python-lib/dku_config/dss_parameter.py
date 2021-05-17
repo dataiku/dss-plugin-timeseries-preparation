@@ -1,5 +1,3 @@
-from typing import Any, List
-
 from safe_logger import SafeLogger
 from .custom_check import CustomCheck, CustomCheckError
 
@@ -22,7 +20,7 @@ class DSSParameter:
         required(bool, optional): Whether the value can be None
     """
 
-    def __init__(self, name: str, value: Any, checks: List[dict] = None, required: bool = False):
+    def __init__(self, name, value, checks=None, required=False):
         """Initialization method for the DSSParameter class
 
         Args:
@@ -50,7 +48,7 @@ class DSSParameter:
                 self.handle_failure(err)
         self.handle_success()
 
-    def handle_failure(self, error: CustomCheckError):
+    def handle_failure(self, error):
         """Is called when at least one test fails. It will raise an Exception with understandable text
 
         Args:
@@ -61,7 +59,7 @@ class DSSParameter:
         """
         raise DSSParameterError(self.format_failure_message(error))
 
-    def format_failure_message(self, error: CustomCheckError) -> str:
+    def format_failure_message(self, error):
         """Format failure text
 
         Args:

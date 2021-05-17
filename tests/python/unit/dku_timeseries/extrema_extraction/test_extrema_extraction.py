@@ -2,15 +2,14 @@
 # pytest automatically runs all the function starting with "test_"
 # see https://docs.pytest.org for more information
 
-import pandas as pd
-import numpy as np
-import sys
 import os
-import random
-from datetime import datetime
+import sys
+
+import numpy as np
+import pandas as pd
 
 ## Add stuff to the path to enable exec outside of DSS
-plugin_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+plugin_root = os.path.dirname(os.path.dirname(os.path.dirname((os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))))
 sys.path.append(os.path.join(plugin_root, 'python-lib'))
 
 import dku_timeseries
