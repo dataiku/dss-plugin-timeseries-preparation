@@ -5,9 +5,11 @@ import pytest
 from dku_timeseries import Resampler
 from recipe_config_loading import get_resampling_params
 
+
 @pytest.fixture
 def datetime_column():
     return "Date"
+
 
 @pytest.fixture
 def df(datetime_column):
@@ -64,6 +66,16 @@ def long_df_4(datetime_column):
         pd.date_range("1-1-2020", periods=2, freq="M")).append(pd.date_range("1-1-2020", periods=2, freq="M"))
     df = pd.DataFrame.from_dict(
         {"value1": co2, "value2": co2, "country": country, "item": country_2, "store": country_3, "Date": time_index})
+    return df
+
+
+@pytest.fixture
+def long_df_different_sizes(datetime_column):
+    co2 = [315.58, 316.39, 316.79, 316.2, 222]
+    country = ["first", "first", "second", "second", "second"]
+    time_index = pd.date_range("1-1-1959", periods=2, freq="M").append(pd.date_range("1-1-1959", periods=3, freq="M"))
+    df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "country": country, "Date": time_index})
     return df
 
 
@@ -151,3 +163,10 @@ class TestResamplerLongFormat:
         assert output_df.shape == (8, 4)
         output_df = resampler.transform(df, datetime_column, groupby_columns=None)
         assert output_df.shape == (8, 4)
+
+    def test_long_df_different_sizes(self, long_df_different_sizes, params, config, datetime_column):
+        resampler = Resampler(params)
+        groupby_columns = ["country"]
+        datetime_column = config.get('datetime_column')
+        output_df = resampler.transform(long_df_different_sizes, datetime_column, groupby_columns=groupby_columns)
+        assert output_df.shape == (12,4)
