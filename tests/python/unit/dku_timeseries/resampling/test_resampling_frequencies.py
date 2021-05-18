@@ -164,8 +164,7 @@ class TestResamplingFrequencies:
         resampler = Resampler(params)
         df_DST = get_df_DST("L", columns)
         output_df = resampler.transform(df_DST, columns.date)
-        print(output_df[columns.date].values)
-        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000','2019-01-31T00:59:00.003000000'])
+        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000', '2019-01-31T00:59:00.003000000'])
         np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
 
     def test_microseconds(self, config, columns):
@@ -175,17 +174,21 @@ class TestResamplingFrequencies:
         resampler = Resampler(params)
         df_DST = get_df_DST("U", columns)
         output_df = resampler.transform(df_DST, columns.date)
-        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000','2019-01-31T00:59:00.000003000'])
+        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000', '2019-01-31T00:59:00.000003000'])
         np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
 
     def test_nanoseconds(self, config, columns):
-        config["time_unit"] = "microseconds"
-        config["time_step"] = 3
+        config["time_unit"] = "nanoseconds"
+        config["time_step"] = 1
         params = get_resampling_params(config)
         resampler = Resampler(params)
-        df_DST = get_df_DST("U", columns)
-        output_df = resampler.transform(df_DST, columns.date)
-        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000','2019-01-31T00:59:00.000003000'])
+        df = get_df_DST("3N", columns)
+        output_df = resampler.transform(df, columns.date)
+        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000', '2019-01-31T00:59:00.000000001',
+                                           '2019-01-31T00:59:00.000000002', '2019-01-31T00:59:00.000000003',
+                                           '2019-01-31T00:59:00.000000004', '2019-01-31T00:59:00.000000005',
+                                           '2019-01-31T00:59:00.000000006', '2019-01-31T00:59:00.000000007',
+                                           '2019-01-31T00:59:00.000000008', '2019-01-31T00:59:00.000000009'])
         np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
 
 
