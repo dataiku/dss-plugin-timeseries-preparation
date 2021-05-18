@@ -83,7 +83,7 @@ def generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequ
     shift_value = get_date_offset(time_unit, shift)
     if time_unit in ROUND_COMPATIBLE_TIME_UNIT:
         start_index = start_time.round(rounding_freq_string) + clip_start_value + shift_value
-        end_index = end_time.round(rounding_freq_string) - clip_end_value + shift_value + shift_value
+        end_index = end_time.round(rounding_freq_string) - clip_end_value + shift_value
     else:  # for week, month, year we round up to closest day
         start_index = start_time.round("D") + clip_start_value + shift_value
         # for some reason date_range omit the last entry when dealing with months, years

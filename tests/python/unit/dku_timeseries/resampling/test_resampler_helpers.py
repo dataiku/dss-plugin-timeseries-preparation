@@ -158,3 +158,161 @@ class TestResamplerHelpers:
         shift = 0
         date_range = generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
         np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08']))
+
+    def test_generate_date_range_days(self, config):
+        config["time_unit"] = "days"
+        config["time_step"] = 1
+        start_time = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
+        end_time = pd.Timestamp('20190214 01:59:00').tz_localize('CET')
+
+        params = get_resampling_params(config)
+        frequency = params.resampling_step
+        time_unit = params.time_unit
+        time_step = params.time_step
+
+        clip_start = 5
+        shift = 2
+        clip_end = 3
+
+        date_range = generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
+        expected_range = pd.DatetimeIndex(['2019-02-07 00:00:00+01:00', '2019-02-08 00:00:00+01:00',
+                                           '2019-02-09 00:00:00+01:00', '2019-02-10 00:00:00+01:00',
+                                           '2019-02-11 00:00:00+01:00', '2019-02-12 00:00:00+01:00',
+                                           '2019-02-13 00:00:00+01:00'])
+        np.testing.assert_array_equal(date_range, expected_range)
+
+    def test_generate_date_range_hours(self, config):
+        config["time_unit"] = "hours"
+        config["time_step"] = 1
+        start_time = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
+        end_time = pd.Timestamp('20190131 11:59:00').tz_localize('CET')
+
+        params = get_resampling_params(config)
+        frequency = params.resampling_step
+        time_unit = params.time_unit
+        time_step = params.time_step
+
+        clip_start = 5
+        shift = 2
+        clip_end = 3
+
+        date_range = generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
+        expected_range = pd.DatetimeIndex(['2019-01-31 09:00:00+01:00', '2019-01-31 10:00:00+01:00',
+                                           '2019-01-31 11:00:00+01:00'])
+        np.testing.assert_array_equal(date_range, expected_range)
+
+    def test_generate_date_range_minutes(self, config):
+        config["time_unit"] = "minutes"
+        config["time_step"] = 1
+        start_time = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
+        end_time = pd.Timestamp('20190131 02:15:00').tz_localize('CET')
+
+        params = get_resampling_params(config)
+        frequency = params.resampling_step
+        time_unit = params.time_unit
+        time_step = params.time_step
+
+        clip_start = 5
+        shift = 2
+        clip_end = 3
+
+        date_range = generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
+        expected_range = pd.DatetimeIndex(['2019-01-31 02:06:00+01:00', '2019-01-31 02:07:00+01:00',
+                                           '2019-01-31 02:08:00+01:00', '2019-01-31 02:09:00+01:00',
+                                           '2019-01-31 02:10:00+01:00', '2019-01-31 02:11:00+01:00',
+                                           '2019-01-31 02:12:00+01:00', '2019-01-31 02:13:00+01:00',
+                                           '2019-01-31 02:14:00+01:00'])
+        np.testing.assert_array_equal(date_range, expected_range)
+
+    def test_generate_date_range_seconds(self, config):
+        config["time_unit"] = "seconds"
+        config["time_step"] = 1
+        start_time = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
+        end_time = pd.Timestamp('20190131 01:59:12').tz_localize('CET')
+
+        params = get_resampling_params(config)
+        frequency = params.resampling_step
+        time_unit = params.time_unit
+        time_step = params.time_step
+
+        clip_start = 5
+        shift = 2
+        clip_end = 3
+
+        date_range = generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
+        expected_range = pd.DatetimeIndex(['2019-01-31 01:59:07+01:00', '2019-01-31 01:59:08+01:00',
+                                           '2019-01-31 01:59:09+01:00', '2019-01-31 01:59:10+01:00',
+                                           '2019-01-31 01:59:11+01:00'])
+        np.testing.assert_array_equal(date_range, expected_range)
+
+    def test_generate_date_range_milliseconds(self, config):
+        config["time_unit"] = "milliseconds"
+        config["time_step"] = 1
+        start_time = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
+        end_time = pd.Timestamp('2019-01-31 01:59:00.015000').tz_localize('CET')
+
+        params = get_resampling_params(config)
+        frequency = params.resampling_step
+        time_unit = params.time_unit
+        time_step = params.time_step
+
+        clip_start = 5
+        shift = 2
+        clip_end = 3
+
+        date_range = generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
+        expected_range = pd.DatetimeIndex(['2019-01-31 01:59:00.007000+01:00',
+                                           '2019-01-31 01:59:00.008000+01:00',
+                                           '2019-01-31 01:59:00.009000+01:00',
+                                           '2019-01-31 01:59:00.010000+01:00',
+                                           '2019-01-31 01:59:00.011000+01:00',
+                                           '2019-01-31 01:59:00.012000+01:00',
+                                           '2019-01-31 01:59:00.013000+01:00',
+                                           '2019-01-31 01:59:00.014000+01:00'])
+        np.testing.assert_array_equal(date_range, expected_range)
+
+    def test_generate_date_range_microseconds(self, config):
+        config["time_unit"] = "microseconds"
+        config["time_step"] = 1
+        start_time = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
+        end_time = pd.Timestamp('2019-01-31 01:59:00.000016').tz_localize('CET')
+
+        params = get_resampling_params(config)
+        frequency = params.resampling_step
+        time_unit = params.time_unit
+        time_step = params.time_step
+
+        clip_start = 5
+        shift = 2
+        clip_end = 3
+
+        date_range = generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
+        expected_range = pd.DatetimeIndex(['2019-01-31 01:59:00.000007+01:00',
+                                           '2019-01-31 01:59:00.000008+01:00',
+                                           '2019-01-31 01:59:00.000009+01:00',
+                                           '2019-01-31 01:59:00.000010+01:00',
+                                           '2019-01-31 01:59:00.000011+01:00',
+                                           '2019-01-31 01:59:00.000012+01:00',
+                                           '2019-01-31 01:59:00.000013+01:00',
+                                           '2019-01-31 01:59:00.000014+01:00',
+                                           '2019-01-31 01:59:00.000015+01:00'])
+        np.testing.assert_array_equal(date_range, expected_range)
+
+    def test_generate_date_range_nanoseconds(self, config):
+        config["time_unit"] = "nanoseconds"
+        config["time_step"] = 1
+        start_time = pd.Timestamp('2019-01-31T00:59:00.000000000')
+        end_time = pd.Timestamp('2019-01-31T00:59:00.000000009')
+
+        params = get_resampling_params(config)
+        frequency = params.resampling_step
+        time_unit = params.time_unit
+        time_step = params.time_step
+
+        clip_start = 5
+        shift = 2
+        clip_end = 3
+
+        date_range = generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2019-01-31 00:59:00.000000007',
+                                                                    '2019-01-31 00:59:00.000000008']))
