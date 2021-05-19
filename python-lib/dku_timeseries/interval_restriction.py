@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, generic_check_compute_arguments
-from dku_timeseries.timeseries_helpers import get_date_offset
 
 logger = logging.getLogger(__name__)
 
@@ -195,11 +194,11 @@ class IntervalRestrictor:
         if len(df) > 0:
             columns = df_copy.columns
 
-            first_date = df_copy.index[0] - get_date_offset("years", 1)
+            first_date = df_copy.index[0] - pd.Timedelta(1, unit="D")
             left_edge = pd.DataFrame(columns=columns, index=[first_date])
             df_initialized = pd.concat([left_edge, df_copy], sort=True)
 
-            last_date = df_initialized.index[-1] + get_date_offset("years", 1)
+            last_date = df_initialized.index[-1] + pd.Timedelta(1, unit="D")
             right_edge = pd.DataFrame(columns=columns, index=[last_date])
             df_initialized = pd.concat([df_initialized, right_edge], sort=True)
             return df_initialized

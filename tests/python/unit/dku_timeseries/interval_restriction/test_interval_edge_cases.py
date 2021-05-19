@@ -37,6 +37,26 @@ def edge_df(datetime_column):
 
 
 @pytest.fixture
+def annual_edge_df(datetime_column):
+    time_index = np.array(['2011',
+                           '2012',
+                           '2013',
+                           '2014',
+                           '2015',
+                           '2016',
+                           '2017',
+                           '2018',
+                           '2019',
+                           '2020',
+                           '2021',
+                           '2022'])
+    revenue = [26000, 20000, 25000, 34000, 40000, 43000, 30000, 27000, 20000, 26000, 20000, 27000]
+    edge_df = pd.DataFrame.from_dict(
+        {datetime_column: time_index, "revenue": revenue})
+    return edge_df
+
+
+@pytest.fixture
 def edge_df_without_1st_row(datetime_column):
     time_index = pd.date_range("7-1-2020", periods=11, freq="D")
     revenue = [18000, 20000, 25000, 34000, 40000, 43000, 30000, 27000, 20000, 20000, 20000]
@@ -78,3 +98,18 @@ class TestEdgeCases():
         output_df = interval_restrictor.compute(edge_df_segment, datetime_column, threshold_dict)
         assert np.all(output_df.interval_id.values[:4] == "0")
         assert output_df.loc[0, datetime_column] == pd.Timestamp("2020-07-01")
+
+    def test_zero_deviation_annual_edges(self, annual_edge_df, config, threshold_dict, datetime_column):
+        params = get_interval_restriction_params(config)
+        interval_restrictor = IntervalRestrictor(params)
+        df_test = annual_edge_df.copy()
+        df_test.loc[:, datetime_column] = pd.to_datetime(df_test[datetime_column])
+        df_test = df_test.set_index(datetime_column).sort_index()
+        df_initialized = interval_restrictor._initialize_edges(df_test)
+        assert df_initialized.index[0] == pd.Timestamp("2010-12-31")
+        assert df_initialized.index[-1] == pd.Timestamp("2022-01-02")
+
+        output_df = interval_restrictor.compute(annual_edge_df, datetime_column, threshold_dict)
+        assert len(output_df.index) == 7
+        assert output_df.loc[0, datetime_column] == pd.Timestamp("2011-01-01")
+        assert output_df.loc[6, datetime_column] == pd.Timestamp("2022-01-01")
