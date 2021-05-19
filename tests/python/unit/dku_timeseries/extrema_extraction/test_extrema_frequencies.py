@@ -56,7 +56,6 @@ class TestExtremaFrequencies:
         extrema_extractor = ExtremaExtractor(params)
         df = get_df_DST("W", columns)
         output_df = extrema_extractor.compute(df, columns.date, columns.data)
-        print(output_df.loc[0, columns.date])
         assert output_df.shape == (1, 5)
         assert output_df.loc[0, columns.date] == pd.Timestamp("2019-03-10 01:59:00+01:00")
 

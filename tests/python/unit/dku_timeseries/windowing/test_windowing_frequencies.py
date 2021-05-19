@@ -240,7 +240,6 @@ class TestWindowFrequencies:
         expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000', '2019-01-31T01:59:00.000000000',
                                            '2019-01-31T02:59:00.000000000', '2019-01-31T03:59:00.000000000',
                                            '2019-01-31T04:59:00.000000000', '2019-01-31T05:59:00.000000000'])
-        print(output_df[columns.date].values)
         np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
 
     def test_minutes(self, recipe_config, columns):
