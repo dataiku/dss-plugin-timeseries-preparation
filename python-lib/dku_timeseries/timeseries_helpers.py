@@ -68,6 +68,9 @@ def get_date_offset(time_unit, offset_value):
             formatted_time_unit = "days"
     elif time_unit == "semi_annual" or time_unit == "quarters":
         formatted_time_unit = "months"
+    elif time_unit == "nanoseconds":
+        # using Timedelta instead of DateOffset because of a Pandas' bug with nanoseconds - https://github.com/pandas-dev/pandas/issues/36589
+        return pd.Timedelta(offset_value, unit="ns")
     else:
         formatted_time_unit = time_unit
     return pd.DateOffset(**{formatted_time_unit: offset_value})
@@ -80,7 +83,7 @@ def generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequ
     shift_value = get_date_offset(time_unit, shift)
     if time_unit in ROUND_COMPATIBLE_TIME_UNIT:
         start_index = start_time.round(rounding_freq_string) + clip_start_value + shift_value
-        end_index = end_time.round(rounding_freq_string) - clip_end_value + shift_value + shift_value
+        end_index = end_time.round(rounding_freq_string) - clip_end_value + shift_value
     else:  # for week, month, year we round up to closest day
         start_index = start_time.round("D") + clip_start_value + shift_value
         # for some reason date_range omit the last entry when dealing with months, years

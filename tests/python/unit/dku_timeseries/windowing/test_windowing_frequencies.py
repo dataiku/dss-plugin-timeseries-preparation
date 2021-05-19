@@ -51,6 +51,16 @@ def annual_start_df():
 
 
 @pytest.fixture
+def columns():
+    class COLUMNS:
+        date = "Date"
+        category = "categorical"
+        data = "value1"
+
+    return COLUMNS
+
+
+@pytest.fixture
 def recipe_config():
     config = {u'window_type': u'none', u'groupby_columns': [u'country'], u'closed_option': u'left', u'window_unit': u'months', u'window_width': 3,
               u'causal_window': False, u'datetime_column': u'Date', u'advanced_activated': False, u'aggregation_types': [u'average', 'retrieve', 'sum'],
@@ -190,3 +200,126 @@ class TestWindowFrequencies:
         np.testing.assert_array_equal(output_df.Date.values, pd.DatetimeIndex(['2015-01-01T00:00:00.000000000', '2016-01-01T00:00:00.000000000',
                                                                                '2017-01-01T00:00:00.000000000', '2018-01-01T00:00:00.000000000',
                                                                                '2019-01-01T00:00:00.000000000', '2020-01-01T00:00:00.000000000']))
+
+    def test_weeks(self, recipe_config, columns):
+        recipe_config["window_unit"] = "weeks"
+        params = get_params(recipe_config)
+        window_aggregator = WindowAggregator(params)
+        datetime_column = columns.date
+        df = get_df_DST("W", columns)
+        output_df = window_aggregator.compute(df, datetime_column)
+        assert output_df.shape == (6, 7)
+        expected_dates = pd.DatetimeIndex(['2019-02-03T00:59:00.000000000', '2019-02-10T00:59:00.000000000',
+                                           '2019-02-17T00:59:00.000000000', '2019-02-24T00:59:00.000000000',
+                                           '2019-03-03T00:59:00.000000000', '2019-03-10T00:59:00.000000000'])
+        np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
+
+    def test_days(self, recipe_config, columns):
+        recipe_config["window_unit"] = "days"
+        params = get_params(recipe_config)
+        window_aggregator = WindowAggregator(params)
+        datetime_column = columns.date
+        df = get_df_DST("D", columns)
+        output_df = window_aggregator.compute(df, datetime_column)
+
+        assert output_df.shape == (6, 7)
+        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000', '2019-02-01T00:59:00.000000000',
+                                           '2019-02-02T00:59:00.000000000', '2019-02-03T00:59:00.000000000',
+                                           '2019-02-04T00:59:00.000000000', '2019-02-05T00:59:00.000000000'])
+        np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
+
+    def test_hours(self, recipe_config, columns):
+        recipe_config["window_unit"] = "hours"
+        params = get_params(recipe_config)
+        window_aggregator = WindowAggregator(params)
+        datetime_column = columns.date
+        df = get_df_DST("H", columns)
+        output_df = window_aggregator.compute(df, datetime_column)
+
+        assert output_df.shape == (6, 7)
+        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000', '2019-01-31T01:59:00.000000000',
+                                           '2019-01-31T02:59:00.000000000', '2019-01-31T03:59:00.000000000',
+                                           '2019-01-31T04:59:00.000000000', '2019-01-31T05:59:00.000000000'])
+        np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
+
+    def test_minutes(self, recipe_config, columns):
+        recipe_config["window_unit"] = "minutes"
+        params = get_params(recipe_config)
+        window_aggregator = WindowAggregator(params)
+        datetime_column = columns.date
+        df = get_df_DST("min", columns)
+        output_df = window_aggregator.compute(df, datetime_column)
+
+        assert output_df.shape == (6, 7)
+        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000', '2019-01-31T01:00:00.000000000',
+                                           '2019-01-31T01:01:00.000000000', '2019-01-31T01:02:00.000000000',
+                                           '2019-01-31T01:03:00.000000000', '2019-01-31T01:04:00.000000000'])
+
+        np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
+
+    def test_seconds(self, recipe_config, columns):
+        recipe_config["window_unit"] = "seconds"
+        params = get_params(recipe_config)
+        window_aggregator = WindowAggregator(params)
+        datetime_column = columns.date
+        df = get_df_DST("S", columns)
+        output_df = window_aggregator.compute(df, datetime_column)
+
+        assert output_df.shape == (6, 7)
+        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000', '2019-01-31T00:59:01.000000000',
+                                           '2019-01-31T00:59:02.000000000', '2019-01-31T00:59:03.000000000',
+                                           '2019-01-31T00:59:04.000000000', '2019-01-31T00:59:05.000000000'])
+
+        np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
+
+    def test_milliseconds(self, recipe_config, columns):
+        recipe_config["window_unit"] = "milliseconds"
+        params = get_params(recipe_config)
+        window_aggregator = WindowAggregator(params)
+        datetime_column = columns.date
+        df = get_df_DST("L", columns)
+        output_df = window_aggregator.compute(df, datetime_column)
+
+        assert output_df.shape == (6, 7)
+        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000', '2019-01-31T00:59:00.001000000',
+                                           '2019-01-31T00:59:00.002000000', '2019-01-31T00:59:00.003000000',
+                                           '2019-01-31T00:59:00.004000000', '2019-01-31T00:59:00.005000000'])
+        np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
+
+    def test_microseconds(self, recipe_config, columns):
+        recipe_config["window_unit"] = "microseconds"
+        params = get_params(recipe_config)
+        window_aggregator = WindowAggregator(params)
+        datetime_column = columns.date
+        df = get_df_DST("U", columns)
+        output_df = window_aggregator.compute(df, datetime_column)
+
+        assert output_df.shape == (6, 7)
+        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000', '2019-01-31T00:59:00.000001000',
+                                           '2019-01-31T00:59:00.000002000', '2019-01-31T00:59:00.000003000',
+                                           '2019-01-31T00:59:00.000004000', '2019-01-31T00:59:00.000005000'])
+        np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
+
+    def test_nanoseconds(self, recipe_config, columns):
+        recipe_config["window_unit"] = "nanoseconds"
+        params = get_params(recipe_config)
+        window_aggregator = WindowAggregator(params)
+        datetime_column = columns.date
+        df = get_df_DST("N", columns)
+        output_df = window_aggregator.compute(df, datetime_column)
+
+        assert output_df.shape == (6, 7)
+        expected_dates = pd.DatetimeIndex(['2019-01-31T00:59:00.000000000', '2019-01-31T00:59:00.000000001',
+                                           '2019-01-31T00:59:00.000000002', '2019-01-31T00:59:00.000000003',
+                                           '2019-01-31T00:59:00.000000004', '2019-01-31T00:59:00.000000005'])
+        np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
+
+
+def get_df_DST(frequency, columns):
+    JUST_BEFORE_SPRING_DST = pd.Timestamp('20190131 01:59:00').tz_localize('CET')
+    co2 = [315.58, 316.39, 316.79, 316.2, 666, 888]
+    co = [315.58, 77, 316.79, 66, 666, 888]
+    categorical = ["first", "first", "second", "second", "second", "second"]
+    time_index = pd.date_range(JUST_BEFORE_SPRING_DST, periods=6, freq=frequency)
+    df = pd.DataFrame.from_dict({columns.data: co2, "value2": co, columns.category: categorical, columns.date: time_index})
+    return df

@@ -55,6 +55,25 @@ def long_df():
         {"value1": co2, "value2": co2, "country": country, "date": time_index})
     return df
 
+@pytest.fixture
+def long_df_different_sizes():
+    co2 = [315.58, 316.39, 316.79, 316.2, 222]
+    country = [0, 0, 1, 1, 1]
+    time_index = pd.date_range("1-1-1959", periods=2, freq="M").append(pd.date_range("1-1-1959", periods=3, freq="M"))
+    df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "country": country, "date": time_index})
+    return df
+
+@pytest.fixture
+def long_df_multiple_ids():
+    co2 = [315.58, 316.39, 316.79, 316.2, 222]
+    country = [0, 0, 1, 1, 1]
+    items = [0, 0, 2, 2, 2]
+    time_index = pd.date_range("1-1-1959", periods=2, freq="M").append(pd.date_range("1-1-1959", periods=3, freq="M"))
+    df = pd.DataFrame.from_dict(
+        {"value1": co2, "value2": co2, "country": country, "items":items, "date": time_index})
+    return df
+
 
 @pytest.fixture
 def basic_dku_config():
@@ -108,6 +127,26 @@ class TestDecomposition:
         np.testing.assert_equal(df_results["value2_trend"], np.array([2, 2, 4, 4]))
         np.testing.assert_equal(df_results["value1_seasonal"], np.array([2, 2, 6, 6]))
         np.testing.assert_equal(df_results["value2_residuals"], np.array([6, 6, 12, 12]))
+
+    def test_long_format_different_sizes(self, basic_dku_config, long_df_different_sizes):
+        basic_dku_config.long_format = True
+        basic_dku_config.timeseries_identifiers = ["country"]
+        timeseries_preparator = TimeseriesPreparator(basic_dku_config)
+        df_long_prepared = timeseries_preparator.prepare_timeseries_dataframe(long_df_different_sizes)
+        decomposition = MockDecomposition(basic_dku_config)
+        df_results = decomposition.fit(df_long_prepared)
+        np.testing.assert_equal(df_results["country"].values, np.array([0,0,1,1,1]))
+        assert np.mean(df_results["value1_trend"]) == 2.2
+
+    def test_long_format_multiple_ids(self, basic_dku_config, long_df_multiple_ids):
+        basic_dku_config.long_format = True
+        basic_dku_config.timeseries_identifiers = ["country", "items"]
+        timeseries_preparator = TimeseriesPreparator(basic_dku_config)
+        df_long_prepared = timeseries_preparator.prepare_timeseries_dataframe(long_df_multiple_ids)
+        decomposition = MockDecomposition(basic_dku_config)
+        df_results = decomposition.fit(df_long_prepared)
+        np.testing.assert_equal(df_results["country"].values, np.array([0,0,1,1,1]))
+        assert np.mean(df_results["value1_trend"]) == 2.2
 
     def test_collision(self, basic_dku_config, input_df):
         basic_dku_config.target_columns = ["value1"]
