@@ -8,9 +8,11 @@
         "description": "Perform resampling, windowing operations, interval extraction, and extrema extraction on time series data (one row per time stamp).",
         "author": "Dataiku (Du PHAN)",
         "icon": "icon-time",
-        "supported":true,
+        "supported": true,
         "licenseInfo": "Apache Software License",
         "url": "https://www.dataiku.com/dss/plugins/info/time-series-preparation.html",
-        "tags": ["Time Series"]
+        "tags": [
+            "Time Series"
+        ]
     }
 }
