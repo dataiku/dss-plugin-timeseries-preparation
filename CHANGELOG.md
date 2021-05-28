@@ -7,6 +7,7 @@
 - Improve long format options
     - :v: Handle multiple identifiers
     - :1234: Allow for numerical columns as time series identifiers
+- The plugin no longer supports Python 2.7. Yet, its previous recipes, namely Resampling, Windowing, Interval extraction and Extrema extraction, are still running with a Python 2.7 code env. 
 ### Resampling recipe
 - :date: Add more frequencies: business days, quarters, semi-annual
 - :thought_balloon: Impute categorical values during interpolation and extrapolation
