@@ -26,12 +26,12 @@ Add visual recipes to prepare time series data
 - :chart_with_downwards_trend: Resample time series data 
 - :date: Choose frequencies from nanoseconds to years
 ### Windowing recipe
-- :bookmark: Compute aggregations or filter a time series using a **rolling window**. 
+- :bookmark: Compute aggregations or filter a time series using a rolling window. 
 - :left_right_arrow: The window size can vary from nanoseconds to years. 
 ### Extrema extraction recipe
-- :mount_fuji: Extract values around an **extremum**
+- :mount_fuji: Extract values around an extremum
 ### Interval extraction recipe
-- :scissors: Identify **intervals** or segments of the time series where the values fall within a given range 
+- :scissors: Identify intervals or segments of the time series where the values fall within a given range 
 
 ### All the recipes
 - :point_up: Handle long format with a unique identifier
