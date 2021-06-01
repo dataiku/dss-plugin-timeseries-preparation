@@ -20,4 +20,15 @@
 - 🪲 Fix the bug occurring with weekly, monthly and annual time series which failed to convert to offsets
   
 
+## Version 1.0.0 - Initial release - 2019-11
+Add visual recipes to prepare time series data : 
+- :chart_with_downwards_trend:	 **Resample** time series data with frequencies from nanoseconds to years
+- :bookmark: Compute aggregations or filter a time series using a **rolling window**. The window size can vary from nanoseconds to years. 
+- :mount_fuji: Extract values around an **extremum**
+- :scissors: Identify **intervals** or segments of the time series where the values fall within a given range 
+
+
+Scope
+- :point_up: Handle long format with a unique identifier
+- :snake: Support Python 2.7 and Python 3.6
 
