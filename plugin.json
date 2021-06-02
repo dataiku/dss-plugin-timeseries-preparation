@@ -1,12 +1,12 @@
 {
     "id": "timeseries-preparation",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "meta": {
         "supportLevel": "SUPPORTED",
         "label": "Time Series Preparation",
         "category": "Time Series",
-        "description": "Perform resampling, windowing operations, interval extraction, and extrema extraction on time series data (one row per time stamp).",
-        "author": "Dataiku (Du PHAN)",
+        "description": "Perform resampling, windowing operations, interval extraction, extrema extraction, and decomposition on time series data (one row per time stamp).",
+        "author": "Dataiku (Du PHAN and Marine SOBAS)",
         "icon": "icon-time",
         "supported": true,
         "licenseInfo": "Apache Software License",
