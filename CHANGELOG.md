@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.0.1 - Bugfix release - 2021-06
+- :pencil: Edit plugin.json to reflect the changes made in 2.0.0
+
 ## Version 2.0.0 - New feature and bugfix release - 2021-05
 ### New recipe - Time series decomposition
 - :chart_with_upwards_trend: Decompose the time series into trend, seasonal and residuals using Seasonal and Trend decomposition using Loess (STL) 
