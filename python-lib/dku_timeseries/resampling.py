@@ -197,7 +197,6 @@ class Resampler:
             df_processed = df_resample.loc[category_imputation_index]
             df_resample.loc[category_imputation_index] = self._fill_in_category_values(df_processed, category_columns)
         df_resampled = df_resample.loc[reference_index].drop('numerical_index', axis=1)
-        df_resampled.dropna(subset=filtered_columns_to_resample, inplace=True)
         return df_resampled
 
     def _fill_in_category_values(self, df, category_columns):
