@@ -260,6 +260,10 @@
         {
           "value": "none",
           "label": "Empty"
+        },
+        {
+          "value": "no_extrapolation",
+          "label": "Do nothing"
         }
       ],
       "defaultValue": "clip"

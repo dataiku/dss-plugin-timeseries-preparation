@@ -10,7 +10,7 @@ from dku_timeseries.timeseries_helpers import FREQUENCY_STRINGS, generate_date_r
 logger = logging.getLogger(__name__)
 
 INTERPOLATION_METHODS = ['linear', 'nearest', 'slinear', 'zero', 'quadratic', 'cubic', 'previous', 'next', 'constant', 'none']
-EXTRAPOLATION_METHODS = ['none', 'clip', 'interpolation']
+EXTRAPOLATION_METHODS = ['none', 'clip', 'interpolation', 'no_extrapolation']
 CATEGORY_IMPUTATION_METHODS = ['empty', 'constant', 'previous', 'next', 'clip', 'mode']
 TIME_UNITS = list(FREQUENCY_STRINGS.keys()) + ['rows']
 
@@ -191,6 +191,8 @@ class Resampler:
             if self.params.extrapolation_method == "clip":
                 temp_df = df_resample.copy().ffill().bfill()
                 df_resample.loc[extrapolation_index, filtered_column] = temp_df.loc[extrapolation_index, filtered_column]
+            elif self.params.extrapolation_method == "no_extrapolation":
+                reference_index = reference_index[~reference_index.isin(extrapolation_index.values)]
             category_imputation_index = category_imputation_index.union(extrapolation_index).union(interpolation_index)
 
         if len(category_columns) > 0 and len(category_imputation_index) > 0 and self.params.category_imputation_method != "empty":

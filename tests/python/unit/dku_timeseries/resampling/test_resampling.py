@@ -49,6 +49,18 @@ def academy_orders_df():
     return df_orders
 
 
+@pytest.fixture
+def long_format_df():
+    id = [1, 1, 1, 1, 1, 2, 2]
+    dates = pd.DatetimeIndex(['2021-06-19T12:45:30.000Z', '2021-06-21T13:45:30.000Z',
+                              '2021-06-22T12:00:00.000Z', '2021-06-23T12:45:30.000Z',
+                              '2021-06-25T12:45:30.000Z', '2021-06-21T12:45:30.000Z',
+                              '2021-06-23T12:45:30.000Z'])
+    value = [12, 13, 12, 14,  4,  5,  4]
+    df = pd.DataFrame({GROUP_COL:id, TIME_COL:dates, DATA_COL:value})
+    return df
+
+
 ### Helpers to create test data, should be fixtures at some point I guess
 def _make_df_with_one_col(column_data, period=pd.DateOffset(seconds=1), start_time=JUST_BEFORE_SPRING_DST):
     time = pd.date_range(start_time, None, len(column_data), period)
@@ -288,12 +300,15 @@ class TestResampler:
         output_df = resampler.transform(df_start_of_month, TIME_COL)
         assert not math.isnan(output_df["data_col"].values[0])
         assert math.isnan(output_df["data_col"].values[-1])
+        assert len(output_df.index) == 10
 
         df_end_of_month = _make_df_with_one_col(data, period=pd.DateOffset(months=1))
         params = ResamplerParams(time_unit="months", extrapolation_method="none")
         resampler = Resampler(params)
         output_df = resampler.transform(df_end_of_month, TIME_COL)
+        assert math.isnan(output_df["data_col"].values[0])
         assert math.isnan(output_df["data_col"].values[-1])
+        assert len(output_df.index) == 10
 
     def test_empty_extrapolation_week(self):
         length = 10
@@ -328,3 +343,53 @@ class TestResampler:
         assert not np.any(np.isnan(black_tshirts_F.loc[:54, DATA_COL]))
         assert np.all(np.isnan(black_tshirts_F.loc[55:59, DATA_COL]))
         assert not np.any(np.isnan(black_tshirts_F.loc[60:, DATA_COL]))
+
+    def test_no_extrapolation_month(self):
+        length = 10
+        data = [random.random() for _ in range(length)]
+        start_time = pd.Timestamp('20210101 00:00:00').tz_localize('CET')
+        df_start_of_month = _make_df_with_one_col(data, period=pd.DateOffset(months=1), start_time=start_time)
+        params = ResamplerParams(time_unit="months", extrapolation_method='no_extrapolation')
+        resampler = Resampler(params)
+        output_df = resampler.transform(df_start_of_month, TIME_COL)
+        assert not math.isnan(output_df["data_col"].values[0])
+        assert not math.isnan(output_df["data_col"].values[-1])
+        assert len(output_df.index) == 9
+
+        df_end_of_month = _make_df_with_one_col(data, period=pd.DateOffset(months=1))
+        params = ResamplerParams(time_unit="months", extrapolation_method="no_extrapolation")
+        resampler = Resampler(params)
+        output_df = resampler.transform(df_end_of_month, TIME_COL)
+        assert len(output_df.index) == 8
+        assert not math.isnan(output_df["data_col"].values[0])
+        assert not math.isnan(output_df["data_col"].values[-1])
+
+    def test_no_extrapolation_week(self):
+        length = 10
+        data = [random.random() for _ in range(length)]
+        start_time = pd.Timestamp('20210301 00:00:00').tz_localize('CET')
+        df = _make_df_with_one_col(data, period=pd.DateOffset(weeks=1), start_time=start_time)
+        params = ResamplerParams(time_unit="weeks", extrapolation_method='no_extrapolation')
+        resampler = Resampler(params)
+        output_df = resampler.transform(df, TIME_COL)
+        np.testing.assert_array_equal(output_df[TIME_COL].values, pd.DatetimeIndex(['2021-03-06T23:00:00.000000000', '2021-03-13T23:00:00.000000000',
+                                                                                    '2021-03-20T23:00:00.000000000', '2021-03-27T23:00:00.000000000',
+                                                                                    '2021-04-03T22:00:00.000000000', '2021-04-10T22:00:00.000000000',
+                                                                                    '2021-04-17T22:00:00.000000000', '2021-04-24T22:00:00.000000000',
+                                                                                    '2021-05-01T22:00:00.000000000']))
+
+    def test_no_extrapolation_long_format(self, long_format_df):
+        params = ResamplerParams(time_unit="days", extrapolation_method='no_extrapolation')
+        resampler = Resampler(params)
+        output_df = resampler.transform(long_format_df, TIME_COL,groupby_columns=[GROUP_COL])
+        assert len(output_df.index) == 8
+        assert not np.any(np.isnan(output_df[DATA_COL].values))
+
+
+    def test_empty_extrapolation_long_format(self, long_format_df):
+        params = ResamplerParams(time_unit="days", extrapolation_method='none')
+        resampler = Resampler(params)
+        output_df = resampler.transform(long_format_df, TIME_COL,groupby_columns=[GROUP_COL])
+        assert len(output_df.index) == 14
+        assert np.all(np.isnan(output_df.loc[6:8, DATA_COL]))
+        assert np.all(np.isnan(output_df.loc[11:13, DATA_COL]))
