@@ -1,7 +1,8 @@
 # Changelog
 
 ## Version 2.0.1 - Bugfix release - 2021-06
-- :bug: Fix regression when the user chooses "no interpolation" or "no extrapolation". Keep the empty values rather than filtering them. 
+- :bug: Keep the empty values rather than filtering them with the extrapolation method "Empty"
+- :scissors: Add the extrapolation method "Do nothing" to filter missing values
 - :pencil: Edit plugin.json to reflect the changes made in 2.0.0
 
 ## Version 2.0.0 - New feature and bugfix release - 2021-05
