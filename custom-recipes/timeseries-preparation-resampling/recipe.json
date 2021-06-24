@@ -231,7 +231,7 @@
         },
         {
           "value": "none",
-          "label": "Don't extrapolate (impute null)"
+          "label": "Don't interpolate (impute null)"
         }
       ],
       "defaultValue": "linear"
