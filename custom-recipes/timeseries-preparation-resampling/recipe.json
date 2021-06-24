@@ -231,7 +231,7 @@
         },
         {
           "value": "none",
-          "label": "Empty"
+          "label": "Don't extrapolate (impute null)"
         }
       ],
       "defaultValue": "linear"
@@ -259,11 +259,11 @@
         },
         {
           "value": "none",
-          "label": "Empty"
+          "label": "Don't extrapolate (impute null)"
         },
         {
           "value": "no_extrapolation",
-          "label": "Do nothing"
+          "label": "Don't extrapolate (no imputation)"
         }
       ],
       "defaultValue": "clip"
