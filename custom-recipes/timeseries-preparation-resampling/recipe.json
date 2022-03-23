@@ -82,16 +82,36 @@
       "type": "SEPARATOR"
     },
     {
+      "name": "synchronize_on_identifier",
+      "label": "Synchronize",
+      "description": "Synchronize all identifier to a reference one",
+      "type": "BOOLEAN",
+      "mandatory": false,
+      "defaultValue": false,
+      "visibilityCondition": "model.advanced_activated==true"
+    },
+    {
+      "name": "time_reference_identifier",
+      "label": "Reference identifier",
+      "description": "",
+      "type": "STRING",
+      "mandatory": false,
+      "defaultValue": "",
+      "visibilityCondition": "(model.advanced_activated==true) && (model.synchronize_on_identifier==true)"
+    },
+    {
       "name": "time_step",
       "label": "Time step",
       "type": "DOUBLE",
       "defaultValue": 1,
-      "minD": 0.0001
+      "minD": 0.0001,
+      "visibilityCondition": "!((model.advanced_activated==true) && (model.synchronize_on_identifier==true))"
     },
     {
       "name": "time_unit",
       "label": "Unit",
       "type": "SELECT",
+      "visibilityCondition": "!((model.advanced_activated==true) && (model.synchronize_on_identifier==true))",
       "selectChoices": [
         {
           "value": "nanoseconds",

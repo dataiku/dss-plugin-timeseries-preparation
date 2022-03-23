@@ -1,3 +1,4 @@
+from pickle import FALSE
 import sys
 
 from dku_config.stl_config import STLConfig
@@ -28,6 +29,9 @@ def get_resampling_params(recipe_config):
     clip_start = _p('clip_start')
     clip_end = _p('clip_end')
     shift = _p('shift')
+    time_reference_identifier = None
+    if _p('advanced_activated') and _p('synchronize_on_identifier', False):
+        time_reference_identifier = _p('time_reference_identifier', None)
 
     params = ResamplerParams(interpolation_method=interpolation_method,
                              extrapolation_method=extrapolation_method,
@@ -39,7 +43,8 @@ def get_resampling_params(recipe_config):
                              time_unit_end_of_week=time_unit_end_of_week,
                              clip_start=clip_start,
                              clip_end=clip_end,
-                             shift=shift)
+                             shift=shift,
+                             time_reference_identifier=time_reference_identifier)
     params.check()
     return params
 

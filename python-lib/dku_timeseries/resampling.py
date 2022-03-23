@@ -28,7 +28,8 @@ class ResamplerParams:
                  time_unit_end_of_week="SUN",
                  clip_start=0,
                  clip_end=0,
-                 shift=0):
+                 shift=0,
+                 time_reference_identifier=None):
 
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
@@ -42,6 +43,7 @@ class ResamplerParams:
         self.clip_start = reformat_time_value(float(clip_start), time_unit)
         self.clip_end = reformat_time_value(float(clip_end), time_unit)
         self.shift = reformat_time_value(float(shift), time_unit)
+        self.time_reference_identifier = time_reference_identifier
 
     def check(self):
 
@@ -89,7 +91,7 @@ class Resampler:
         df_copy.loc[:, datetime_column] = pd.to_datetime(df_copy[datetime_column])
         # when having multiple timeseries, their time range is not necessarily the same
         # we thus compute a unified time index for all partitions
-        reference_time_index = self._compute_full_time_index(df_copy, datetime_column)
+        reference_time_index = self._compute_full_time_index(df_copy, datetime_column, groupby_columns)
         columns_to_resample = [col for col in df_copy.select_dtypes([int, float]).columns.tolist() if col != datetime_column and col not in groupby_columns]
         category_columns = [col for col in df.select_dtypes([object, bool]).columns.tolist() if col != datetime_column and col not in columns_to_resample and
                             col not in groupby_columns]
@@ -113,10 +115,15 @@ class Resampler:
 
         return df_resampled
 
-    def _compute_full_time_index(self, df, datetime_column):
+    def _compute_full_time_index(self, df, datetime_column, groupby_columns):
         """
         From the resampling config, create the full index of the output dataframe.
         """
+        if self.params.time_reference_identifier:
+            reference_dataframe = df[df[groupby_columns[0]] == self.params.time_reference_identifier]
+            start_time = reference_dataframe[datetime_column].min()
+            end_time = reference_dataframe[datetime_column].max()
+            return reference_dataframe[datetime_column]
         start_time = df[datetime_column].min()
         end_time = df[datetime_column].max()
         clip_start = self.params.clip_start
