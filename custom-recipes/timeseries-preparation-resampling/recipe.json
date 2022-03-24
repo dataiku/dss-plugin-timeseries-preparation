@@ -91,12 +91,11 @@
       "visibilityCondition": "model.advanced_activated==true"
     },
     {
-      "name": "time_reference_identifier",
+      "name": "time_reference_identifiers",
       "label": "Reference identifier",
       "description": "",
-      "type": "STRING",
+      "type": "MAP",
       "mandatory": false,
-      "defaultValue": "",
       "visibilityCondition": "(model.advanced_activated==true) && (model.synchronize_on_identifier==true)"
     },
     {

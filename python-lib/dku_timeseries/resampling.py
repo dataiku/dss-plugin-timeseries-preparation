@@ -29,7 +29,7 @@ class ResamplerParams:
                  clip_start=0,
                  clip_end=0,
                  shift=0,
-                 time_reference_identifier=None):
+                 time_reference_identifiers=None):
 
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
@@ -43,7 +43,7 @@ class ResamplerParams:
         self.clip_start = reformat_time_value(float(clip_start), time_unit)
         self.clip_end = reformat_time_value(float(clip_end), time_unit)
         self.shift = reformat_time_value(float(shift), time_unit)
-        self.time_reference_identifier = time_reference_identifier
+        self.time_reference_identifiers = time_reference_identifiers
 
     def check(self):
 
@@ -119,8 +119,11 @@ class Resampler:
         """
         From the resampling config, create the full index of the output dataframe.
         """
-        if self.params.time_reference_identifier:
-            reference_dataframe = df[df[groupby_columns[0]] == self.params.time_reference_identifier]
+        if self.params.time_reference_identifiers:
+            reference_dataframe = df
+            for time_reference_identifier_column in self.params.time_reference_identifiers:
+                time_reference_identifier = self.params.time_reference_identifiers.get(time_reference_identifier_column)
+                reference_dataframe = reference_dataframe[reference_dataframe[time_reference_identifier_column] == time_reference_identifier]
             start_time = reference_dataframe[datetime_column].min()
             end_time = reference_dataframe[datetime_column].max()
             return reference_dataframe[datetime_column]
