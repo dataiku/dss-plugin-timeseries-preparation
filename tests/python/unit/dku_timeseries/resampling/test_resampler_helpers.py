@@ -91,7 +91,7 @@ class TestResamplerHelpers:
 
         end_time = pd.Timestamp('2021-01-24 00:00:00')
         date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit)
-        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2020-12-27', '2021-01-10', '2021-01-24', '2021-02-07']))
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2020-12-27', '2021-01-10', '2021-01-24']))
 
         date_range = generate_date_range(start_time, end_time, 1, 0, 1, frequency, time_step, time_unit)
         np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-10', '2021-01-24', '2021-02-07']))
@@ -145,19 +145,19 @@ class TestResamplerHelpers:
         time_step = params.time_step
 
         date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit)
-        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-11']))
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08']))
 
         clip_start = 1
         clip_end = 1
         shift = 0
         date_range = generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
-        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-11']))
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-05', '2021-01-06', '2021-01-07']))
 
         clip_start = 2
         clip_end = 2
         shift = 0
         date_range = generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
-        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08']))
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-06']))
 
     def test_generate_date_range_days(self, config):
         config["time_unit"] = "days"

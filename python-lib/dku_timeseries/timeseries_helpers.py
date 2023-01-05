@@ -5,6 +5,7 @@ import math
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
 from pandas.tseries.offsets import BDay
+from pandas.tseries.offsets import Day
 
 logger = logging.getLogger(__name__)
 
@@ -77,17 +78,35 @@ def get_date_offset(time_unit, offset_value):
 
 
 def generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit):
-    rounding_freq_string = FREQUENCY_STRINGS.get(time_unit)
     clip_start_value = get_date_offset(time_unit, clip_start)
     clip_end_value = get_date_offset(time_unit, clip_end)
     shift_value = get_date_offset(time_unit, shift)
-    if time_unit in ROUND_COMPATIBLE_TIME_UNIT:
-        start_index = start_time.round(rounding_freq_string) + clip_start_value + shift_value
-        end_index = end_time.round(rounding_freq_string) - clip_end_value + shift_value
-    else:  # for week, month, year we round up to closest day
-        start_index = start_time.round("D") + clip_start_value + shift_value
-        # for some reason date_range omit the last entry when dealing with months, years
-        end_index = end_time.round("D") - clip_end_value + get_date_offset(time_unit, time_step) + shift_value
+
+    # for business day, week, month, year we round up to closest day
+    rounding_freq_string = FREQUENCY_STRINGS.get(time_unit) if time_unit in ROUND_COMPATIBLE_TIME_UNIT else "D"
+    start_index = start_time.round(rounding_freq_string)
+    end_index = end_time.round(rounding_freq_string)
+
+    if time_unit not in ROUND_COMPATIBLE_TIME_UNIT:
+        # pd.date_range omits the end index when frequency is business day, week, month or year, 
+        # unless the end index is exactly at the end of the period.
+        # so we need to offset the end index to make sure it falls between the last time step and the following one
+        if time_unit == "business_days":
+            # if start index is not a business day, then we want to start the range on the next Monday
+            # adding BDay(0) does nothing if the timestamp is already a business day and converts it into the first next business day otherwise
+            start_index = start_index + BDay(0)
+
+            # if end index is not a business day, then we want to end the range on the previous Friday
+            # adding Day(1) - BDay(1) does nothing if the timestamp is already a business day and converts it into the last previous business day otherwise
+            end_index = end_index + Day(1) - BDay(1)
+        else:
+            # we add one less Day to the end index to make sure we do not include the following time stamp
+            # if the end index is exactly at the end of the period
+            end_index = end_index + get_date_offset(time_unit, time_step) - Day(1)
+    
+    start_index = start_index + clip_start_value + shift_value
+    end_index = end_index - clip_end_value + shift_value
+
     return pd.date_range(start=start_index, end=end_index, freq=frequency)
 
 

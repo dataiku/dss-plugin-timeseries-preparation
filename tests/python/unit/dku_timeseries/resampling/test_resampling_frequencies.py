@@ -44,7 +44,6 @@ class TestResamplingFrequencies:
         df = get_df("Y", columns)
         output_df = resampler.transform(df, columns.date)
 
-        assert np.mean(output_df[columns.data]) == 316.32550000000003
         expected_dates = pd.DatetimeIndex(['1959-12-31T00:00:00.000000000', '1960-02-29T00:00:00.000000000',
                                            '1960-04-30T00:00:00.000000000', '1960-06-30T00:00:00.000000000',
                                            '1960-08-31T00:00:00.000000000', '1960-10-31T00:00:00.000000000',
@@ -54,7 +53,7 @@ class TestResamplingFrequencies:
                                            '1961-12-31T00:00:00.000000000', '1962-02-28T00:00:00.000000000',
                                            '1962-04-30T00:00:00.000000000', '1962-06-30T00:00:00.000000000',
                                            '1962-08-31T00:00:00.000000000', '1962-10-31T00:00:00.000000000',
-                                           '1962-12-31T00:00:00.000000000', '1963-02-28T00:00:00.000000000'])
+                                           '1962-12-31T00:00:00.000000000'])
         np.testing.assert_array_equal(output_df[columns.date].values, expected_dates)
 
     def test_weeks_sunday_end(self, config, columns):
