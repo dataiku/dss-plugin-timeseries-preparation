@@ -97,8 +97,8 @@ def generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequ
             start_index = start_index + BDay(0)
 
             # if end index is not a business day, then we want to end the range on the previous Friday
-            # adding Day(1) - BDay(1) does nothing if the timestamp is already a business day and converts it into the last previous business day otherwise
-            end_index = end_index + Day(1) - BDay(1)
+            # adding Day(1) then subtracting BDay(1) does nothing if the timestamp is already a business day and converts it into the last previous business day otherwise
+            end_index = (end_index + Day(1)) - BDay(1)
         else:
             # we add one less Day to the end index to make sure we do not include the following time stamp
             # if the end index is exactly at the end of the period
