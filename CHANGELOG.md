@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.0.2 - Bugfix release - 2023-01
+- 🪲 Fix the bug that was adding an extra date at the end after resampling when the last input timestamp was exactly at the end of a period (week, month, half-year, year)
+
 ## Version 2.0.1 - Bugfix release - 2021-06
 - :bug: Keep the empty values rather than filtering them with the extrapolation method "Don't extrapolate (impute nulls)"
 - :scissors: Add the extrapolation method "Don't extrapolate (no imputation)" to filter missing values
