@@ -150,7 +150,7 @@ class Resampler:
         df_resample = df.set_index(datetime_column).sort_index().copy()
         # merge the reference time index with the original ones that has data
         # cf: https://stackoverflow.com/questions/47148446/pandas-resample-interpolate-is-producing-nans
-        df_resample = df_resample.reindex(df_resample.index | reference_time_index)
+        df_resample = df_resample.reindex(df_resample.index.union(reference_time_index))
 
         # `scipy.interpolate.interp1d` only works with numerical index, so we create one
         df_resample['numerical_index'] = range(len(df_resample))

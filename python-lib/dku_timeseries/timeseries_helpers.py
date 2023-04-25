@@ -69,6 +69,8 @@ def get_date_offset(time_unit, offset_value):
             formatted_time_unit = "days"
     elif time_unit == "semi_annual" or time_unit == "quarters":
         formatted_time_unit = "months"
+    elif time_unit == "milliseconds":
+        return pd.Timedelta(offset_value, unit="ms")
     elif time_unit == "nanoseconds":
         # using Timedelta instead of DateOffset because of a Pandas' bug with nanoseconds - https://github.com/pandas-dev/pandas/issues/36589
         return pd.Timedelta(offset_value, unit="ns")

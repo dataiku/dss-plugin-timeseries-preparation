@@ -68,8 +68,8 @@ class TestResamplerHelpers:
         start_time = pd.Timestamp('2021-01-31 10:00:00').tz_localize("CET")
         end_time = pd.Timestamp('2021-06-20 00:00:00').tz_localize("CET")
         date_range = generate_date_range(start_time, end_time, 0, 0, 0, frequency, time_step, time_unit)
-        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(
-            ['2021-01-31 00:00:00+01:00', '2021-03-31 00:00:00+02:00', '2021-05-31 00:00:00+02:00', '2021-07-31 00:00:00+02:00']))
+        np.testing.assert_array_equal(date_range, pd.DatetimeIndex(['2021-01-31', '2021-03-31',
+                           '2021-05-31', '2021-07-31'], tz='CET'))
 
         start_time = pd.Timestamp('2021-01-31 10:00:00')
         end_time = pd.Timestamp('2021-06-20 00:00:00')
