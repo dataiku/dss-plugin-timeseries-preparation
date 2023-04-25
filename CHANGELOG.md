@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.0.3 - Bugfix release - 2023-04
+- Updated code-env descriptor for DSS 12
+
 ## Version 2.0.2 - Bugfix release - 2023-01
 - 🪲 Fix the bug that was adding an extra date at the end after resampling when the last input timestamp was exactly at the end of a period (week, month, half-year, year)
 
