@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.0.4 - Bugfix release - 2024-02
+- :bug: Plugin resamples on columns when they should be interpreted as categorical columns
+
 ## Version 2.0.3 - Bugfix release - 2023-04
 - Updated code-env descriptor for DSS 12
 
