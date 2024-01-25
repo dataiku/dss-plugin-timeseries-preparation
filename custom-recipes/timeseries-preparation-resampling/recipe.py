@@ -18,7 +18,7 @@ datetime_column = recipe_config.get('datetime_column')
 params = get_resampling_params(recipe_config)
 
 # --- Run
-df = input_dataset.get_dataframe()
+df = input_dataset.get_dataframe(infer_with_pandas=False)
 resampler = Resampler(params)
 output_df = resampler.transform(df, datetime_column, groupby_columns=groupby_columns)
 
