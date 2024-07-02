@@ -7,6 +7,8 @@ from pandas.tseries.frequencies import to_offset
 from pandas.tseries.offsets import BDay
 from pandas.tseries.offsets import Day
 
+from dataiku.base.utils import package_is_at_least
+
 logger = logging.getLogger(__name__)
 
 # Frequency strings as defined in https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
@@ -18,14 +20,14 @@ FREQUENCY_STRINGS = {
     'weeks': 'W',
     'days': 'D',
     'business_days': 'B',
-    'hours': 'H',
-    'minutes': 'T',
     'seconds': 'S',
     'milliseconds': 'L',
     'microseconds': 'us',
     'nanoseconds': 'ns'
 }
 
+FREQUENCY_STRINGS['hours'] = 'h' if package_is_at_least(pd, "2") else 'H'
+FREQUENCY_STRINGS['minutes'] = 'min' if package_is_at_least(pd, "1") else 'T'
 ROUND_COMPATIBLE_TIME_UNIT = ['days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds', 'nanoseconds']
 UNIT_ORDER = ['years', 'months', 'semi_annual', 'quarters', 'weeks', 'days', 'business_days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds',
               'nanoseconds']
