@@ -219,19 +219,19 @@ class WindowAggregator:
             new_df[raw_columns] = df_ref[raw_columns]
         if 'min' in self.params.aggregation_types:
             col_names = ['{}_min'.format(col) for col in raw_columns]
-            new_df[col_names] = roller[raw_columns].apply(min, raw=True)
+            new_df[col_names] = roller[raw_columns].apply(min)
         if 'max' in self.params.aggregation_types:
             col_names = ['{}_max'.format(col) for col in raw_columns]
-            new_df[col_names] = roller[raw_columns].apply(max, raw=True)
+            new_df[col_names] = roller[raw_columns].apply(max)
         if 'q25' in self.params.aggregation_types:
             col_names = ['{}_q25'.format(col) for col in raw_columns]
-            new_df[col_names] = roller[raw_columns].quantile(0.25, raw=True)
+            new_df[col_names] = roller[raw_columns].quantile(0.25)
         if 'median' in self.params.aggregation_types:
             col_names = ['{}_median'.format(col) for col in raw_columns]
-            new_df[col_names] = roller[raw_columns].quantile(0.5, raw=True)
+            new_df[col_names] = roller[raw_columns].quantile(0.5)
         if 'q75' in self.params.aggregation_types:
             col_names = ['{}_q75'.format(col) for col in raw_columns]
-            new_df[col_names] = roller[raw_columns].quantile(0.75, raw=True)
+            new_df[col_names] = roller[raw_columns].quantile(0.75)
         if 'first_order_derivative' in self.params.aggregation_types:
             col_names = ['{}_1st_derivative'.format(col) for col in raw_columns]
             if self.params.window_width < 1:
