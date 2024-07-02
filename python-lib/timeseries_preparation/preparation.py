@@ -255,8 +255,8 @@ def assert_time_column_valid(dataframe, time_column_name, frequency, start_date=
         error_message += " Please check the Frequency parameter or use the resampling recipe from the time series preparation plugin."
         raise ValueError(error_message)
 
-
-FREQUENCY_LABEL = {"T": "minute", "H": "hour", "D": "day", "B": "business day"}
+# Depending on whether pandas 1 or 2 is in use, minute and hour offset names vary (min and h are pandas 2 names)
+FREQUENCY_LABEL = { "min": "minute", "T": "minute", "h": "HOUR", "H": "hour", "D": "day", "B": "business day"}
 
 WEEKDAYS = [
     "Monday",
