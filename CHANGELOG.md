@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 2.1.0 - New feature release - 2024-12
+### Resampling recipe
+- :date: Support selecting custom dates for the start and end of extrapolation
+
 ## Version 2.0.4 - Bugfix release - 2024-02
 - :bug: Plugin resamples on columns when they should be interpreted as categorical columns
 

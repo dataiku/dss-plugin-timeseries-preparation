@@ -28,6 +28,10 @@ def get_resampling_params(recipe_config):
     clip_start = _p('clip_start')
     clip_end = _p('clip_end')
     shift = _p('shift')
+    start_date_mode = _p('start_date_mode', 'AUTO')
+    custom_start_date = _p('custom_start_date') if start_date_mode == 'CUSTOM' else None
+    end_date_mode = _p('end_date_mode', 'AUTO')
+    custom_end_date = _p('custom_end_date') if end_date_mode == 'CUSTOM' else None
 
     params = ResamplerParams(interpolation_method=interpolation_method,
                              extrapolation_method=extrapolation_method,
@@ -39,7 +43,9 @@ def get_resampling_params(recipe_config):
                              time_unit_end_of_week=time_unit_end_of_week,
                              clip_start=clip_start,
                              clip_end=clip_end,
-                             shift=shift)
+                             shift=shift,
+                             custom_start_date=custom_start_date,
+                             custom_end_date=custom_end_date)
     params.check()
     return params
 
