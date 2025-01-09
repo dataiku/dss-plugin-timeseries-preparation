@@ -156,8 +156,7 @@ def convert_to_rolling_compatible_time_unit(time_step, time_unit):
         return 7 * time_step, 'days'
     elif time_unit == 'months' or time_unit.startswith("M"):
         return 30 * time_step, 'days'
-    # The S and E (start and end) units sometimes look like "QE-dec", so we split on "-" to get rid of the useless info
-    elif time_unit == 'quarters' or time_unit.split("-")[0] in ["Q","QE","QS"]:
+    elif time_unit == 'quarters' or time_unit.startswith("Q"):
         return 91 * time_step, 'days'
     # There is no half year frequency, those are inferred as two quarters instead in infer_frequency()
     elif time_unit == 'years' or time_unit.startswith("Y") or time_unit.startswith("A"):
