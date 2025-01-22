@@ -120,15 +120,6 @@ class Resampler:
     def _can_customize_resampling_dates(self):
         return self.params.extrapolation_method == 'clip' or (self.params.extrapolation_method == 'interpolation' and self.params.interpolation_method != 'none')
 
-    def _get_comparable_date(self, raw_date, reference):
-        clean_date = pd.Timestamp(raw_date)
-        clean_date = clean_date.tz_convert(reference.timetz().tzinfo)
-        # round UTC+12 dates down
-        if clean_date.hour == 12:
-            clean_date = clean_date.floor("D")
-        else:
-            clean_date = clean_date.round("D")
-        return clean_date
 
     def _compute_full_time_index(self, df, datetime_column):
         """
@@ -146,13 +137,11 @@ class Resampler:
         if self._can_customize_resampling_dates():
             custom_start_date = self.params.custom_start_date
             if custom_start_date:
-                custom_start_date = self._get_comparable_date(custom_start_date, start_time)
                 if custom_start_date < start_time:
                     start_time = custom_start_date
 
             custom_end_date = self.params.custom_end_date
             if custom_end_date:
-                custom_end_date = self._get_comparable_date(custom_end_date, end_time)
                 if custom_end_date > end_time:
                     end_time = custom_end_date
 
