@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.0.5 - Bugfix release - 2025-01
+- :bug: Windowing would fail on quarterly and yearly frequencies
+
 ## Version 2.0.4 - Bugfix release - 2024-02
 - :bug: Plugin resamples on columns when they should be interpreted as categorical columns
 
