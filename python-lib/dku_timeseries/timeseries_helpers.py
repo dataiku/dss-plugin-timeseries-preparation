@@ -152,11 +152,16 @@ def format_group_id(group_id, identifiers_number):
 
 
 def convert_to_rolling_compatible_time_unit(time_step, time_unit):
+    if time_unit == 'businessdays' or time_unit.startswith("B"):
+        raise Exception("Data with a 'businessdays' frequency cannot be windowed.")
     if time_unit == 'weeks' or time_unit.startswith("W"):
         return 7 * time_step, 'days'
     elif time_unit == 'months' or time_unit.startswith("M"):
         return 30 * time_step, 'days'
-    elif time_unit == 'years' or time_unit.startswith("A"):
+    elif time_unit == 'quarters' or time_unit.startswith("Q"):
+        return 91 * time_step, 'days'
+    # There is no half year frequency, those are inferred as two quarters instead in infer_frequency()
+    elif time_unit == 'years' or time_unit.startswith("Y") or time_unit.startswith("A"):
         return 365 * time_step, 'days'
     else:
         return time_step, time_unit
