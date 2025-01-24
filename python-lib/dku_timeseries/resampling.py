@@ -28,7 +28,9 @@ class ResamplerParams:
                  time_unit_end_of_week="SUN",
                  clip_start=0,
                  clip_end=0,
-                 shift=0):
+                 shift=0,
+                 custom_start_date=None,
+                 custom_end_date=None):
 
         self.interpolation_method = interpolation_method
         self.extrapolation_method = extrapolation_method
@@ -42,6 +44,8 @@ class ResamplerParams:
         self.clip_start = reformat_time_value(float(clip_start), time_unit)
         self.clip_end = reformat_time_value(float(clip_end), time_unit)
         self.shift = reformat_time_value(float(shift), time_unit)
+        self.custom_start_date = custom_start_date
+        self.custom_end_date = custom_end_date
 
     def check(self):
 
@@ -113,6 +117,10 @@ class Resampler:
 
         return df_resampled
 
+    def _can_customize_resampling_dates(self):
+        return self.params.extrapolation_method == 'clip' or (self.params.extrapolation_method == 'interpolation' and self.params.interpolation_method != 'none')
+
+
     def _compute_full_time_index(self, df, datetime_column):
         """
         From the resampling config, create the full index of the output dataframe.
@@ -125,6 +133,18 @@ class Resampler:
         frequency = self.params.resampling_step
         time_step = self.params.time_step
         time_unit = self.params.time_unit
+
+        if self._can_customize_resampling_dates():
+            custom_start_date = self.params.custom_start_date
+            if custom_start_date:
+                if custom_start_date < start_time:
+                    start_time = custom_start_date
+
+            custom_end_date = self.params.custom_end_date
+            if custom_end_date:
+                if custom_end_date > end_time:
+                    end_time = custom_end_date
+
         return generate_date_range(start_time, end_time, clip_start, clip_end, shift, frequency, time_step, time_unit)
 
     def _resample(self, df, datetime_column, columns_to_resample, category_columns, reference_time_index, df_id=''):

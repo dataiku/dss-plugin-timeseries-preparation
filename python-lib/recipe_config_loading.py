@@ -1,5 +1,7 @@
 import sys
 
+import pandas as pd
+
 from dku_config.stl_config import STLConfig
 from dku_input_validator.decomposition_input_validator import DecompositionInputValidator
 from dku_timeseries import ExtremaExtractorParams
@@ -17,6 +19,24 @@ def get_resampling_params(recipe_config):
     def _p(param_name, default=None):
         return recipe_config.get(param_name, default)
 
+    def date_from_naive_datetime(datetime_str):
+        if not datetime_str:
+            return None
+
+        # the frontend sends a zulu datetime after offsetting it from midnight on the selected day
+        # eg. selecting 2025-01-31 in a browser set to UTC+4 sends "2025-01-30T20:00:00Z"
+        # while a browser set to UTC-4 sends "2025-01-31T04:00:00Z"
+        date = pd.Timestamp(datetime_str)
+
+        # round UTC+12 dates up (includes NZST), UTC-12 is not used anywhere
+        if date.hour == 12:
+            return date.ceil("D")
+        # round UTC+13 dates up (includes NZDT and the state of Samoa), without timezone info UTC-11 looks the same as UTC+13 but the latter only has very few inhabitants (mainly American Samoa)
+        if date.hour == 11:
+            logger.warning("The input date is either UTC-11 or UTC+13, it will be processed as UTC+13")
+            return date.ceil("D")
+        return date.round("D")
+
     interpolation_method = _p('interpolation_method')
     extrapolation_method = _p('extrapolation_method')
     constant_value = _p('constant_value')
@@ -28,6 +48,10 @@ def get_resampling_params(recipe_config):
     clip_start = _p('clip_start')
     clip_end = _p('clip_end')
     shift = _p('shift')
+    start_date_mode = _p('start_date_mode', 'AUTO')
+    custom_start_date = date_from_naive_datetime(_p('custom_start_date')) if start_date_mode == 'CUSTOM' else None
+    end_date_mode = _p('end_date_mode', 'AUTO')
+    custom_end_date = date_from_naive_datetime(_p('custom_end_date')) if end_date_mode == 'CUSTOM' else None
 
     params = ResamplerParams(interpolation_method=interpolation_method,
                              extrapolation_method=extrapolation_method,
@@ -39,7 +63,9 @@ def get_resampling_params(recipe_config):
                              time_unit_end_of_week=time_unit_end_of_week,
                              clip_start=clip_start,
                              clip_end=clip_end,
-                             shift=shift)
+                             shift=shift,
+                             custom_start_date=custom_start_date,
+                             custom_end_date=custom_end_date)
     params.check()
     return params
 

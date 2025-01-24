@@ -378,6 +378,20 @@ class TestResampler:
                                                                                     '2021-04-17T22:00:00.000000000', '2021-04-24T22:00:00.000000000',
                                                                                     '2021-05-01T22:00:00.000000000']))
 
+    def test_extrapolation_custom_dates(self):
+        data = [random.random() for _ in range(3)]
+        start_time = pd.Timestamp('2024-12-01T00:00:00Z')
+        df = _make_df_with_one_col(data, period=pd.DateOffset(days=1), start_time=start_time)
+        params = ResamplerParams(time_unit="days",
+                                 extrapolation_method='clip',
+                                 custom_start_date=pd.Timestamp("2024-11-30T00:00:00Z"),
+                                 custom_end_date=pd.Timestamp("2024-12-05T00:00:00Z"))
+        resampler = Resampler(params)
+        output_df = resampler.transform(df, TIME_COL)
+        np.testing.assert_array_equal(output_df[TIME_COL].values, pd.DatetimeIndex(['2024-11-30T00:00:00.000000000', '2024-12-01T00:00:00.000000000',
+                                                                                    '2024-12-02T00:00:00.000000000', '2024-12-03T00:00:00.000000000',
+                                                                                    '2024-12-04T00:00:00.000000000', '2024-12-05T00:00:00.000000000']))
+
     def test_no_extrapolation_long_format(self, long_format_df):
         params = ResamplerParams(time_unit="days", extrapolation_method='no_extrapolation')
         resampler = Resampler(params)

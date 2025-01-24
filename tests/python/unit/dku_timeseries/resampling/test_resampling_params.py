@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 
 from recipe_config_loading import get_resampling_params
@@ -7,7 +8,8 @@ from recipe_config_loading import get_resampling_params
 def config():
     config = {u'clip_end': 0, u'extrapolation_method': u'none', u'shift': 0,
               u'datetime_column': u'Date', u'advanced_activated': False, u'time_unit': u'quarters', u'clip_start': 0, u'time_step': 2,
-              u'interpolation_method': u'linear'}
+              u'interpolation_method': u'linear',
+              'start_date_mode': 'AUTO', 'end_date_mode': 'AUTO'}
     return config
 
 
@@ -60,3 +62,31 @@ class TestResamplerParams:
     def test_no_category_constant_value(self, config):
         params = get_resampling_params(config)
         assert params.category_constant_value == ""
+
+    def test_extrapolation_dates_params(self, config):
+        config["start_date_mode"] = "AUTO"
+        config["custom_start_date"] = "not read"
+        params = get_resampling_params(config)
+        assert params.custom_start_date is None
+
+        config["start_date_mode"] = "CUSTOM"
+
+        # UTC-11, rounds one day later than selected but that's required to support UTC+13
+        config["custom_start_date"] = "2025-01-31T11:00:00Z"
+        params = get_resampling_params(config)
+        assert params.custom_start_date == pd.Timestamp("2025-02-01T00:00:00Z")
+
+        # UTC-10
+        config["custom_start_date"] = "2025-01-31T10:00:00Z"
+        params = get_resampling_params(config)
+        assert params.custom_start_date == pd.Timestamp("2025-01-31T00:00:00Z")
+
+        # UTC+12
+        config["custom_start_date"] = "2025-01-30T12:00:00Z"
+        params = get_resampling_params(config)
+        assert params.custom_start_date == pd.Timestamp("2025-01-31T00:00:00Z")
+
+        # UTC+13
+        config["custom_start_date"] = "2025-01-30T11:00:00Z"
+        params = get_resampling_params(config)
+        assert params.custom_start_date == pd.Timestamp("2025-01-31T00:00:00Z")

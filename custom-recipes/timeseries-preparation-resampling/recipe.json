@@ -269,6 +269,58 @@
       "defaultValue": "clip"
     },
     {
+      "name": "start_date_mode",
+      "label": "Extrapolation start date",
+      "type": "SELECT",
+      "selectChoices": [
+        {
+          "value": "AUTO",
+          "label": "First available"
+        },
+        {
+          "value": "CUSTOM",
+          "label": "Custom"
+        }
+      ],
+      "mandatory": false,
+      "defaultValue": "AUTO",
+      "visibilityCondition": "model.extrapolation_method == 'clip' || (model.extrapolation_method == 'interpolation' && model.interpolation_method != 'none')"
+    },
+    {
+      "name": "custom_start_date",
+      "label": "Custom start date",
+      "type": "DATE",
+      "mandatory": false,
+      "visibilityCondition": "(model.extrapolation_method == 'clip' || (model.extrapolation_method == 'interpolation' && model.interpolation_method != 'none')) && model.start_date_mode == 'CUSTOM'",
+      "description": "Set a custom date to start extrapolation from."
+    },
+    {
+      "name": "end_date_mode",
+      "label": "Extrapolation end date",
+      "type": "SELECT",
+      "selectChoices": [
+        {
+          "value": "AUTO",
+          "label": "Last available"
+        },
+        {
+          "value": "CUSTOM",
+          "label": "Custom"
+        }
+      ],
+      "mandatory": false,
+      "defaultValue": "AUTO",
+      "visibilityCondition": "model.extrapolation_method == 'clip' || (model.extrapolation_method == 'interpolation' && model.interpolation_method != 'none')"
+    },
+    {
+      "name": "custom_end_date",
+      "label": "Custom end date",
+      "type": "DATE",
+      "mandatory": false,
+      "visibilityCondition": "(model.extrapolation_method == 'clip' || (model.extrapolation_method == 'interpolation' && model.interpolation_method != 'none')) && model.end_date_mode == 'CUSTOM'",
+      "description": "Set a custom date to end extrapolation on."
+    },
+    {
       "name": "category_imputation_method",
       "label": "Impute categorical data",
       "description": "Used to fill in categorical values during interpolation and extrapolation",
