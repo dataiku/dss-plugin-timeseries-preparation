@@ -2,6 +2,7 @@
 import logging
 
 import pandas as pd
+import numpy as np
 from scipy import interpolate
 
 from dku_timeseries.dataframe_helpers import has_duplicates, nothing_to_do, filter_empty_columns, generic_check_compute_arguments
@@ -78,6 +79,9 @@ class Resampler:
         self.params.check()
 
     def transform(self, df, datetime_column, groupby_columns=None):
+        numeric_columns = df.select_dtypes(include=['number']).columns
+        df[numeric_columns] = df[numeric_columns].astype('float64')
+        
         if groupby_columns is None:
             groupby_columns = []
 
@@ -94,7 +98,7 @@ class Resampler:
         # when having multiple timeseries, their time range is not necessarily the same
         # we thus compute a unified time index for all partitions
         reference_time_index = self._compute_full_time_index(df_copy, datetime_column)
-        columns_to_resample = [col for col in df_copy.select_dtypes([int, float]).columns.tolist() if col != datetime_column and col not in groupby_columns]
+        columns_to_resample = [col for col in df_copy.select_dtypes([int, float, np.float32, np.int32]).columns.tolist() if col != datetime_column and col not in groupby_columns]
         category_columns = [col for col in df.select_dtypes([object, bool]).columns.tolist() if col != datetime_column and col not in columns_to_resample and
                             col not in groupby_columns]
         if groupby_columns:
