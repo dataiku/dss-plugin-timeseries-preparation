@@ -33,14 +33,14 @@ else:
 resampler = Resampler(params)
 output_df = resampler.transform(df, datetime_column, groupby_columns=groupby_columns, can_use_nullable_integers=can_use_nullable_integers)
 
-if can_use_nullable_integers:
-    columns_to_round = [
-        column["name"]
-        for column in schema
-        if column["type"] in ["tinyint", "smallint", "int", "bigint"]
-    ]
-    # int columns must be resampled into int values (note that they can also contain NaN values)
-    output_df[columns_to_round] = output_df[columns_to_round].round()
+
+columns_to_round = [
+    column["name"]
+    for column in schema
+    if column["type"] in ["tinyint", "smallint", "int", "bigint"]
+]
+# int columns must be resampled into int values (note that they can also contain NaN values)
+output_df[columns_to_round] = output_df[columns_to_round].round()
 
 
 # --- Write output
