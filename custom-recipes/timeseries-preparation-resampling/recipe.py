@@ -13,9 +13,7 @@ check_python_version()
 # --- Setup
 (input_dataset, output_dataset) = get_input_output()
 recipe_config = get_recipe_config()
-
 schema = input_dataset.read_schema()
-
 input_dataset_columns = [column["name"] for column in schema]
 check_time_column_parameter(recipe_config, input_dataset_columns)
 groupby_columns = check_and_get_groupby_columns(recipe_config, input_dataset_columns)
@@ -30,10 +28,10 @@ can_use_nullable_integers = "use_nullable_integers" in signature.parameters
 if can_use_nullable_integers:
     df = input_dataset.get_dataframe(infer_with_pandas=False, use_nullable_integers=True)
 else:
-    df = input_dataset.get_dataframe()
+    df = input_dataset.get_dataframe(infer_with_pandas=False)
 
 resampler = Resampler(params)
-output_df = resampler.transform(df, datetime_column, groupby_columns=groupby_columns)
+output_df = resampler.transform(df, datetime_column, groupby_columns=groupby_columns, can_use_nullable_integers=can_use_nullable_integers)
 
 if can_use_nullable_integers:
     columns_to_round = [

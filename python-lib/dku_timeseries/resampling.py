@@ -78,9 +78,10 @@ class Resampler:
         self.params = params
         self.params.check()
 
-    def transform(self, df, datetime_column, groupby_columns=None):
-        numeric_columns = df.select_dtypes(include=['number']).columns
-        df[numeric_columns] = df[numeric_columns].astype('float64')
+    def transform(self, df, datetime_column, groupby_columns=None, can_use_nullable_integers=False):
+        if can_use_nullable_integers:
+            numeric_columns = df.select_dtypes(include=['number']).columns
+            df[numeric_columns] = df[numeric_columns].astype('float64')
         
         if groupby_columns is None:
             groupby_columns = []
