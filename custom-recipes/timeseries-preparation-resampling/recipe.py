@@ -20,9 +20,9 @@ groupby_columns = check_and_get_groupby_columns(recipe_config, input_dataset_col
 datetime_column = recipe_config.get('datetime_column')
 params = get_resampling_params(recipe_config)
 
-
+# use_nullable_integers is only available in DSS >= 13.1
+# Prior to this, the plugin does not support integer columns with NaN values
 signature = inspect.signature(input_dataset.get_dataframe)
-
 can_use_nullable_integers = "use_nullable_integers" in signature.parameters
 
 if can_use_nullable_integers:
@@ -33,13 +33,12 @@ else:
 resampler = Resampler(params)
 output_df = resampler.transform(df, datetime_column, groupby_columns=groupby_columns, can_use_nullable_integers=can_use_nullable_integers)
 
-
+# int columns must be resampled into int values
 columns_to_round = [
     column["name"]
     for column in schema
     if column["type"] in ["tinyint", "smallint", "int", "bigint"]
 ]
-# int columns must be resampled into int values (note that they can also contain NaN values)
 output_df[columns_to_round] = output_df[columns_to_round].round()
 
 
