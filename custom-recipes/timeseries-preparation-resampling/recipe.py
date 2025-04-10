@@ -26,7 +26,7 @@ signature = inspect.signature(input_dataset.get_dataframe)
 can_use_nullable_integers = "use_nullable_integers" in signature.parameters
 
 if can_use_nullable_integers:
-    df = input_dataset.get_dataframe(infer_with_pandas=False, use_nullable_integers=True)
+    df = input_dataset.get_dataframe(infer_with_pandas=False, use_nullable_integers=True, bool_as_string=True)
 else:
     df = input_dataset.get_dataframe(infer_with_pandas=False)
 
