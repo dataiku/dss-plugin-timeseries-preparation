@@ -100,7 +100,7 @@ class Resampler:
         # we thus compute a unified time index for all partitions
         reference_time_index = self._compute_full_time_index(df_copy, datetime_column)
         columns_to_resample = [col for col in df_copy.select_dtypes([int, float, np.float32, np.int32]).columns.tolist() if col != datetime_column and col not in groupby_columns]
-        category_columns = [col for col in df.select_dtypes([object, bool]).columns.tolist() if col != datetime_column and col not in columns_to_resample and
+        category_columns = [col for col in df.select_dtypes(exclude=[int, float, np.float32, np.int32]).columns.tolist() if col != datetime_column and col not in columns_to_resample and
                             col not in groupby_columns]
         if groupby_columns:
             grouped = df_copy.groupby(groupby_columns)
@@ -237,6 +237,13 @@ class Resampler:
         elif self.params.category_imputation_method == "clip":
             category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].ffill().bfill()
         elif self.params.category_imputation_method == "mode":
+            # .mode() loses the timezone info for any datetimetz column
             most_frequent_categoricals = category_filled_df.loc[:, category_columns].mode().iloc[0]
+
+            for col in category_columns:
+                # only perform conversion if the column has a timezone
+                if pd.api.types.is_datetime64_any_dtype(category_filled_df[col]) and category_filled_df[col].dt.tz is not None:
+                    most_frequent_categoricals[col] = most_frequent_categoricals[col].tz_localize("UTC")
+
             category_filled_df.loc[:, category_columns] = category_filled_df.loc[:, category_columns].fillna(most_frequent_categoricals)
         return category_filled_df
