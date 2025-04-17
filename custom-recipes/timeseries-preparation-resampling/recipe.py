@@ -31,7 +31,7 @@ else:
     df = input_dataset.get_dataframe(infer_with_pandas=False)
 
 resampler = Resampler(params)
-output_df = resampler.transform(df, datetime_column, groupby_columns=groupby_columns, can_use_nullable_integers=can_use_nullable_integers)
+output_df = resampler.transform(df, datetime_column, groupby_columns=groupby_columns)
 
 # int columns must be resampled into int values
 columns_to_round = [

@@ -70,6 +70,7 @@ class ResamplerParams:
 
 
 class Resampler:
+    RESAMPLEABLE_TYPES = [int, float, np.float32, np.int32]
 
     def __init__(self, params=None):
 
@@ -78,11 +79,7 @@ class Resampler:
         self.params = params
         self.params.check()
 
-    def transform(self, df, datetime_column, groupby_columns=None, can_use_nullable_integers=False):
-        if can_use_nullable_integers:
-            numeric_columns = df.select_dtypes(include=['number']).columns
-            df[numeric_columns] = df[numeric_columns].astype('float64')
-        
+    def transform(self, df, datetime_column, groupby_columns=None):    
         if groupby_columns is None:
             groupby_columns = []
 
@@ -99,8 +96,8 @@ class Resampler:
         # when having multiple timeseries, their time range is not necessarily the same
         # we thus compute a unified time index for all partitions
         reference_time_index = self._compute_full_time_index(df_copy, datetime_column)
-        columns_to_resample = [col for col in df_copy.select_dtypes([int, float, np.float32, np.int32]).columns.tolist() if col != datetime_column and col not in groupby_columns]
-        category_columns = [col for col in df.select_dtypes(exclude=[int, float, np.float32, np.int32]).columns.tolist() if col != datetime_column and col not in columns_to_resample and
+        columns_to_resample = [col for col in df_copy.select_dtypes(Resampler.RESAMPLEABLE_TYPES).columns.tolist() if col != datetime_column and col not in groupby_columns]
+        category_columns = [col for col in df.select_dtypes(exclude=Resampler.RESAMPLEABLE_TYPES).columns.tolist() if col != datetime_column and col not in columns_to_resample and
                             col not in groupby_columns]
         if groupby_columns:
             grouped = df_copy.groupby(groupby_columns)
