@@ -1,5 +1,11 @@
 # Changelog
 
+
+## Version 2.1.1 - Bugfix release - 2025-04
+### Resampling recipe
+- :bug: support integer columns containing null values
+- :bug: support float values in resampling
+
 ## Version 2.1.0 - New feature release - 2024-12
 ### Resampling recipe
 - :date: Support selecting custom dates for the start and end of extrapolation
