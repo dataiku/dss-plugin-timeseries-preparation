@@ -240,7 +240,6 @@ class Resampler:
             for col in category_columns:
                 # only perform conversion if the column has a timezone
                 if pd.api.types.is_datetime64_any_dtype(category_filled_df[col]) and category_filled_df[col].dt.tz is not None:
-                    print(category_filled_df[col].dt.tz, category_filled_df[col].dt)
                     import pydevd_pycharm
                     pydevd_pycharm.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True)
                     most_frequent_categoricals[col] = most_frequent_categoricals[col].tz_localize("UTC")
