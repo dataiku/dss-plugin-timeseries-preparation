@@ -236,7 +236,6 @@ class Resampler:
         elif self.params.category_imputation_method == "mode":
             # .mode() loses the timezone info for any datetimetz column
             most_frequent_categoricals = category_filled_df.loc[:, category_columns].mode().iloc[0]
-
             for col in category_columns:
                 # only perform conversion if the column has a timezone
                 if pd.api.types.is_datetime64_any_dtype(category_filled_df[col]) and category_filled_df[col].dt.tz is not None:
