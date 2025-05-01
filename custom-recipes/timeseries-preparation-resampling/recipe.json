@@ -1,0 +1,390 @@
+{
+  "meta": {
+    "label": "Time series resampling",
+    "description": "Performs interpolations and extrapolations to align time series on a fixed sampling rate.",
+    "icon": "icon-dku-timeseries-resample icon-DKU_timeseries_resample",
+    "displayOrderRank": 1
+  },
+  "kind": "PYTHON",
+  "selectableFromDataset": "input_dataset",
+  "inputRoles": [
+    {
+      "name": "input_dataset",
+      "label": "Input time series",
+      "description": "Dataset containing your time series data.",
+      "arity": "UNARY",
+      "required": true,
+      "acceptsDataset": true,
+      "acceptsFolder": false
+    }
+  ],
+  "outputRoles": [
+    {
+      "name": "output_dataset",
+      "label": "Output time series",
+      "description": "Output dataset with equispaced time series.",
+      "arity": "UNARY",
+      "required": true,
+      "acceptsDataset": true
+    }
+  ],
+  "params": [
+    {
+      "type": "SEPARATOR",
+      "name": "separator_input",
+      "label": "Input parameters"
+    },
+    {
+      "name": "datetime_column",
+      "label": "Time column",
+      "type": "COLUMN",
+      "columnRole": "input_dataset",
+      "allowedColumnTypes": [
+        "date"
+      ],
+      "mandatory": true
+    },
+    {
+      "name": "advanced_activated",
+      "label": "Long format",
+      "description": "If multiple time series are stored in the same column",
+      "type": "BOOLEAN"
+    },
+    {
+      "name": "groupby_column",
+      "label": "Column with identifier",
+      "type": "COLUMN",
+      "columnRole": "input_dataset",
+      "mandatory": false,
+      "description": "⚠️  Deprecated. Use the field 'Time series identifiers' instead",
+      "visibilityCondition": "model.advanced_activated && (model.groupby_column.length > 0)"
+    },
+    {
+      "name": "groupby_columns",
+      "label": "Time series identifiers",
+      "description": "Columns that identify the multiple time series - mandatory for long format",
+      "type": "COLUMNS",
+      "allowedColumnTypes": [
+        "tinyint",
+        "smallint",
+        "int",
+        "bigint",
+        "string",
+        "boolean"
+      ],
+      "columnRole": "input_dataset",
+      "mandatory": false,
+      "visibilityCondition": "model.advanced_activated"
+    },
+    {
+      "name": "sep1",
+      "label": "Resampling parameters",
+      "type": "SEPARATOR"
+    },
+    {
+      "name": "time_step",
+      "label": "Time step",
+      "type": "DOUBLE",
+      "defaultValue": 1,
+      "minD": 0.0001
+    },
+    {
+      "name": "time_unit",
+      "label": "Unit",
+      "type": "SELECT",
+      "selectChoices": [
+        {
+          "value": "nanoseconds",
+          "label": "Nanoseconds"
+        },
+        {
+          "value": "microseconds",
+          "label": "Microseconds"
+        },
+        {
+          "value": "milliseconds",
+          "label": "Milliseconds"
+        },
+        {
+          "value": "seconds",
+          "label": "Seconds"
+        },
+        {
+          "value": "minutes",
+          "label": "Minutes"
+        },
+        {
+          "value": "hours",
+          "label": "Hours"
+        },
+        {
+          "value": "days",
+          "label": "Days"
+        },
+        {
+          "value": "business_days",
+          "label": "Business days (Mon-Fri)"
+        },
+        {
+          "value": "weeks",
+          "label": "Weeks"
+        },
+        {
+          "value": "months",
+          "label": "Months"
+        },
+        {
+          "value": "quarters",
+          "label": "Quarters"
+        },
+        {
+          "value": "semi_annual",
+          "label": "Semi-annual"
+        },
+        {
+          "value": "years",
+          "label": "Years"
+        }
+      ],
+      "defaultValue": "seconds"
+    },
+    {
+      "name": "time_unit_end_of_week",
+      "label": "End of week day",
+      "type": "SELECT",
+      "mandatory": false,
+      "defaultValue": "SUN",
+      "visibilityCondition": "model.time_unit == 'weeks'",
+      "selectChoices": [
+        {
+          "value": "SUN",
+          "label": "Sunday"
+        },
+        {
+          "value": "MON",
+          "label": "Monday"
+        },
+        {
+          "value": "TUE",
+          "label": "Tuesday"
+        },
+        {
+          "value": "WED",
+          "label": "Wednesday"
+        },
+        {
+          "value": "THU",
+          "label": "Thursday"
+        },
+        {
+          "value": "FRI",
+          "label": "Friday"
+        },
+        {
+          "value": "SAT",
+          "label": "Saturday"
+        }
+      ]
+    },
+    {
+      "name": "sep2",
+      "label": "Methods",
+      "type": "SEPARATOR"
+    },
+    {
+      "name": "interpolation_method",
+      "label": "Interpolate",
+      "description": "Used to compute values for dates located between two existing data points",
+      "type": "SELECT",
+      "selectChoices": [
+        {
+          "value": "nearest",
+          "label": "Nearest"
+        },
+        {
+          "value": "previous",
+          "label": "Previous"
+        },
+        {
+          "value": "next",
+          "label": "Next"
+        },
+        {
+          "value": "linear",
+          "label": "Linear"
+        },
+        {
+          "value": "zero",
+          "label": "Mean"
+        },
+        {
+          "value": "quadratic",
+          "label": "Quadratic"
+        },
+        {
+          "value": "cubic",
+          "label": "Cubic"
+        },
+        {
+          "value": "constant",
+          "label": "Constant"
+        },
+        {
+          "value": "none",
+          "label": "Don't interpolate (impute null)"
+        }
+      ],
+      "defaultValue": "linear"
+    },
+    {
+      "name": "constant_value",
+      "label": "Constant value",
+      "type": "DOUBLE",
+      "defaultValue": 0,
+      "visibilityCondition": "model.interpolation_method == 'constant'"
+    },
+    {
+      "name": "extrapolation_method",
+      "label": "Extrapolate",
+      "description": "Used to compute values for dates before or after the last known data point",
+      "type": "SELECT",
+      "selectChoices": [
+        {
+          "value": "clip",
+          "label": "Previous/next"
+        },
+        {
+          "value": "interpolation",
+          "label": "Same as interpolation"
+        },
+        {
+          "value": "none",
+          "label": "Don't extrapolate (impute null)"
+        },
+        {
+          "value": "no_extrapolation",
+          "label": "Don't extrapolate (no imputation)"
+        }
+      ],
+      "defaultValue": "clip"
+    },
+    {
+      "name": "start_date_mode",
+      "label": "Extrapolation start date",
+      "type": "SELECT",
+      "selectChoices": [
+        {
+          "value": "AUTO",
+          "label": "First available"
+        },
+        {
+          "value": "CUSTOM",
+          "label": "Custom"
+        }
+      ],
+      "mandatory": false,
+      "defaultValue": "AUTO",
+      "visibilityCondition": "model.extrapolation_method == 'clip' || (model.extrapolation_method == 'interpolation' && model.interpolation_method != 'none')"
+    },
+    {
+      "name": "custom_start_date",
+      "label": "Custom start date",
+      "type": "DATE",
+      "mandatory": false,
+      "visibilityCondition": "(model.extrapolation_method == 'clip' || (model.extrapolation_method == 'interpolation' && model.interpolation_method != 'none')) && model.start_date_mode == 'CUSTOM'",
+      "description": "Set a custom date to start extrapolation from."
+    },
+    {
+      "name": "end_date_mode",
+      "label": "Extrapolation end date",
+      "type": "SELECT",
+      "selectChoices": [
+        {
+          "value": "AUTO",
+          "label": "Last available"
+        },
+        {
+          "value": "CUSTOM",
+          "label": "Custom"
+        }
+      ],
+      "mandatory": false,
+      "defaultValue": "AUTO",
+      "visibilityCondition": "model.extrapolation_method == 'clip' || (model.extrapolation_method == 'interpolation' && model.interpolation_method != 'none')"
+    },
+    {
+      "name": "custom_end_date",
+      "label": "Custom end date",
+      "type": "DATE",
+      "mandatory": false,
+      "visibilityCondition": "(model.extrapolation_method == 'clip' || (model.extrapolation_method == 'interpolation' && model.interpolation_method != 'none')) && model.end_date_mode == 'CUSTOM'",
+      "description": "Set a custom date to end extrapolation on."
+    },
+    {
+      "name": "category_imputation_method",
+      "label": "Impute categorical data",
+      "description": "Used to fill in categorical values during interpolation and extrapolation",
+      "type": "SELECT",
+      "selectChoices": [
+        {
+          "value": "empty",
+          "label": "Empty"
+        },
+        {
+          "value": "constant",
+          "label": "Constant"
+        },
+        {
+          "value": "mode",
+          "label": "Most common"
+        },
+        {
+          "value": "clip",
+          "label": "Previous/next"
+        },
+        {
+          "value": "previous",
+          "label": "Previous"
+        },
+        {
+          "value": "next",
+          "label": "Next"
+        }
+      ],
+      "defaultValue": "empty"
+    },
+    {
+      "name": "category_constant_value",
+      "label": "Constant value",
+      "type": "STRING",
+      "defaultValue": "",
+      "visibilityCondition": "model.category_imputation_method == 'constant'"
+    },
+    {
+      "name": "sepEdition",
+      "label": "Advanced parameters",
+      "type": "SEPARATOR"
+    },
+    {
+      "name": "clip_start",
+      "label": "Clip start",
+      "description": "Number of time steps to skip at the beginning of the series.",
+      "type": "DOUBLE",
+      "defaultValue": 0
+    },
+    {
+      "name": "clip_end",
+      "label": "Clip end",
+      "description": "Number of time steps to skip at the end of the series.",
+      "type": "DOUBLE",
+      "defaultValue": 0
+    },
+    {
+      "name": "shift",
+      "label": "Shift value",
+      "description": "Shift all time stamps by this amount (can be negative).",
+      "type": "DOUBLE",
+      "defaultValue": 0
+    }
+  ]
+}

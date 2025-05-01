@@ -1,0 +1,5 @@
+scipy==1.2.1; python_version < '3.8'
+scipy==1.10.1; python_version >= '3.8'
+future==0.18.3
+statsmodels==0.12.2; python_version < '3.8'
+statsmodels==0.13.5; python_version >= '3.8'
