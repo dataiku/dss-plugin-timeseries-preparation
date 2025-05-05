@@ -39,7 +39,7 @@ columns_to_round = [
     for column in schema
     if column["type"] in ["tinyint", "smallint", "int", "bigint"]
 ]
-output_df[columns_to_round] = output_df[columns_to_round].round()
+output_df[columns_to_round].astype(float).round().astype(int)
 
 
 # --- Write output
