@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.1.2 - Bugfix release - 2025-05
+### Resampling recipe
+- :bug: fix 3.8/3.11 python support
 
 ## Version 2.1.1 - Bugfix release - 2025-04
 ### Resampling recipe
