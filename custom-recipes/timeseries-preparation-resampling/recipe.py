@@ -34,11 +34,12 @@ resampler = Resampler(params)
 output_df = resampler.transform(df, datetime_column, groupby_columns=groupby_columns)
 
 # int columns must be resampled into int values
-columns_to_round = [
+dss_expected_integer_columns = [
     column["name"]
     for column in schema
     if column["type"] in ["tinyint", "smallint", "int", "bigint"]
 ]
+columns_to_round = [c for c in df.select_dtypes(include="inexact").columns if c in dss_expected_integer_columns]
 output_df[columns_to_round] = output_df[columns_to_round].round()
 
 

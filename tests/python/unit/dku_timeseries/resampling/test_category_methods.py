@@ -289,7 +289,7 @@ class TestCategoryMethods:
         params = get_resampling_params(config)
         resampler = Resampler(params)
         output_df = resampler.transform(df_multiple_dates, columns.date)
-        assert pd.isnull(output_df.loc[1, "date2"])
+        np.testing.assert_array_equal(pd.to_datetime(output_df['date2']).map(lambda s: s.strftime('%Y-%m-%d')), np.array(["2013-01-01", "2013-01-01", "2013-01-01", "2013-01-01", "2013-01-03", "2013-01-03", "2013-01-04", "2013-01-04", "2013-01-05", "2013-01-05", "2013-01-06"]))
 
     def test_bool_column(self, bool_df, config,columns):
         config["category_imputation_method"] = "previous"
